@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - APP_PORT=$APP_PORT
+        - APP_NAME=$APP_NAME
+        - RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER
+        - RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS
+        - REDIS_PORT=$REDIS_PORT
+        - AMQP_SERVER_PORT=$AMQP_SERVER_PORT
+    restart: unless-stopped
+    container_name: ${APP_NAME}Api
+    networks:
+      - yourfeeds
+    tty: true
+    # Expose the internal 8080 port, but do not specify host port mapping. Docker will map it as it pleases and
+    # prevent clashes to existing ports.
+    ports:
+      - ${APP_PORT}
+    links:
+      - redis
+      - rabbitmq
+
+  redis:
+    image: redis:latest
+    container_name: ${APP_NAME}Api_redis
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    volumes:
+      - ./tmp/redisStore:/data
+    networks:
+      - yourfeeds
+
+  rabbitmq:
+    # rabbitmq image with rabbitmq management ui
+    image: rabbitmq:management
+    container_name: ${APP_NAME}Api_rabbitmq
+    # set the rabbitmq username and password that will be used to connect to rabbitmq management ui
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - ./tmp/amqpStore:/data
+    ports:
+      # AMQP protocol port
+      - ${AMQP_SERVER_PORT}:${AMQP_SERVER_PORT}
+      # HTTP management UI
+      - '15672:15672'
+    networks:
+      - yourfeeds
+
+networks:
+  yourfeeds:
+    driver: bridge
