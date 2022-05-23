@@ -1,0 +1,54 @@
+{
+  "name": "yourfeeds-api",
+  "version": "1.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/gblend/yourfeedsApi.git"
+  },
+  "main": "app.js",
+  "scripts": {
+    "start:dev": "nodemon app.js",
+    "start": "node app.js",
+    "test": "jest --coverage tests/*",
+    "unit": "jest --coverage tests/unit --watchAll",
+    "integration": "jest --coverage tests/integration --watchAll"
+  },
+  "author": "gabrielilochi@gmail.com",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.8.0",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.27.1",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-async-errors": "^3.1.1",
+    "express-fileupload": "^1.2.1",
+    "express-graphql": "^0.12.0",
+    "express-mongo-sanitize": "^2.1.0",
+    "express-rate-limit": "^5.4.1",
+    "helmet": "^4.6.0",
+    "http-status-codes": "^2.1.4",
+    "ioredis": "^4.28.2",
+    "jest": "^27.4.5",
+    "joi": "^17.4.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.0.8",
+    "morgan": "^1.10.0",
+    "nock": "^13.2.4",
+    "nodemailer": "^6.7.2",
+    "sinon": "^14.0.0",
+    "supertest": "^6.1.6",
+    "validator": "^13.6.0",
+    "winston": "^3.7.2",
+    "xss-clean": "^0.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.9"
+  },
+  "engines": {
+    "node": "14.x"
+  }
+}
