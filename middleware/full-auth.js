@@ -1,7 +1,7 @@
 const CustomError = require('../lib/errors');
 const { isTokenValid } = require('../lib/utils/jwt');
-const {adaptRequest, logger, constants} = require("../lib/utils");
-const {StatusCodes} = require("http-status-codes");
+const {adaptRequest, logger, constants} = require('../lib/utils');
+const {StatusCodes} = require('http-status-codes');
 
 const authenticateUser = async (req, res, next) => {
   const {headers: {authorization}, cookies, method, path} = adaptRequest(req);
