@@ -22,6 +22,7 @@ const {
     configRouter,
     savedForLaterRouter,
     userRouter,
+    feedCategoryRouter,
     config,
     app,
     express
@@ -59,6 +60,7 @@ app.get('/api/v1/doc', (_req, res) => {
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/config', configRouter);
+app.use('/api/v1/feedCategory', feedCategoryRouter);
 app.use('/api/v1/savedForLater', savedForLaterRouter);
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
