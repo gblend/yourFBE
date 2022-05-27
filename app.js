@@ -19,6 +19,7 @@ const {
     decodeCookies,
     logger,
     fileUpload,
+    userRouter,
     config,
     app,
     express
@@ -54,6 +55,7 @@ app.get('/api/v1/doc', (_req, res) => {
 });
 
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/users', userRouter);
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
