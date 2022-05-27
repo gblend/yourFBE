@@ -4,6 +4,7 @@ const config = {
         name: process.env.APP_NAME,
         baseUrlDev: process.env.BASE_URL_DEV,
         baseUrlProd: process.env.BASE_URL_PROD,
+        env: process.env.NODE_ENV,
     },
     rateLimiter: {
         windowMs: process.env.RATE_LIMIT_WINDOWS_MS,
@@ -36,8 +37,17 @@ const config = {
     redis: {
         allOrdersKey: process.env.GET_ALL_ORDERS_CACHE_KEY,
         allProductsKey: process.env.GET_ALL_PRODUCTS_CACHE_KEY,
-        host: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT,
+        host: process.env.REDIS_HOST || '127.0.0.1',
+        port: process.env.REDIS_PORT || 6379,
+        db: process.env.REDIS_DB || 0,
+        family: process.env.REDIS_FAMILY || 4,
+    },
+    database: {
+        uri: process.env.MONGO_URI,
+    },
+    days: {
+        one: 60 * 60 * 24 * 1000,
+        thirty: 60 * 60 * 24 * 1000 * 30,
     }
 }
 
