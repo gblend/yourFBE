@@ -25,6 +25,7 @@ const {
     feedCategoryRouter,
     feedRouter,
     followedFeedRouter,
+    logRouter,
     config,
     app,
     express
@@ -65,6 +66,7 @@ app.use('/api/v1/config', configRouter);
 app.use('/api/v1/feedCategory', feedCategoryRouter);
 app.use('/api/v1/feed', feedRouter);
 app.use('/api/v1/followedFeed', followedFeedRouter);
+app.use('/api/v1/log', logRouter);
 app.use('/api/v1/savedForLater', savedForLaterRouter);
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
