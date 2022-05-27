@@ -9,6 +9,7 @@ const {
     notFoundMiddleware,
     cookieParser,
     connectDB,
+    authRouter,
     mongoSanitize,
     rateLimit,
     helmet,
@@ -52,6 +53,7 @@ app.get('/api/v1/doc', (_req, res) => {
     return res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
+app.use('/api/v1/auth', authRouter);
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
