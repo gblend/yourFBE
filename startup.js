@@ -1,3 +1,5 @@
+'use strict';
+
 const morgan = require('morgan');
 const cors = require('cors');
 const path = require("path");
@@ -25,9 +27,9 @@ const app = express();
 
 const cloudinary = require('cloudinary').v2;
 cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.CLOUD_API_KEY,
-    api_secret: process.env.CLOUD_API_SECRET
+    cloud_name: config.cloudinary.cloudName,
+    api_key: config.cloudinary.cloudApiKey,
+    api_secret: config.cloudinary.cloudApiSecret
 });
 
 
