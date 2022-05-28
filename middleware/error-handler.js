@@ -1,36 +1,36 @@
-const { StatusCodes } = require('http-status-codes');
+const {StatusCodes} = require('http-status-codes');
 const {logger, adaptRequest} = require("../lib/utils");
 
-const errorHandlerMiddleware = (err, req, res, next) => {
-  const {path, method} = adaptRequest(req);
+const errorHandlerMiddleware = (err, req, res, _next) => {
+    const {path, method} = adaptRequest(req);
 
-  let customError = {
-    // set default
-    statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
-    msg: err.message || 'Something went wrong try again later.',
-  };
+    let customError = {
+        // set default
+        statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
+        msg: err.message || 'Something went wrong try again later.',
+    };
 
-  if (err.name === 'ValidationError') {
-    customError.msg = Object.values(err.errors)
-      .map((item) => item.message)
-      .join(',');
-    customError.statusCode = 400;
-  }
+    if (err.name === 'ValidationError') {
+        customError.msg = Object.values(err.errors)
+            .map((item) => item.message)
+            .join(',');
+        customError.statusCode = 400;
+    }
 
-  if (err.code && err.code === 11000) {
-    customError.msg = `Duplicate value entered for ${Object.keys(
-      err.keyValue
-    )} field, please choose another value.`;
-    customError.statusCode = 400;
-  }
+    if (err.code && err.code === 11000) {
+        customError.msg = `Duplicate value entered for ${Object.keys(
+            err.keyValue
+        )} field, please choose another value.`;
+        customError.statusCode = 400;
+    }
 
-  if (err.name === 'CastError') {
-    customError.msg = `No item found with id : ${err.value}`;
-    customError.statusCode = 404;
-  }
+    if (err.name === 'CastError') {
+        customError.msg = `No item found with id : ${err.value}`;
+        customError.statusCode = 404;
+    }
 
-  logger.error(`${customError.statusCode} - ${customError.msg} - ${method} ${path}`);
-  return res.status(customError.statusCode).json({ msg: customError.msg });
+    logger.error(`${customError.statusCode} - ${customError.msg} - ${method} ${path}`);
+    return res.status(customError.statusCode).json({msg: customError.msg});
 };
 
 module.exports = errorHandlerMiddleware;

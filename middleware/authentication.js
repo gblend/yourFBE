@@ -1,8 +1,6 @@
-const CustomErr =  require('../lib/errors');
-const { isTokenValid, attachCookiesToResponse, adaptRequest, logger, constants} = require('../lib/utils');
-const {Token} = require("../models/Token");
-const {createJWT} = require("../lib/utils/jwt");
-const {StatusCodes} = require("http-status-codes");
+const CustomErr = require('../lib/errors');
+const {isTokenValid, attachCookiesToResponse, adaptRequest, logger, constants, StatusCodes, createJWT} = require('../lib/utils');
+const {Token} = require('../models/Token');
 
 
 const authenticateUser = async (req, res, next) => {
@@ -10,10 +8,10 @@ const authenticateUser = async (req, res, next) => {
     const {accessToken, refreshToken} = signedCookies;
 
     try {
-        if(accessToken) {
+        if (accessToken) {
             const {name, id, role} = isTokenValid(accessToken);
             req.user = {name, id, role};
-           return next();
+            return next();
         }
 
         const payload = isTokenValid(refreshToken);
@@ -21,13 +19,13 @@ const authenticateUser = async (req, res, next) => {
             user: payload.user.id,
             refreshToken: payload.refreshToken
         });
-        if(!isTokenExist || !isTokenExist?.isValid) {
+        if (!isTokenExist || !isTokenExist?.isValid) {
             logger.info(`${StatusCodes.BAD_REQUEST} - Access token invalid - ${method} ${path}`)
             throw new CustomErr.UnauthenticatedError(constants.auth.AUTHENTICATION_INVALID);
         }
 
         const accessTokenJWT = createJWT(payload.user);
-        attachCookiesToResponse({accessTokenJWT, refreshTokenJWT:isTokenExist.refreshToken, res});
+        attachCookiesToResponse({accessTokenJWT, refreshTokenJWT: isTokenExist.refreshToken, res});
         req.user = payload.user;
         next();
     } catch (err) {

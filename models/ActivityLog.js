@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoose = require('mongoose');
 const joi = require('joi');
 const Schema = mongoose.Schema;
@@ -17,7 +19,7 @@ const ActivityLogSchema = new Schema({
         ref: 'User',
         required: true,
     }
-}, { timestamps: true });
+}, {timestamps: true});
 
 const ActivityLog = mongoose.model('ActivityLog', ActivityLogSchema);
 

@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const joi = require('joi');
@@ -33,7 +35,7 @@ const FeedSchema = new Schema({
         required: true,
     },
     socialHandle: {
-       type: String,
+        type: String,
         trim: true,
     },
     socialPage: {
@@ -45,7 +47,7 @@ const FeedSchema = new Schema({
         ref: 'User',
         required: true,
     },
-}, { timestamps: true});
+}, {timestamps: true});
 
 const Feed = mongoose.model('Feed', FeedSchema);
 

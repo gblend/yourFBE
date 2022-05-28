@@ -1,5 +1,7 @@
+'use strict';
+
 const mongoose = require('mongoose');
-const joi = require("joi");
+const joi = require('joi');
 const Schema = mongoose.Schema;
 
 const ConfigDataSchema = new Schema({
@@ -23,7 +25,7 @@ const ConfigDataSchema = new Schema({
         enum: ['enabled', 'disabled'],
         default: 'enabled',
     }
-}, { timestamps: true});
+}, {timestamps: true});
 
 const ConfigData = mongoose.model('ConfigData', ConfigDataSchema);
 

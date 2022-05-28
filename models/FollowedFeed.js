@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const joi = require('joi');
@@ -13,18 +15,18 @@ const FollowedFeedSchema = new Schema({
         ref: 'User',
         required: true,
     },
-}, { timestamps: true});
-FollowedFeedSchema.index({user: 1, feed: 1}, { unique: true });
+}, {timestamps: true});
+FollowedFeedSchema.index({user: 1, feed: 1}, {unique: true});
 
 const FollowedFeed = mongoose.model('FollowedFeed', FollowedFeedSchema);
-FollowedFeedSchema.virtual('user',{
+FollowedFeedSchema.virtual('user', {
     ref: 'User',
     localField: 'user',
     foreignField: '_id',
     justOne: false
 });
 
-FollowedFeedSchema.virtual('feed',{
+FollowedFeedSchema.virtual('feed', {
     ref: 'Feed',
     localField: 'feed',
     foreignField: '_id',

@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const joi = require('joi');
@@ -17,8 +19,8 @@ const SavedForLaterSchema = new Schema({
         ref: 'User',
         required: true,
     },
-}, { timestamps: true});
-SavedForLaterSchema.index({user: 1, postId: 1}, { unique: true });
+}, {timestamps: true});
+SavedForLaterSchema.index({user: 1, postId: 1}, {unique: true});
 
 const SavedForLater = mongoose.model('SavedForLater', SavedForLaterSchema);
 

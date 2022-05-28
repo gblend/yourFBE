@@ -1,5 +1,7 @@
+'use strict';
+
 const mongoose = require('mongoose');
-const joi = require("joi");
+const joi = require('joi');
 const Schema = mongoose.Schema;
 
 const FeedCategorySchema = new Schema({
@@ -19,7 +21,7 @@ const FeedCategorySchema = new Schema({
         enum: ['enabled', 'disabled'],
         default: 'enabled',
     }
-}, { timestamps: true});
+}, {timestamps: true});
 
 const FeedCategory = mongoose.model('FeedCategory', FeedCategorySchema);
 

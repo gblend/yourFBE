@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoose = require('mongoose');
 const joi = require('joi');
 const Schema = mongoose.Schema;
@@ -13,7 +15,7 @@ const PollingLogSchema = new Schema({
         enum: ['completed', 'failed', 'exception'],
         default: 'completed',
     }
-}, { timestamps: true });
+}, {timestamps: true});
 
 const PollingLog = mongoose.model('PollingLog', PollingLogSchema);
 
