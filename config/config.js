@@ -1,3 +1,7 @@
+'use strict';
+
+require('dotenv').config();
+
 const config = {
     app: {
         port: process.env.APP_PORT || 5000,
@@ -7,7 +11,7 @@ const config = {
         env: process.env.NODE_ENV,
     },
     rateLimiter: {
-        windowMs: process.env.RATE_LIMIT_WINDOWS_MS,
+        windowMs: process.env.RATE_LIMIT_WINDOW_MS,
         max: process.env.RATE_LIMIT_MAX,
     },
     jwt: {
