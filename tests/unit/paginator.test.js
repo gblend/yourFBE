@@ -1,6 +1,6 @@
 'use strict';
 
-const {paginate} = require('lib/utils');
+const {paginate} = require('../../lib/utils');
 
 // supertest
 // sinon
@@ -8,8 +8,31 @@ const {paginate} = require('lib/utils');
 // nock
 
 describe('Paginator', () => {
-    it('with out pageNumber, data and pageSize', () => {
-        const result = [];
-        expect(paginate({}, result)).toEqual(result);
-    })
+    let data = [];
+    let expected = {};
+    let params = {};
+
+    beforeEach(() => {
+        expected = { pagination: { pageSize: 10, pageNumber: 1, offset: 0 }, result: [] }
+    });
+
+    describe('without data', () => {
+        it('without pageNumber, pageSize, and empty array', () => {
+
+            expect(paginate(data, {})).toEqual(expected);
+        });
+
+        it('with pageNumber and empty array', () => {
+            params.pageNumber = 1;
+
+            expect(paginate(data, params)).toEqual(expected);
+        });
+
+        it('with pageSize and empty array', () => {
+            params.pageSize = 1;
+            expected.pagination.pageSize = 1;
+
+            expect(paginate(data, params)).toEqual(expected);
+        });
+    });
 });
