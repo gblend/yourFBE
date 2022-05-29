@@ -4,11 +4,11 @@ const {paginate} = require('../../lib/utils');
 
 describe('Paginator', () => {
     let data = ['cat', 'rat', 'dog', 'car', 'cab', 'data'];
-    let expected = { pagination: { offset: 0 }, result: [] };
+    let expected = {pagination: {offset: 0}, result: []};
     let params = {};
 
     afterEach(() => {
-       params = {};
+        params = {};
     });
 
     describe('Paginate Array Data', () => {
