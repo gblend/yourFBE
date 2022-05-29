@@ -2,37 +2,69 @@
 
 const {paginate} = require('../../lib/utils');
 
-// supertest
-// sinon
-// nock
-// nock
-
 describe('Paginator', () => {
-    let data = [];
-    let expected = {};
+    let data = ['cat', 'rat', 'dog', 'car', 'cab', 'data'];
+    let expected = { pagination: { offset: 0 }, result: [] };
     let params = {};
 
-    beforeEach(() => {
-        expected = { pagination: { pageSize: 10, pageNumber: 1, offset: 0 }, result: [] }
+    afterEach(() => {
+       params = {};
     });
 
-    describe('without data', () => {
-        it('without pageNumber, pageSize, and empty array', () => {
+    describe('Paginate Array Data', () => {
+        describe('paginate without data', () => {
+            it('without pageNumber, pageSize, and empty array', () => {
+                expected.pagination.pageNumber = 1;
+                expected.pagination.pageSize = 10;
 
-            expect(paginate(data, {})).toEqual(expected);
+                expect(paginate([], {})).toEqual(expected);
+            });
+
+            it('with pageNumber and empty array', () => {
+                params.pageNumber = 1;
+                expected.pagination.pageNumber = 1;
+                expected.pagination.pageSize = 10;
+
+                expect(paginate([], params)).toEqual(expected);
+            });
+
+            it('with pageSize and empty array', () => {
+                params.pageSize = 1;
+                expected.pagination.pageNumber = 1;
+                expected.pagination.pageSize = 1;
+
+                expect(paginate([], params)).toEqual(expected);
+            });
         });
 
-        it('with pageNumber and empty array', () => {
-            params.pageNumber = 1;
+        describe('paginate with data', () => {
+            it('with pageNumber, pageSize, and data array', () => {
+                params.pageSize = 5;
+                params.pageNumber = 1;
+                expected.pagination.pageSize = 5;
+                expected.pagination.pageNumber = 1;
+                expected.result = data.slice(0, 5)
 
-            expect(paginate(data, params)).toEqual(expected);
-        });
+                expect(paginate(data, params)).toEqual(expected);
+            });
 
-        it('with pageSize and empty array', () => {
-            params.pageSize = 1;
-            expected.pagination.pageSize = 1;
+            it('with pageNumber and data array', () => {
+                params.pageNumber = 1;
+                expected.pagination.pageNumber = 1;
+                expected.pagination.pageSize = 10;
+                expected.result = data.slice(0, 10)
 
-            expect(paginate(data, params)).toEqual(expected);
+
+                expect(paginate(data, params)).toEqual(expected);
+            });
+
+            it('with pageSize and data array', () => {
+                params.pageSize = 5;
+                expected.pagination.pageSize = 5;
+                expected.result = data.slice(0, 5)
+
+                expect(paginate(data, params)).toEqual(expected);
+            });
         });
     });
 });
