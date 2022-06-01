@@ -52,6 +52,9 @@ const config = {
     days: {
         one: 60 * 60 * 24 * 1000,
         thirty: 60 * 60 * 24 * 1000 * 30,
+    },
+    imageUpload: {
+        maxSize: 2 * 1024 * 1024,
     }
 }
 
