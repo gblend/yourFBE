@@ -7,4 +7,8 @@ describe('CreateJWT', () => {
 		expect(createJWT({}).length).toBeGreaterThan(0);
 	});
 
+	it.only('should throw an error when payload is undefined', () => {
+		expect(() => createJWT(undefined)).toThrow('payload is required');
+	});
+
 });
