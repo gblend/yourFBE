@@ -11,4 +11,8 @@ describe('CreateJWT', () => {
 		expect(() => createJWT(undefined)).toThrow('payload is required');
 	});
 
+	it.only('should throw an error when payload is null (not a plain object)', () => {
+		expect(() => createJWT(null)).toThrow();
+	});
+
 });
