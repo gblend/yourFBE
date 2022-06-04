@@ -82,4 +82,14 @@ start().then(data => {
 	server = data.server;
 });
 
+process.on('SIGTERM', () => {
+	logger.error('SIGTERM signal received - closing http server.');
+	server.close(() => {
+		logger.info(`${config.app.name} Http server closed.`);
+		conn.connection.close(false, () => {
+			process.exit(0);
+		});
+	});
+});
+
 module.exports = app;
