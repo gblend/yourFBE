@@ -68,6 +68,12 @@ app.use('/api/v1/savedForLater', savedForLaterRouter);
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
+process.on('uncaughtException', (err) => {
+	logger.info(`Uncaught Exception - ${err.stack}`);
+	logger.error(`Uncaught Exception - ${err.stack}`);
+	process.exit(1);
+});
+
 let conn, server = null;
 const start = async () => {
 	conn = await connectDB(config.database.uri);
