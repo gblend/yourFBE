@@ -74,6 +74,10 @@ process.on('uncaughtException', (err) => {
 	process.exit(1);
 });
 
+process.on('unhandledRejection', err => {
+	logger.warn(`Unhandled Rejection - ${err.message}`);
+});
+
 let conn, server = null;
 const start = async () => {
 	conn = await connectDB(config.database.uri);
