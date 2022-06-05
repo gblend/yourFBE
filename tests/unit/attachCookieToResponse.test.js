@@ -28,4 +28,18 @@ describe('AttachCookiesToResponse', () => {
 		}));
 	});
 
+	it('with access token, refresh token and res - res.cookie should be called twice', () => {
+		const res = mockResponse();
+		attachCookiesToResponse({accessTokenJWT, refreshTokenJWT, res});
+
+		expect(res.cookie).toHaveBeenCalledTimes(2);
+		expect(res.cookie).toBeCalledWith('accessToken', accessTokenJWT, expect.objectContaining({
+			expires: expect.anything(),
+			httpOnly: true, secure: expect.anything(), signed: true
+		}));
+		expect(res.cookie).toBeCalledWith('refreshToken', refreshTokenJWT, expect.objectContaining({
+			expires: expect.anything(),
+			httpOnly: true, secure: expect.anything(), signed: true
+		}));
+	});
 });
