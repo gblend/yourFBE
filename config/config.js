@@ -5,7 +5,7 @@ require('dotenv').config();
 const config = {
     app: {
         port: process.env.APP_PORT || 5000,
-        name: process.env.APP_NAME,
+        name: process.env.APP_NAME || 'yourFeeds',
         baseUrlDev: process.env.BASE_URL_DEV,
         baseUrlProd: process.env.BASE_URL_PROD,
         env: process.env.NODE_ENV,
@@ -15,7 +15,7 @@ const config = {
         max: process.env.RATE_LIMIT_MAX,
     },
     jwt: {
-        secret: process.env.JWT_SECRET,
+        secret: process.env.JWT_SECRET || 'secret',
         expiration: process.env.JWT_EXPIRATION,
     },
     cloudinary: {
