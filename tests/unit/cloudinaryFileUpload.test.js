@@ -37,10 +37,10 @@ describe('UploadImage', () => {
 	it('should succeed when valid file is uploaded', async () => {
 		const req = {files: {uploadImage: {size: 1024, mimetype: 'image/'}}};
 		const uploadImage = jest.spyOn(cloudHelpers, 'uploadImage');
-		const mockUploadImage = (requestObj) => jest.fn().
-		mockReturnValue(cloudHelpers.uploadImage(requestObj));
+		const mockUploadImage = async (requestObj) => jest.fn().
+		mockReturnValue(await cloudHelpers.uploadImage(requestObj));
 
-		mockUploadImage(req);
+		await mockUploadImage(req).catch(_ => _);
 
 		expect(uploadImage).toHaveBeenCalledTimes(1);
 		expect(uploadImage).toHaveBeenCalledWith(req);
