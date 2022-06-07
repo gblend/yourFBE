@@ -17,14 +17,14 @@ const attachCookiesToResponse = ({accessTokenJWT, refreshTokenJWT, res}) => {
             secure: config.app.env === 'production',
             signed: true,
             expires: new Date(Date.now() + config.days.one),
-        }).catch(_ => _);
+        });
     res.cookie('refreshToken', refreshTokenJWT,
         {
             expires: new Date(Date.now() + config.days.thirty),
             httpOnly: true,
             secure: config.app.env === 'production',
             signed: true
-        }).catch(_ => _);
+        });
 }
 
 const decodeCookies = async (req, _res, next) => {
