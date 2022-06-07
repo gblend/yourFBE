@@ -27,7 +27,7 @@ const ConfigDataSchema = new Schema({
     }
 }, {timestamps: true});
 
-const ConfigData = mongoose.model('ConfigData', ConfigDataSchema);
+const ConfigData = mongoose.model('ConfigData', ConfigDataSchema, 'configData');
 
 const validateConfigDataDto = (configDataPayload) => {
     const configData = joi.object({

@@ -22,7 +22,7 @@ const SavedForLaterSchema = new Schema({
 }, {timestamps: true});
 SavedForLaterSchema.index({user: 1, postId: 1}, {unique: true});
 
-const SavedForLater = mongoose.model('SavedForLater', SavedForLaterSchema);
+const SavedForLater = mongoose.model('SavedForLater', SavedForLaterSchema, 'savedForLater');
 
 const validateSavedForLaterDto = (saveForLaterData) => {
     const saveForLater = joi.object({
