@@ -14,37 +14,27 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  eslint:
-    name: Run eslint scanning
-    runs-on: ubuntu-latest
+  lint:
+    name: DevSkim
+    runs-on: ubuntu-20.04
     permissions:
+      actions: read
       contents: read
       security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install ESLint
-        run: |
-          npm install --ignore-engines eslint@8.10.0
-          npm install --ignore-engines @microsoft/eslint-formatter-sarif@2.1.7
+      - name: Run DevSkim scanner
+        uses: microsoft/DevSkim-Action@v1
 
-      - name: Run ESLint
-        run: npx eslint .
-          --config .eslintrc.js
-          --ext .js,.jsx,.ts,.tsx
-          --format @microsoft/eslint-formatter-sarif
-          --output-file eslint-results.sarif
-        continue-on-error: true
-
-      - name: Upload analysis results to GitHub
+      - name: Upload DevSkim scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: eslint-results.sarif
-          wait-for-processing: true
+          sarif_file: devskim-results.sarif
 
   analyze:
-    needs: eslint
+    needs: lint
     name: Analyze
     runs-on: ubuntu-latest
     permissions:
@@ -72,7 +62,7 @@ jobs:
 
   # Run tests
   test:
-    needs: [eslint, analyze]
+    needs: [lint, analyze]
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -96,7 +86,7 @@ jobs:
 
   # Run build Staging
   build-staging:
-    needs: [eslint, analyze, test]
+    needs: [lint, analyze, test]
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -121,7 +111,7 @@ jobs:
 
   # Run build Production
   build-production:
-    needs: [ eslint, analyze, test ]
+    needs: [ lint, analyze, test ]
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
