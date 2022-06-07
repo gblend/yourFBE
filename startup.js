@@ -24,7 +24,6 @@ const {config} = require('./app/config/config');
 const connectDB = require('./app/config/db/connect');
 const express = require('express');
 const app = express();
-const expressAsyncErrors = () => require('express-async-errors');
 const cloudinary = require('cloudinary').v2;
 cloudinary.config({
 	cloud_name: config.cloudinary.cloudName,
@@ -66,5 +65,4 @@ module.exports = {
 	app,
 	appStatus,
 	StatusCodes,
-	expressAsyncErrors,
 }
