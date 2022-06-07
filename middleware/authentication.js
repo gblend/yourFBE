@@ -1,3 +1,5 @@
+'use strict';
+
 const CustomErr = require('../lib/errors');
 const {isTokenValid, attachCookiesToResponse, adaptRequest, logger, constants, StatusCodes, createJWT} = require('../lib/utils');
 const {Token} = require('../models/Token');

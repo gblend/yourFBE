@@ -1,5 +1,5 @@
 const {StatusCodes} = require('http-status-codes');
-const {logger, adaptRequest} = require("../lib/utils");
+const {logger, adaptRequest} = require('../lib/utils');
 
 const errorHandlerMiddleware = (err, req, res, _next) => {
     const {path, method} = adaptRequest(req);

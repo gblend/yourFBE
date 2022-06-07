@@ -1,3 +1,5 @@
+'use strict';
+
 const CustomError = require('../lib/errors');
 const {adaptRequest, logger, constants, StatusCodes, isTokenValid} = require('../lib/utils');
 
