@@ -15,7 +15,7 @@ const config = {
         max: process.env.RATE_LIMIT_MAX,
     },
     jwt: {
-        secret: process.env.JWT_SECRET || 'secret',
+        secret: process.env.JWT_SECRET || 'yourFeeds',
         expiration: process.env.JWT_EXPIRATION,
     },
     cloudinary: {
