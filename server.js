@@ -1,5 +1,6 @@
 'use strict';
 
+require('express-async-errors');
 const {
 	morgan,
 	errorHandlerMiddleware,
@@ -28,10 +29,8 @@ const {
 	express,
 	appStatus,
 	StatusCodes,
-	expressAsyncErrors,
 } = require('./startup');
 
-expressAsyncErrors();
 app.use(helmet());
 app.use(xss());
 app.use(mongoSanitize());
