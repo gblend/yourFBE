@@ -6,10 +6,10 @@
     "type": "git",
     "url": "git://github.com/gblend/yourfeedsApi.git"
   },
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
-    "dev": "nodemon app.js",
-    "start": "node app.js",
+    "dev": "nodemon server.js",
+    "start": "node server.js",
     "pm2:dev": "NODE_PATH=. pm2 delete ecosystem.config.js && pm2 start ecosystem.config.js --no-daemon",
     "pm2": "NODE_PATH=. pm2 delete ecosystem.config.js && pm2 start ecosystem.config.js",
     "stop": "NODE_PATH=. pm2 stop ecosystem.config.js",

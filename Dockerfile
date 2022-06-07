@@ -29,6 +29,6 @@ COPY . /app
 EXPOSE  5000
 EXPOSE  8585
 
-ENTRYPOINT ["node", "app.js"]
+ENTRYPOINT ["node", "server.js"]
 
 CMD ["pm2-docker", "ecosystem.config.js"]

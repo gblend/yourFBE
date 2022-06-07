@@ -3,7 +3,7 @@ const {config} = require('./config/config');
 module.exports = {
   apps : [{
     name: config.app.name,
-    script: 'app.js',
+    script: 'server.js',
     min_uptime: 36000,
     watch: '.',
     ignore_watch: ['logs', 'coverage', '.git', '.gitignore'],
