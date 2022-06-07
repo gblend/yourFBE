@@ -1,4 +1,4 @@
-const {createJWT, isTokenValid} = require('../../lib/utils');
+const {createJWT, isTokenValid} = require('../../app/lib/utils');
 
 
 describe('VerifyJWT', () => {

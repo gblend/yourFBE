@@ -42,7 +42,7 @@ app.use(express.urlencoded({extended: false}));
 app.use(cookieParser(config.jwt.secret));
 app.use(decodeCookies);
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'app/public')));
 app.use(fileUpload({useTempFiles: true}));
 if (config.app.env === 'development') app.use(morgan('dev'));
 
@@ -54,7 +54,7 @@ app.get('/api/v1/status', (_req, res) => {
     });
 });
 app.get('/api/v1/doc', (_req, res) => {
-	return res.sendFile(path.join(__dirname, 'public/index.html'));
+	return res.sendFile(path.join(__dirname, 'app/public/index.html'));
 });
 
 app.use('/api/v1/auth', authRouter);

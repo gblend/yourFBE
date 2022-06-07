@@ -1,4 +1,4 @@
-const {adaptRequest} = require('../../lib/utils');
+const {adaptRequest} = require('../../app/lib/utils');
 
 describe('AdaptRequest', () => {
 	it('should return extracted request object with value as undefined', () => {

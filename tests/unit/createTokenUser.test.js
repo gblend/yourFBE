@@ -1,4 +1,4 @@
-const { createTokenUser } = require('../../lib/utils');
+const { createTokenUser } = require('../../app/lib/utils');
 
 describe('CreateTokenUser', () => {
     it('should return null when input is null', () => {

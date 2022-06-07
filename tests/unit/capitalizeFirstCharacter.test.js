@@ -1,4 +1,4 @@
-const { capitalizeFirstCharacter } = require('../../lib/utils');
+const { capitalizeFirstCharacter } = require('../../app/lib/utils');
 
 
 describe('CapitalizeFirstCharacter', () => {

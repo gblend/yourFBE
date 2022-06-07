@@ -1,6 +1,6 @@
 'use strict';
 
-const {paginate} = require('../../lib/utils');
+const {paginate} = require('../../app/lib/utils');
 
 describe('Paginator', () => {
     let data = ['cat', 'rat', 'dog', 'car', 'cab', 'data'];

@@ -1,4 +1,4 @@
-const {createHash} = require('../../lib/utils');
+const {createHash} = require('../../app/lib/utils');
 
 describe('CreateHash', () => {
 	it('should return null when input is null', () => {

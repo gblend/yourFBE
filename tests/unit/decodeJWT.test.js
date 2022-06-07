@@ -1,4 +1,4 @@
-const {createJWT, decodeCookies} = require('../../lib/utils');
+const {createJWT, decodeCookies} = require('../../app/lib/utils');
 
 describe('DecodeJWT', () => {
 	const mockResponse = () => {

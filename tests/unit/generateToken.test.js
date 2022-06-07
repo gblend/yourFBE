@@ -1,6 +1,6 @@
 'use strict';
 
-const {generateToken} = require('../../lib/utils');
+const {generateToken} = require('../../app/lib/utils');
 
 
 describe('GenerateToken', () => {

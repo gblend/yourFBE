@@ -1,4 +1,4 @@
-const {constants} = require('../../lib/utils');
+const {constants} = require('../../app/lib/utils');
 
 describe('Constants', () => {
 	it('should return INVALID_CREDENTIALS', () => {

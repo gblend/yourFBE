@@ -1,4 +1,4 @@
-const {createJWT} = require('../../lib/utils');
+const {createJWT} = require('../../app/lib/utils');
 
 
 describe('CreateJWT', () => {

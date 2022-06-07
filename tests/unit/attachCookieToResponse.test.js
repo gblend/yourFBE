@@ -1,4 +1,4 @@
-const {generateToken, attachCookiesToResponse, createJWT} = require('../../lib/utils');
+const {generateToken, attachCookiesToResponse, createJWT} = require('../../app/lib/utils');
 
 describe('AttachCookiesToResponse', () => {
 	const mockResponse = () => {

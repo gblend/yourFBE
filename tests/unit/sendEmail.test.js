@@ -1,5 +1,5 @@
-const emailHelpers = require('../../lib/utils/email/sendEmail');
-const {generateToken} = require('../../lib/utils');
+const emailHelpers = require('../../app/lib/utils/email/sendEmail');
+const {generateToken} = require('../../app/lib/utils');
 
 describe('SendEmail', () => {
 	it('should send verification email to the user', () => {

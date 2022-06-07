@@ -1,4 +1,4 @@
-const {checkPermissions} = require('../../lib/utils');
+const {checkPermissions} = require('../../app/lib/utils');
 const mongoose = require('mongoose');
 
 describe('CheckPermission', () => {

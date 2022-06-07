@@ -1,7 +1,7 @@
 'use strict';
 
-const packJson = require('../../package.json');
-const {logger} = require('../../lib/utils/logger');
+const packJson = require('../../../package.json');
+const {logger} = require('./logger');
 const {config} = require('../../config/config');
 
 const appStatus = {
