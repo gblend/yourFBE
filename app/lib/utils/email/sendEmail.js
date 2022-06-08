@@ -21,7 +21,7 @@ const sendResetPasswordEmail = async ({name, email, passwordToken}) => {
         await sendEmail({to: email, subject: 'Password Reset', html: message});
         logger.info('Password reset email sent successfully.');
     } catch (err) {
-        logger.error(`${err.statusCode} - Password reset email failed:  ${err.message} - ${err.originalUrl} - ${err.method}`);
+        logger.error(`Password reset email failed:  ${err.message}`);
     }
 }
 
@@ -37,7 +37,7 @@ const sendVerificationEmail = async ({name, email, verificationToken}) => {
         await sendEmail({to: email, subject: 'Email Verification', html: message});
         logger.info('Verification email sent successfully.')
     } catch (err) {
-        logger.error(`${err.statusCode} - Verification email failed:  ${err.message} - ${err.originalUrl} - ${err.method}`);
+        logger.error(`Verification email failed:  ${err.message}`);
     }
 }
 
