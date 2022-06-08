@@ -3,7 +3,7 @@
 const express = require('express');
 
 const router = express.Router();
-const {register, login, logout, verifyEmail, resetPassword, forgotPassword} = require('../controllers/authController');
+const {register, login, logout, verifyEmail, resetPassword, forgotPassword, resendVerificationEmail} = require('../controllers/authController');
 const {authenticateUser} = require('../middleware/authentication');
 
 router.post('/register', register);
@@ -12,6 +12,7 @@ router.delete('/logout', authenticateUser, logout);
 router.post('/verify-email', verifyEmail);
 router.post('/reset-password', resetPassword);
 router.post('/forgot-password', forgotPassword);
+router.post('/resendVerificationEmail', authenticateUser, resendVerificationEmail);
 
 module.exports = router;
 
