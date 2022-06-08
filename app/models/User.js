@@ -123,9 +123,9 @@ const validateUpdatePassword = (payload) => {
 
 const validateUpdateUser = (userData) => {
 	const userUpdate = joi.object({
-		firstname: joi.string().min(3).required(),
-		lastname: joi.string().min(3).required(),
-		email: joi.string().email().required(),
+		firstname: joi.string().min(3),
+		lastname: joi.string().min(3),
+		email: joi.string().email(),
 	});
 
 	return userUpdate.validate(userData);
@@ -134,17 +134,17 @@ const validateUpdateUser = (userData) => {
 const validateLogin = (credentials) => {
 	const login = joi.object({
 		email: joi.string().email().required(),
-		password: joi.string().required()
+		password: joi.string().min(8).required()
 	});
 
 	return login.validate(credentials);
 }
 
-UserSchema.pre('save', async function (req, res, next) {
+UserSchema.pre('save', async function (_req, _res, next) {
 	if (this.isModified('firstname') || this.isModified('lastname')) {
 		capitalizeFirstCharacter(this.firstname, this.lastname);
 	}
-	if (!this.isModified('password')) {
+	if (!this.isModified('password') || !this.password) {
 		return next();
 	}
 	const salt = await bcrypt.genSalt(12);
