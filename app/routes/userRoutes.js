@@ -9,16 +9,20 @@ const {
     getAllAdmins,
     getSingleUser,
     updateUser,
-    updateUserPassword,
+    updatePassword,
     showCurrentUser,
+    enableUserAccount,
+    getDisabledAccounts,
     disableUserAccount
 } = require('../controllers/userController');
 
 router.route('/').get(authenticateUser, authorizePermissions('admin'), getAllUsers);
+router.route('/disabledAccounts').get(authenticateUser, authorizePermissions('admin'), getDisabledAccounts);
 router.route('/admins').get(authenticateUser, authorizePermissions('admin'), getAllAdmins);
-router.route('/:id').delete(authenticateUser, authorizePermissions('admin'), disableUserAccount);
+router.route('/updatePassword').patch(authenticateUser, updatePassword);
+router.route('/:id').delete(authenticateUser, authorizePermissions('admin', 'user'), disableUserAccount).patch(authenticateUser, enableUserAccount);
 router.route('/me').get(authenticateUser, showCurrentUser);
-router.route('/updateUserPassword').patch(authenticateUser, updateUserPassword);
-router.route('/:id').get(authenticateUser, getSingleUser).patch(authenticateUser, updateUser);
+router.route('/:id').get(authenticateUser, getSingleUser);
+router.route('/update/:id').patch(authenticateUser, updateUser);
 
 module.exports = router;
