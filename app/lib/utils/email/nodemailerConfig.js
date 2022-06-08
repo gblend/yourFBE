@@ -7,7 +7,7 @@ require('dotenv').config({path: '../.env'});
 const transporterInit = () => {
     return nodemailer.createTransport({
         host: config.mail.host,
-        port: config.mail.host,
+        port: config.mail.port,
         auth: {
             user: config.mail.authUser,
             pass: config.mail.authPassword
