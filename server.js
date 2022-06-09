@@ -36,7 +36,7 @@ app.use(xss());
 app.use(mongoSanitize());
 app.set('trust proxy', 1);
 app.use('/api', apiRateLimiter);
-app.use(express.json());
+app.use(express.json({limit: '300kb'}));
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser(config.jwt.secret));
 app.use(decodeCookies);
