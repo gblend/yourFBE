@@ -11,7 +11,10 @@ const SavedForLaterSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['enabled', 'disabled'],
+        enum: {
+            values: ['enabled', 'disabled'],
+            messages: '{VALUE} is not acceptable'
+        },
         default: 'enabled',
     },
     user: {

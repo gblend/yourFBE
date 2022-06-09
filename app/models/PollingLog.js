@@ -12,7 +12,10 @@ const PollingLogSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['completed', 'failed', 'exception'],
+        enum: {
+            values: ['completed', 'failed', 'exception'],
+            messages: '{VALUE} is not acceptable'
+        },
         default: 'completed',
     }
 }, {timestamps: true});

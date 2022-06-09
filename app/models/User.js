@@ -33,12 +33,18 @@ const UserSchema = new Schema({
 	},
 	role: {
 		type: String,
-		enum: ['admin', 'user'],
+		enum: {
+			values: ['admin', 'user'],
+			messages: '{VALUE} is not acceptable'
+		},
 		default: 'user',
 	},
 	status: {
 		type: String,
-		enum: ['enabled', 'disabled'],
+		enum: {
+			values: ['enabled', 'disabled'],
+				messages: '{VALUE} is not acceptable'
+		},
 		default: 'enabled',
 	},
 	socialChannel: {
