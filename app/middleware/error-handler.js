@@ -7,7 +7,7 @@ const errorHandlerMiddleware = (err, req, res, _next) => {
     let customError = {
         // set default
         statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
-        message: err.message || 'Something went wrong try again later.',
+        message: err.message || 'Something went wrong. Please try again later.',
     };
 
     if (err.name === 'ValidationError') {
@@ -30,7 +30,11 @@ const errorHandlerMiddleware = (err, req, res, _next) => {
     }
 
     logger.error(`${customError.statusCode} - ${customError.message} - ${method} ${path}`);
-    return res.status(customError.statusCode).json({status: customError.statusCode, message: customError.message});
+    return res.status(customError.statusCode).json({
+        data: {
+            errors: [customError.message],
+        }
+    });
 };
 
 module.exports = errorHandlerMiddleware;
