@@ -46,6 +46,10 @@ const config = {
         db: process.env.REDIS_DB || 0,
         family: process.env.REDIS_FAMILY || 4,
     },
+    cache: {
+      allUsersCacheKey: process.env.ALL_USERS_REDIS_CACHE_KEY,
+      allAdminCacheKey: process.env.ALL_ADMINS_REDIS_CACHE_KEY,
+    },
     database: {
         uri: process.env.MONGO_URI,
     },
