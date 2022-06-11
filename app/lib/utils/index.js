@@ -12,6 +12,7 @@ const {appStatus} = require('./appStatus');
 const {paginate} = require('./pagination');
 const StatusCodes = () => require('http-status-codes').StatusCodes;
 const {generateToken} = require('./verificationToken');
+const {redisRefreshCache, redisSetBatchRecords, redisGetBatchRecords} = require('./redis');
 
 module.exports = {
 	createJWT,
@@ -32,4 +33,7 @@ module.exports = {
 	StatusCodes: StatusCodes(),
 	paginate,
 	generateToken,
+	redisRefreshCache,
+	redisSetBatchRecords,
+	redisGetBatchRecords,
 }
