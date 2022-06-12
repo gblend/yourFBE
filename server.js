@@ -29,6 +29,7 @@ const {
 	express,
 	appStatus,
 	StatusCodes,
+	resInterceptor,
 } = require('./startup');
 
 app.use(helmet());
@@ -56,6 +57,7 @@ app.get('/api/v1/doc', (_req, res) => {
 	return res.sendFile(path.join(__dirname, 'app/public/index.html'));
 });
 
+app.use(resInterceptor);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/config', configRouter);
