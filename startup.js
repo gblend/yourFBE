@@ -15,6 +15,7 @@ const feedCategoryRouter = require('./app/routes/feedCategoryRoutes');
 const followedFeedRouter = require('./app/routes/followedFeedRoutes');
 const savedForLaterRouter = require('./app/routes/savedForLaterRoutes');
 const notFoundMiddleware = require('./app/middleware/not-found');
+const resInterceptor = require('./app/middleware/resInterceptor');
 const authRouter = require('./app/routes/authRoutes');
 const userRouter = require('./app/routes/userRoutes');
 const feedRouter = require('./app/routes/feedRoutes');
@@ -65,4 +66,5 @@ module.exports = {
 	app,
 	appStatus,
 	StatusCodes,
+	resInterceptor,
 }
