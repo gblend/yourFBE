@@ -35,7 +35,7 @@ const UserSchema = new Schema({
 		type: String,
 		enum: {
 			values: ['admin', 'user'],
-			messages: '{VALUE} is not acceptable'
+			messages: '{VALUE} is not acceptable.'
 		},
 		default: 'user',
 	},
