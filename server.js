@@ -47,11 +47,11 @@ app.use(fileUpload({useTempFiles: true}));
 if (config.app.env === 'development') app.use(morgan('dev'));
 
 app.get('/api/v1/status', (_req, res) => {
-    return res.json({
-        'status': StatusCodes.OK,
-        message: `${config.app.name} backend service is running.`,
-        info: appStatus.compile()
-    });
+	return res.json({
+		'status': 'success',
+		message: `${config.app.name} backend service is running.`,
+		data: {info: appStatus.compile()},
+	});
 });
 app.get('/api/v1/doc', (_req, res) => {
 	return res.sendFile(path.join(__dirname, 'app/public/index.html'));
@@ -61,11 +61,11 @@ app.use(resInterceptor);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/config', configRouter);
-app.use('/api/v1/feedCategory', feedCategoryRouter);
-app.use('/api/v1/feed', feedRouter);
-app.use('/api/v1/followedFeed', followedFeedRouter);
-app.use('/api/v1/log', logRouter);
-app.use('/api/v1/savedForLater', savedForLaterRouter);
+app.use('/api/v1/feed-category', feedCategoryRouter);
+app.use('/api/v1/feeds', feedRouter);
+app.use('/api/v1/followed-feeds', followedFeedRouter);
+app.use('/api/v1/logs', logRouter);
+app.use('/api/v1/saved-for-later', savedForLaterRouter);
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
