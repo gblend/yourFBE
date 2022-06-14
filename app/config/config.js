@@ -49,6 +49,7 @@ const config = {
     cache: {
       allUsersCacheKey: process.env.ALL_USERS_REDIS_CACHE_KEY,
       allAdminCacheKey: process.env.ALL_ADMINS_REDIS_CACHE_KEY,
+      savePostForLaterCacheKey: process.env.SAVED_FOR_LATER_CACHE_KEY,
     },
     database: {
         uri: process.env.MONGO_URI,

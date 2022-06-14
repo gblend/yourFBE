@@ -31,4 +31,4 @@ EXPOSE  8585
 
 ENTRYPOINT ["node", "server.js"]
 
-CMD ["pm2-docker", "ecosystem.config.js"]
+CMD ["pm2-docker", "ecosystem.configRoutes.js"]
