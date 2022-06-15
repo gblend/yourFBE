@@ -5,14 +5,14 @@ const Schema = mongoose.Schema;
 const joi = require('joi');
 
 const SavedForLaterSchema = new Schema({
-    postId: {
-        type: String,
+    post: {
+        type: Object,
         required: true,
     },
     status: {
         type: String,
         enum: {
-            values: ['enabled', 'disabled'],
+            values: ['enabled', 'disabled', 'read'],
             messages: '{VALUE} is not acceptable'
         },
         default: 'enabled',
@@ -22,6 +22,11 @@ const SavedForLaterSchema = new Schema({
         ref: 'User',
         required: true,
     },
+    feed: {
+        type: mongoose.Types.ObjectId,
+        ref: 'Feed',
+        required: true,
+    },
 }, {timestamps: true});
 SavedForLaterSchema.index({user: 1, postId: 1}, {unique: true});
 
@@ -29,7 +34,8 @@ const SavedForLater = mongoose.model('SavedForLater', SavedForLaterSchema, 'save
 
 const validateSavedForLaterDto = (saveForLaterData) => {
     const saveForLater = joi.object({
-        postId: joi.string().min(3).required(),
+        postObject: joi.object().required(),
+        feed: joi.object().required(),
         user: joi.object().required(),
     });
 
