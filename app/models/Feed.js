@@ -57,11 +57,11 @@ const Feed = mongoose.model('Feed', FeedSchema);
 const validateFeedDto = (feedData) => {
     const feed = joi.object({
         url: joi.string().uri().required(),
-        title: joi.string().uri().required(),
+        title: joi.string(),
         status: joi.number(),
         description: joi.string().min(10),
-        logo: joi.string(),
-        category: joi.string().min(3).required(),
+        logoUrl: joi.string(),
+        category: joi.string().required(),
         socialHandle: joi.string(),
         socialPage: joi.string(),
         user: joi.object().required(),
@@ -70,7 +70,22 @@ const validateFeedDto = (feedData) => {
     return feed.validate(feedData);
 }
 
+const validateFeedUpdateDto = (feedUpdateData) => {
+    const feedUpdate = joi.object({
+        url: joi.string().uri(),
+        title: joi.string(),
+        description: joi.string().min(10),
+        logoUrl: joi.string(),
+        category: joi.string(),
+        socialHandle: joi.string(),
+        socialPage: joi.string(),
+    });
+
+    return feedUpdate.validate(feedUpdateData);
+}
+
 module.exports = {
     Feed,
-    validateFeedDto
+    validateFeedDto,
+    validateFeedUpdateDto,
 }
