@@ -12,5 +12,11 @@ const {
 } = require('../controllers/configController');
 
 
-router.route('/')
+router.route('/').post(authenticateUser, authorizePermissions('admin'), createConfig)
+	.get(authenticateUser, authorizePermissions('admin'), getAllConfig);
+router.route('/:id').get(authenticateUser, authorizePermissions('admin'), getSingleConfig)
+	.patch(authenticateUser, authorizePermissions('admin'), updateConfig)
+	.delete(authenticateUser, authorizePermissions('admin'), deleteConfig);
+router.route('/disable/:id').patch(authenticateUser, authorizePermissions('admin'), disableConfig);
+
 module.exports = router;
