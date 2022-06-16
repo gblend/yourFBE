@@ -19,6 +19,7 @@ const resInterceptor = require('./app/middleware/resInterceptor');
 const authRouter = require('./app/routes/authRoutes');
 const userRouter = require('./app/routes/userRoutes');
 const feedRouter = require('./app/routes/feedRoutes');
+const statRouter = require('./app/routes/statRoutes');
 const logRouter = require('./app/routes/logRoutes');
 const configRouter = require('./app/routes/configRoutes');
 const {config} = require('./app/config/config');
@@ -61,6 +62,7 @@ module.exports = {
 	feedRouter,
 	followedFeedRouter,
 	logRouter,
+	statRouter,
 	config,
 	express,
 	app,
