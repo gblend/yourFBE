@@ -13,7 +13,7 @@ const {
 	updateFeed,
 } = require('../controllers/feedController');
 
-router.route('/').get(authenticateUser, getFeeds)
+router.route('/').get(getFeeds)
 	.post(authenticateUser, authorizePermissions('admin'), createFeed);
 router.route('/:id').get(authenticateUser, getFeedById)
 	.delete(authenticateUser, authorizePermissions('admin'), deleteFeed)
