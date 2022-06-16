@@ -24,6 +24,7 @@ const {
 	feedRouter,
 	followedFeedRouter,
 	logRouter,
+	statRouter,
 	config,
 	app,
 	express,
@@ -58,13 +59,14 @@ app.get('/api/v1/doc', (_req, res) => {
 });
 
 app.use(resInterceptor);
+app.use('/api/v1/logs', logRouter);
+app.use('/api/v1/stats', statRouter);
+app.use('/api/v1/feeds', feedRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/config', configRouter);
 app.use('/api/v1/feed-category', feedCategoryRouter);
-app.use('/api/v1/feeds', feedRouter);
 app.use('/api/v1/followed-feeds', followedFeedRouter);
-app.use('/api/v1/logs', logRouter);
 app.use('/api/v1/saved-for-later', savedForLaterRouter);
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
