@@ -19,14 +19,14 @@ const FollowedFeedSchema = new Schema({
 FollowedFeedSchema.index({user: 1, feed: 1}, {unique: true});
 
 const FollowedFeed = mongoose.model('FollowedFeed', FollowedFeedSchema);
-FollowedFeedSchema.virtual('user', {
+FollowedFeedSchema.virtual('feedFollower', {
     ref: 'User',
     localField: 'user',
     foreignField: '_id',
     justOne: false
 });
 
-FollowedFeedSchema.virtual('feed', {
+FollowedFeedSchema.virtual('feedFollowed', {
     ref: 'Feed',
     localField: 'feed',
     foreignField: '_id',
