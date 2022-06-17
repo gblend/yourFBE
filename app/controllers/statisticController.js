@@ -2,6 +2,8 @@ const {adaptRequest, logger} = require('../lib/utils');
 const {FollowedFeed} = require('../models/FollowedFeed');
 const {SavedForLater} = require('../models/SavedForLater');
 const {StatusCodes} = require('http-status-codes');
+const {Feed} = require('../models/Feed');
+const {FeedCategory} = require('../models/FeedCategory');
 
 const userDashboardStats = async (req, res) => {
 	const {pathParams: {id: userId}, method, path} = adaptRequest(req);
@@ -31,7 +33,27 @@ const userDashboardStats = async (req, res) => {
 	});
 }
 
+const adminDashboardStats = async (req, res) => {
+	const { method, path} = adaptRequest(req);
+
+	const totalFeeds = await Feed.find({status: 'enabled'}).countDocuments().exec();
+
+	const totalFollowedFeeds = await FollowedFeed.find({}).countDocuments().exec();
+
+	const totalCategories = await FeedCategory.find({status: 'enabled'}).countDocuments().exec();
+
+	const result = Promise.all([totalFeeds, totalFollowedFeeds, totalCategories]);
+
+	logger.info(`${StatusCodes.OK} - Stats fetched successfully - ${method} ${path}`)
+	res.status(StatusCodes.OK).json({
+		message: 'Stats fetched successfully.',
+		data: {
+			stats: result
+		}
+	});
+}
 
 module.exports = {
 	userDashboardStats,
+	adminDashboardStats,
 }
