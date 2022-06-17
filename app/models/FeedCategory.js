@@ -28,6 +28,14 @@ const FeedCategorySchema = new Schema({
 
 const FeedCategory = mongoose.model('FeedCategory', FeedCategorySchema);
 
+FeedCategorySchema.virtual('categoryFeeds', {
+    ref: 'Feed',
+    localField: '_id',
+    foreignField: 'category',
+    justOne: false,
+    count: true,
+});
+
 const validateFeedCategoryDto = (feedCategoryData) => {
     const feedCategory = joi.object({
         name: joi.string().required(),
