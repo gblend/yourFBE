@@ -213,11 +213,36 @@ const saveTokenInfo = async ({_id: userId}, {ip, headers}) => {
 	return Token.create(userToken);
 }
 
+const resendVerificationEmail = async (req, res) => {
+	const {user: {id: userId}} = adaptRequest(req);
+
+	const userAccount = await User.findOne({id: userId});
+	if (!userAccount) {
+		throw new BadRequestError('Account not found.');
+	}
+
+	userAccount.verificationToken = generateToken();
+	await userAccount.save();
+	// send verify email via queue
+	queueErrorMsg = 'Unable to queue verify email, please try again';
+	queueName = config.amqp.verifyEmailQueue;
+	await pushToQueue(queueName, queueErrorMsg, {
+		name: userAccount.firstname,
+		email: userAccount.email,
+		verificationToken: userAccount.verificationToken
+	}).catch(err => logger.error(`Queue error: ${err.message}`));
+
+	return res.status(StatusCodes.OK).json({
+		message: 'Please check your email for a link to verify your account',
+	});
+}
+
 module.exports = {
 	register,
 	logout,
 	login,
 	resetPassword,
 	forgotPassword,
+	resendVerificationEmail,
 	verifyEmail,
 }
