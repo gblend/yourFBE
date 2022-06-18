@@ -66,6 +66,56 @@ const register = async (req, res) => {
 	});
 }
 
+const login = async (req, res) => {
+	const {body, headers, ip} = adaptRequest(req);
+	let verificationMsg = '';
+	const {error} = validateLogin(body);
+	if (error) {
+		return res.status(StatusCodes.BAD_REQUEST).json({
+			data: {
+				errors: formatValidationError(error)
+			}
+		});
+	}
+
+	const {email, password} = body;
+	const user = await User.findOne({email}).select('-verificationToken');
+	if (!user) {
+		throw new BadRequestError(constants.auth.INVALID_CREDENTIALS());
+	}
+
+	if (user.status === 'disabled') {
+		throw new UnauthenticatedError('Account is disabled. Please contact support.');
+	}
+
+	const isMatch = await user.comparePassword(password);
+	if (!isMatch) {
+		throw new UnauthenticatedError('Invalid email or password.');
+	}
+	if (!user.isVerified) {
+		verificationMsg = 'Please verify your email to get full access to your account capabilities.';
+	} else verificationMsg = 'Verified';
+
+	const accessTokenJWT = await user.createJWT();
+	user.lastLogin = Date.now();
+	await user.save();
+	const tokenInfo = await saveTokenInfo(user, {ip, headers});
+	const refreshTokenJWT = await user.createRefreshJWT(user, tokenInfo.refreshToken);
+
+	attachCookiesToResponse({accessTokenJWT, refreshTokenJWT, res});
+	user.password = undefined;
+	return res.json({
+		data: {
+			token: accessTokenJWT,
+			refreshToken: refreshTokenJWT,
+			verificationMsg,
+			user,
+		},
+		message: constants.auth.SUCCESSFUL('Login'),
+	});
+}
+
 module.exports = {
 	register,
+	login,
 }
