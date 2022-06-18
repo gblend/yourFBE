@@ -1,0 +1,71 @@
+'use strict';
+
+const {User, validateLogin, validateUserDto} = require('../models/User');
+const {StatusCodes} = require('http-status-codes');
+const {CustomAPIError, UnauthenticatedError, BadRequestError} = require('../lib/errors');
+const {
+	attachCookiesToResponse,
+	createHash,
+	formatValidationError,
+	constants,
+	adaptRequest,
+	logger,
+	redisRefreshCache,
+} = require('../lib/utils');
+const {generateToken} = require('../lib/utils/verificationToken');
+const {Token} = require('../models/Token');
+const {pushToQueue} = require('../lib/utils/amqplibQueue');
+const {config} = require('../config/config');
+const {saveActivityLog} = require("../lib/dbActivityLog");
+
+let queueName = '', queueErrorMsg = '';
+
+const register = async (req, res) => {
+	const {body, ip, headers} = adaptRequest(req);
+	const {email, firstname, lastname, password} = body;
+	const {error} = validateUserDto(body);
+	if (error) {
+		return res.status(StatusCodes.BAD_REQUEST).json({
+			data: {errors: formatValidationError(error)}
+		});
+	}
+
+	const isEmailExist = await User.findOne({email});
+	if (isEmailExist) {
+		throw new CustomAPIError(constants.auth.ALREADY_IN_USE('Email address'));
+	}
+
+	const isAdminExists = (await User.countDocuments({role: 'admin'})) === 0;
+	const role = isAdminExists ? 'admin' : 'user';
+	const isVerified = isAdminExists;
+
+	const verificationToken = generateToken();
+	const user = await User.create({email, firstname, lastname, password, role, verificationToken, isVerified});
+	(role === 'admin') ? await redisRefreshCache(config.cache.allAdminCacheKey) : await redisRefreshCache(config.cache.allUsersCacheKey);
+	const accessTokenJWT = await user.createJWT();
+	// send verify email via queue
+	queueErrorMsg = 'Unable to queue verify email, please try again';
+	queueName = config.amqp.verifyEmailQueue;
+	await pushToQueue(queueName, queueErrorMsg, {
+		name: user.firstname,
+		email: user.email,
+		verificationToken: user.verificationToken
+	}).catch(err => logger.error(`Queue error: ${err.message}`));
+	user.password = undefined;
+
+	const tokenInfo = await saveTokenInfo(user, {ip, headers});
+	const refreshTokenJWT = await user.createRefreshJWT(user, tokenInfo.refreshToken);
+	attachCookiesToResponse({accessTokenJWT, refreshTokenJWT, res});
+	return res.status(StatusCodes.OK).json({
+		message: 'Please check your email for a link to verify your account',
+		data: {
+			token: accessTokenJWT,
+			refreshToken: refreshTokenJWT,
+			user,
+		}
+	});
+}
+
+module.exports = {
+	register,
+}
