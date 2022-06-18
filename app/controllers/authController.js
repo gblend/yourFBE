@@ -199,6 +199,20 @@ const verifyEmail = async (req, res) => {
 	res.status(StatusCodes.OK).json({message: 'Email successfully verified'});
 }
 
+const saveTokenInfo = async ({_id: userId}, {ip, headers}) => {
+	const isTokenExist = await Token.findOne({user: userId});
+	if (isTokenExist) {
+		if (!isTokenExist.isValid) {
+			throw new UnauthenticatedError(constants.auth.INVALID_CREDENTIALS);
+		}
+		return isTokenExist;
+	}
+	const refreshToken = generateToken();
+	const userAgent = headers['user-agent'];
+	const userToken = {refreshToken, ip, userAgent, user: userId};
+	return Token.create(userToken);
+}
+
 module.exports = {
 	register,
 	logout,
