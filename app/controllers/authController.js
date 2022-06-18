@@ -182,10 +182,28 @@ const resetPassword = async (req, res) => {
 	});
 }
 
+const verifyEmail = async (req, res) => {
+	const {body: {email, token}} = adaptRequest(req);
+	const user = await User.findOne({email});
+	if (!user) {
+		throw new UnauthenticatedError('Verification failed');
+	}
+	if (user.verificationToken !== token) {
+		throw new UnauthenticatedError('Verification failed, invalid token');
+	}
+
+	user.isVerified = true;
+	user.verificationToken = '';
+	user.verified = Date.now();
+	user.save();
+	res.status(StatusCodes.OK).json({message: 'Email successfully verified'});
+}
+
 module.exports = {
 	register,
 	logout,
 	login,
 	resetPassword,
 	forgotPassword,
+	verifyEmail,
 }
