@@ -115,7 +115,20 @@ const login = async (req, res) => {
 	});
 }
 
+const logout = async (req, res) => {
+	const {user, signedCookies} = adaptRequest(req);
+	await Token.findOneAndDelete({user: user.id});
+
+	signedCookies.accessToken = undefined;
+	signedCookies.refreshToken = undefined;
+	res.clearCookie('accessToken');
+	res.clearCookie('refreshToken');
+
+	res.status(StatusCodes.NO_CONTENT).json({});
+}
+
 module.exports = {
 	register,
+	logout,
 	login,
 }
