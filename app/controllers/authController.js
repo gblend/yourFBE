@@ -151,9 +151,41 @@ const forgotPassword = async (req, res) => {
 	res.status(StatusCodes.OK).json({message: 'Please check your email for reset link'});
 }
 
+const resetPassword = async (req, res) => {
+	const {body: {email, token, password}, method, path} = adaptRequest(req);
+	if (!email || !token || !password) {
+		throw new BadRequestError('Please provide all values - email, token, password');
+	}
+
+	const user = await User.findOne({email});
+	if (user) {
+		const currentDate = new Date();
+		if (user.passwordTokenExpirationDate < currentDate) {
+			throw new BadRequestError('Password reset link has expired');
+		}
+		if (user.passwordToken === createHash(token)) {
+			user.passwordTokenExpirationDate = null;
+			user.passwordToken = '';
+			user.password = password;
+			await user.save();
+		}
+	}
+
+	const logData = {
+		action: `resetPassword - ${method} ${path} - by ${user.role}`,
+		resourceName: 'users',
+		user: user.id,
+	}
+	await saveActivityLog(logData, method, path);
+	res.status(StatusCodes.OK).json({
+		message: 'Password changed successfully.'
+	});
+}
+
 module.exports = {
 	register,
 	logout,
 	login,
+	resetPassword,
 	forgotPassword,
 }
