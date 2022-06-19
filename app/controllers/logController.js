@@ -88,8 +88,43 @@ const getPollingLogs = async (req, res) => {
 	});
 }
 
+const searchLogs = async (req, res) => {
+	const {queryParams: {type = 'polling', searchTerm, pageSize, pageNumber}} = adaptRequest(req);
+
+	let query = '';
+	let searchResult = [];
+	if (searchTerm && type === 'polling') {
+		query = {
+			url: {regex: `*${searchTerm}*`, $options: 'i'},
+			status: {regex: `*${searchTerm}*`, $options: 'i'},
+		}
+
+		searchResult = PollingLog.find(query);
+	} else if (searchTerm && type === 'activity') {
+		query = {
+			action: {regex: `*${searchTerm}*`, $options: 'i'},
+			resourceName: {regex: `*${searchTerm}*`, $options: 'i'},
+		}
+
+		searchResult = ActivityLog.find(query);
+	}
+
+	let {pagination, result} = paginate(searchResult, {pageSize, pageNumber});
+	const logs = await result;
+	// const totalLogs = await logsQuery.estimatedDocumentCount().exec();
+
+	res.status(StatusCodes.OK).json({
+		message: 'Activity logs fetched successfully.',
+		data: {
+			logs,
+			pagination
+		}
+	});
+}
+
 module.exports = {
 	getPollingLogs,
+	searchLogs,
 	getActivityLog,
 	getActivityLogs,
 	getPollingLog,
