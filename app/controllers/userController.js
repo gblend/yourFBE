@@ -154,6 +154,26 @@ const disableUserAccount = async (req, res) => {
     });
 }
 
+const enableUserAccount = async (req, res) => {
+    const {pathParams: {id: userId}, user, method, path} = adaptRequest(req);
+    if(user.role !== 'admin') {
+        throw new UnauthorizedError('You are not authorized to perform this action.')
+    }
+
+    const account = await User.findOneAndUpdate({_id: userId}, {status: 'enabled'},
+        {new: true, runValidators: true}).select(['-password', '-verificationToken']);
+
+    const logData = {
+        action: `enableUserAccount: ${userId} - ${method} ${path} - by ${user.role}`,
+        resourceName: 'users',
+        user: user.id,
+    }
+    await saveActivityLog(logData, method, path);
+    return res.status(StatusCodes.OK).json({
+        message: `${account.firstname} ${account.lastname} account enabled successfully`,
+    });
+}
+
 module.exports = {
     getAllUsers,
     getAllAdmins,
@@ -161,5 +181,6 @@ module.exports = {
     showCurrentUser,
     updateUser,
     getDisabledAccounts,
+    enableUserAccount,
     disableUserAccount
 }
