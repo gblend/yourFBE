@@ -28,6 +28,24 @@ const getActivityLogs = async (req, res) => {
 	});
 }
 
+const getActivityLog = async (req, res) => {
+	const {pathParams: {id: logId}, path, method} = adaptRequest(req);
+	let activityLog = ActivityLog.findById(logId);
+
+	if (!activityLog) {
+		logger.info(`${StatusCodes.NOT_FOUND} - Activity log with id ${logId} does not exist. - ${method} ${path}`)
+		return res.status(StatusCodes.NOT_FOUND).json({message: `Activity log with id ${logId} does not exist.`})
+	}
+
+	res.status(StatusCodes.OK).json({
+		message: 'Activity log fetched successfully.',
+		data: {
+			activityLog,
+		}
+	});
+}
+
 module.exports = {
+	getActivityLog,
 	getActivityLogs,
 }
