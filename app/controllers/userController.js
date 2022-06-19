@@ -70,8 +70,25 @@ const getAllAdmins = async (req, res) => {
     return res.status(StatusCodes.OK).json({message: 'Admins fetched successfully', data: {admins}});
 }
 
+const getSingleUser = async (req, res) => {
+    const {pathParams: {id: userId}, user: reqUser, method, path: _path} = adaptRequest(req);
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        logger.info(`${StatusCodes.BAD_REQUEST} ${constants.auth.INVALID_CREDENTIALS('user id')} for get_single_user - ${method} ${_path}`);
+        throw new BadRequestError(constants.auth.INVALID_CREDENTIALS('user id'));
+    }
+    const user = await User.findOne({_id: userId, status: 'enabled'}).select(['-password', '-verificationToken']);
+    if (!user) {
+        logger.info(JSON.stringify(`${StatusCodes.NOT_FOUND} - User with id ${userId} does not exist for get_single_user - ${method} ${_path}`));
+        throw new NotFoundError(`User with id ${userId} does not exist`);
+    }
+    checkPermissions(reqUser, user._id);
+    logger.info(`${StatusCodes.OK} - ${JSON.stringify(JSON.stringify(user))} - ${method} ${_path}`);
+    return res.status(StatusCodes.OK).json({message: 'User fetched successfully', data: {user}});
+}
+
 module.exports = {
     getAllUsers,
     getAllAdmins,
+    getSingleUser,
     getDisabledAccounts,
 }
