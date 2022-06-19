@@ -174,12 +174,48 @@ const enableUserAccount = async (req, res) => {
     });
 }
 
+const updatePassword = async (req, res) => {
+    const {body, user: {id: userId, role}, path: _path, method} = adaptRequest(req);
+    const {newPassword, oldPassword} = body;
+
+    const {error} = validateUpdatePassword(body);
+    if (error) {
+        logger.info(JSON.stringify(JSON.stringify(formatValidationError(error))));
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            data: {errors: formatValidationError(error)}
+        });
+    }
+    if (newPassword.toLowerCase() === oldPassword.toLowerCase()) {
+        logger.info(`${StatusCodes.BAD_REQUEST} - New password must not be the same as old password for update_user_password - ${method} ${_path}`);
+        throw new BadRequestError('New password must not be the same as old password');
+    }
+    const user = await User.findOne({_id: userId});
+    if (!user) {
+        throw new UnauthorizedError(`Unauthorized access`);
+    }
+    const isPasswordMatch = await user.comparePassword(oldPassword);
+    if (!isPasswordMatch) {
+        throw new UnauthorizedError('Password mismatch');
+    }
+    user.password = newPassword;
+    await user.save();
+
+    const logData = {
+        action: `updatePassword - ${method} ${_path} - by ${role}`,
+        resourceName: 'users',
+        user: userId,
+    }
+    await saveActivityLog(logData, method, _path);
+    return res.status(StatusCodes.OK).json({message: 'Password was updated successfully'});
+}
+
 module.exports = {
     getAllUsers,
     getAllAdmins,
     getSingleUser,
     showCurrentUser,
     updateUser,
+    updatePassword,
     getDisabledAccounts,
     enableUserAccount,
     disableUserAccount
