@@ -40,6 +40,18 @@ const getAllUsers = async (req, res) => {
     return res.status(StatusCodes.OK).json({message: 'Users fetched successfully', data: {users: result, pagination}});
 }
 
+const getDisabledAccounts = async (req, res) => {
+    const {method, path: _path} = adaptRequest(req);
+    const users = await User.find({role: 'user', status: 'disabled'}).select(['-password', '-verificationToken']);
+    if (!users.length) {
+        logger.info(`${StatusCodes.NOT_FOUND} - No user found for get_disabled_accounts - ${method} ${_path}`);
+        throw new NotFoundError('No user found');
+    }
+    logger.info(JSON.stringify(users));
+    return res.status(StatusCodes.OK).json({message: 'Disabled accounts fetched successfully', data: {users}});
+}
+
 module.exports = {
     getAllUsers,
+    getDisabledAccounts,
 }
