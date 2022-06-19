@@ -130,6 +130,30 @@ const updateUser = async (req, res) => {
     });
 }
 
+const disableUserAccount = async (req, res) => {
+    const {pathParams: {id: userId}, user, method, path} = adaptRequest(req);
+    const account = await User.findById(userId).select(['-password', '-verificationToken']);
+
+    if(user.role !== 'admin' && user.id !== account._id.toHexString()) {
+        throw new UnauthorizedError('You are not authorized to perform this action.')
+    }
+    checkPermissions(user, account._id);
+
+    account.status = 'disabled';
+    await account.save();
+
+    const logData = {
+        action: `disableUserAccount: ${userId} - ${method} ${path} - by ${user.role}`,
+        resourceName: 'users',
+        user: user.id,
+    }
+    await saveActivityLog(logData, method, path);
+    return res.status(StatusCodes.OK).json({
+        message: (user.role === 'admin') ?`${account.firstname} ${account.lastname}'s account disabled successfully` :
+            'Account disabled successfully',
+    });
+}
+
 module.exports = {
     getAllUsers,
     getAllAdmins,
@@ -137,4 +161,5 @@ module.exports = {
     showCurrentUser,
     updateUser,
     getDisabledAccounts,
+    disableUserAccount
 }
