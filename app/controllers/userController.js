@@ -97,10 +97,44 @@ const showCurrentUser = async (req, res) => {
     return res.status(StatusCodes.OK).json({message: 'User fetched successfully', data: {user}});
 }
 
+const updateUser = async (req, res) => {
+    logger.info(JSON.stringify(req.body));
+    const {user, body, path: _path, method, pathParams: {id: userId}} = adaptRequest(req);
+    const {error} = validateUpdateUser(body);
+    if (error) {
+        logger.info(JSON.stringify(JSON.stringify(formatValidationError(error))));
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            data: {errors: formatValidationError(error)}
+        });
+    }
+
+    const account = await User.findOneAndUpdate({_id: userId}, body, {new: true, runValidators: true});
+    if (!account) {
+        logger.info(JSON.stringify(`${StatusCodes.NOT_FOUND} - User with id ${userId} does not exist for update_account - ${method} ${_path}`));
+        throw new NotFoundError(`User does not exist`);
+    }
+    checkPermissions(user, account._id);
+    const token = await account.createJWT();
+    account.password = undefined;
+
+    const logData = {
+        action: `updateUser - ${method} ${_path} - by ${user.role}`,
+        resourceName: 'users',
+        user: user.id,
+    }
+    await saveActivityLog(logData, method, _path);
+    logger.info(`${StatusCodes.OK} - ${JSON.stringify(JSON.stringify(user))} - ${method} ${_path}`);
+    return res.status(StatusCodes.OK).json({
+        message: 'Information updated successfully',
+        data: {token, user: account, }
+    });
+}
+
 module.exports = {
     getAllUsers,
     getAllAdmins,
     getSingleUser,
     showCurrentUser,
+    updateUser,
     getDisabledAccounts,
 }
