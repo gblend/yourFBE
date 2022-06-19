@@ -45,7 +45,25 @@ const getActivityLog = async (req, res) => {
 	});
 }
 
+const getPollingLog = async (req, res) => {
+	const {pathParams: {id: logId}, path, method} = adaptRequest(req);
+	let pollingLog = PollingLog.findById(logId);
+
+	if (!pollingLog) {
+		logger.info(`${StatusCodes.NOT_FOUND} - Polling log with id ${logId} does not exist. - ${method} ${path}`)
+		res.status(StatusCodes.NOT_FOUND).json({message: `Polling log with id ${logId} does not exist.`,})
+	}
+
+	res.status(StatusCodes.OK).json({
+		message: 'Polling log fetched successfully.',
+		data: {
+			pollingLog,
+		}
+	});
+}
+
 module.exports = {
 	getActivityLog,
 	getActivityLogs,
+	getPollingLog,
 }
