@@ -86,9 +86,21 @@ const getSingleUser = async (req, res) => {
     return res.status(StatusCodes.OK).json({message: 'User fetched successfully', data: {user}});
 }
 
+const showCurrentUser = async (req, res) => {
+    const {user, path: _path, method} = adaptRequest(req);
+    if (!user) {
+        logger.info(`${StatusCodes.UNAUTHORIZED} - Unauthorized access for show_current_user - ${method} ${_path}`);
+        throw new UnauthenticatedError(`Unauthorized access`);
+    }
+
+    logger.info(`${StatusCodes.UNAUTHORIZED} - ${JSON.stringify(JSON.stringify(user))} - ${method} ${_path}`);
+    return res.status(StatusCodes.OK).json({message: 'User fetched successfully', data: {user}});
+}
+
 module.exports = {
     getAllUsers,
     getAllAdmins,
     getSingleUser,
+    showCurrentUser,
     getDisabledAccounts,
 }
