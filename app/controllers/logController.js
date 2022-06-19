@@ -62,7 +62,34 @@ const getPollingLog = async (req, res) => {
 	});
 }
 
+const getPollingLogs = async (req, res) => {
+	const {queryParams: {sort, fields, pageSize, pageNumber}} = adaptRequest(req);
+	let pollingLogs = getActivityLogs.find({});
+	// const logsQuery = activityLogs;
+	if(sort) {
+		const sortFields = sort.split(',').join(' ')
+		pollingLogs.sort(sortFields)
+	}
+	if(fields) {
+		const requiredFields = fields.split(',').join(' ')
+		pollingLogs.select(requiredFields)
+	}
+
+	let {pagination, result} = paginate(pollingLogs, {pageSize, pageNumber});
+	const logs = await result;
+	// const totalLogs = await logsQuery.estimatedDocumentCount().exec();
+
+	res.status(StatusCodes.OK).json({
+		message: 'Activity logs fetched successfully.',
+		data: {
+			logs,
+			pagination
+		}
+	});
+}
+
 module.exports = {
+	getPollingLogs,
 	getActivityLog,
 	getActivityLogs,
 	getPollingLog,
