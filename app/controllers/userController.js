@@ -51,7 +51,27 @@ const getDisabledAccounts = async (req, res) => {
     return res.status(StatusCodes.OK).json({message: 'Disabled accounts fetched successfully', data: {users}});
 }
 
+const getAllAdmins = async (req, res) => {
+    const {queryParams: {sort}, path: _path, method} = adaptRequest(req);
+    let admins = await redisGetBatchRecords(config.cache.allUsersCacheKey);
+    if (admins.length < 1) {
+        admins = await User.find({role: 'admin'}).select(['-password', '-verificationToken']);
+        if (admins.length < 1) {
+            logger.info(JSON.stringify(`${StatusCodes.NOT_FOUND} - No admin found for get_all_admins - ${method} ${_path}`));
+            throw new NotFoundError('No admin found');
+        }
+        await redisSetBatchRecords(config.cache.allAdminCacheKey, admins);
+    }
+    if (sort) {
+        const sortFields = sort.split(',').join(' ')
+        admins.sort(sortFields)
+    }
+    logger.info(`${StatusCodes.OK} - ${JSON.stringify(admins)} - ${method} ${_path}`);
+    return res.status(StatusCodes.OK).json({message: 'Admins fetched successfully', data: {admins}});
+}
+
 module.exports = {
     getAllUsers,
+    getAllAdmins,
     getDisabledAccounts,
 }
