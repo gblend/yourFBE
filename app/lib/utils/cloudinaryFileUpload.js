@@ -1,3 +1,5 @@
+'use strict';
+
 const fs = require('fs');
 const CustomError = require('../errors');
 const {adaptRequest, logger, StatusCodes} = require('./index');

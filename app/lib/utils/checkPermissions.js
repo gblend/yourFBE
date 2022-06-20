@@ -1,3 +1,5 @@
+'use strict';
+
 const CustomError = require('../errors');
 
 const checkPermissions = (requestUser, resourceUserId) => {

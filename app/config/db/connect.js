@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoose = require('mongoose');
 const {logger} = require('../../lib/utils');
 const {StatusCodes} = require('http-status-codes');

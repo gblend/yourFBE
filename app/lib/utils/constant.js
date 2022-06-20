@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.constants = {
     auth: {
         INVALID_CREDENTIALS: (name = 'credentials provided') => `Invalid ${name}.`,
