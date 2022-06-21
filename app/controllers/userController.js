@@ -12,32 +12,30 @@ const {
     formatValidationError,
     logger,
     redisGetBatchRecords,
-    redisSetBatchRecords, paginate,
+    redisSetBatchRecords, paginate, createObjectId,
 } = require('../lib/utils');
 const {config} = require('../config/config');
 const {saveActivityLog} = require('../lib/dbActivityLog');
 
 const getAllUsers = async (req, res) => {
     const {method, path: _path, queryParams: {sort, pageSize, pageNumber}} = adaptRequest(req);
-    let users = await redisGetBatchRecords(config.cache.allUsersCacheKey);
-    if (users.length < 1) {
-        users = await User.find({role: 'user', status: 'enabled'}).select(['-password', '-verificationToken']);
-        if (users.length < 1) {
-            logger.info(`${StatusCodes.NOT_FOUND} - No user found for get_all_users - ${method} ${_path}`);
-            throw new NotFoundError('No user found.');
-        }
-        await redisSetBatchRecords(config.cache.allUsersCacheKey, users);
-    }
+    const usersQuery = User.find({role: 'user', status: 'enabled'}).select(['-password', '-verificationToken']);
 
     if (sort) {
         const sortFields = sort.split(',').join(' ');
-        users.sort(sortFields);
+        usersQuery.sort(sortFields);
     }
 
-    let {pagination, result} = paginate(users, {pageSize, pageNumber});
-    // const totalLogs = await logsQuery.estimatedDocumentCount().exec();
-    logger.info(JSON.stringify(users));
-    return res.status(StatusCodes.OK).json({message: 'Users fetched successfully', data: {users: result, pagination}});
+    const {pagination, result} = await paginate(usersQuery, {pageSize, pageNumber});
+    const usersData = await result;
+
+    if (usersData.length < 1) {
+        logger.info(`${StatusCodes.NOT_FOUND} - No user found for get_all_users - ${method} ${_path}`);
+        throw new NotFoundError('No user found.');
+    }
+
+    logger.info(`${JSON.stringify(pagination)} ${JSON.stringify(usersData)}`);
+    return res.status(StatusCodes.OK).json({message: 'Users fetched successfully', data: {users: usersData, pagination}});
 }
 
 const getDisabledAccounts = async (req, res) => {
@@ -72,7 +70,7 @@ const getAllAdmins = async (req, res) => {
 
 const getSingleUser = async (req, res) => {
     const {pathParams: {id: userId}, user: reqUser, method, path: _path} = adaptRequest(req);
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
+    if (!mongoose.isValidObjectId(userId)) {
         logger.info(`${StatusCodes.BAD_REQUEST} ${constants.auth.INVALID_CREDENTIALS('user id')} for get_single_user - ${method} ${_path}`);
         throw new BadRequestError(constants.auth.INVALID_CREDENTIALS('user id'));
     }
@@ -118,9 +116,9 @@ const updateUser = async (req, res) => {
     account.password = undefined;
 
     const logData = {
-        action: `updateUser - ${method} ${_path} - by ${user.role}`,
+        action: `updateUser - by ${user.role}`,
         resourceName: 'users',
-        user: user.id,
+        user: createObjectId(user.id),
     }
     await saveActivityLog(logData, method, _path);
     logger.info(`${StatusCodes.OK} - ${JSON.stringify(JSON.stringify(user))} - ${method} ${_path}`);
@@ -143,9 +141,9 @@ const disableUserAccount = async (req, res) => {
     await account.save();
 
     const logData = {
-        action: `disableUserAccount: ${userId} - ${method} ${path} - by ${user.role}`,
+        action: `disableUserAccount: ${userId} - by ${user.role}`,
         resourceName: 'users',
-        user: user.id,
+        user: createObjectId(user.id),
     }
     await saveActivityLog(logData, method, path);
     return res.status(StatusCodes.OK).json({
@@ -164,9 +162,9 @@ const enableUserAccount = async (req, res) => {
         {new: true, runValidators: true}).select(['-password', '-verificationToken']);
 
     const logData = {
-        action: `enableUserAccount: ${userId} - ${method} ${path} - by ${user.role}`,
+        action: `enableUserAccount: ${userId} - by ${user.role}`,
         resourceName: 'users',
-        user: user.id,
+        user: createObjectId(user.id),
     }
     await saveActivityLog(logData, method, path);
     return res.status(StatusCodes.OK).json({
@@ -201,9 +199,9 @@ const updatePassword = async (req, res) => {
     await user.save();
 
     const logData = {
-        action: `updatePassword - ${method} ${_path} - by ${role}`,
+        action: `updatePassword - by ${role}`,
         resourceName: 'users',
-        user: userId,
+        user: createObjectId(userId),
     }
     await saveActivityLog(logData, method, _path);
     return res.status(StatusCodes.OK).json({message: 'Password was updated successfully'});
