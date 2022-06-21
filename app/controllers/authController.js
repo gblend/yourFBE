@@ -1,5 +1,10 @@
 'use strict';
 
+const {Token} = require('../models/Token');
+const {config} = require('../config/config');
+const {saveActivityLog} = require('../lib/dbActivityLog');
+const {pushToQueue} = require('../lib/utils/amqplibQueue');
+const {generateToken} = require('../lib/utils/verificationToken');
 const {User, validateLogin, validateUserDto} = require('../models/User');
 const {StatusCodes} = require('http-status-codes');
 const {CustomAPIError, UnauthenticatedError, BadRequestError} = require('../lib/errors');
@@ -11,12 +16,8 @@ const {
 	adaptRequest,
 	logger,
 	redisRefreshCache,
+	createObjectId,
 } = require('../lib/utils');
-const {generateToken} = require('../lib/utils/verificationToken');
-const {Token} = require('../models/Token');
-const {pushToQueue} = require('../lib/utils/amqplibQueue');
-const {config} = require('../config/config');
-const {saveActivityLog} = require("../lib/dbActivityLog");
 
 let queueName = '', queueErrorMsg = '';
 
@@ -172,7 +173,7 @@ const resetPassword = async (req, res) => {
 	}
 
 	const logData = {
-		action: `resetPassword - ${method} ${path} - by ${user.role}`,
+		action: `resetPassword - by ${user.role}`,
 		resourceName: 'users',
 		user: user.id,
 	}
@@ -216,7 +217,7 @@ const saveTokenInfo = async ({_id: userId}, {ip, headers}) => {
 const resendVerificationEmail = async (req, res) => {
 	const {user: {id: userId}} = adaptRequest(req);
 
-	const userAccount = await User.findOne({id: userId});
+	const userAccount = await User.findOne({_id: createObjectId(userId)});
 	if (!userAccount) {
 		throw new BadRequestError('Account not found.');
 	}
