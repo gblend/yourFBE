@@ -13,6 +13,7 @@ const ConfigDataSchema = new Schema({
     path: {
         type: String,
         trim: true,
+        unique: true,
         required: true,
     },
     value: {
@@ -29,6 +30,7 @@ const ConfigDataSchema = new Schema({
         default: 'enabled',
     }
 }, {timestamps: true});
+ConfigDataSchema.index({path: 1}, {unique: true});
 
 const ConfigData = mongoose.model('ConfigData', ConfigDataSchema, 'configData');
 
