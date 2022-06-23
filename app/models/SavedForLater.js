@@ -28,13 +28,12 @@ const SavedForLaterSchema = new Schema({
         required: true,
     },
 }, {timestamps: true});
-SavedForLaterSchema.index({user: 1, postId: 1}, {unique: true});
 
 const SavedForLater = mongoose.model('SavedForLater', SavedForLaterSchema, 'savedForLater');
 
 const validateSavedForLaterDto = (saveForLaterData) => {
     const saveForLater = joi.object({
-        postObject: joi.object().required(),
+        post: joi.object().required(),
         feed: joi.object().required(),
         user: joi.object().required(),
     });
