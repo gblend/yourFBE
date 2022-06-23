@@ -7,6 +7,7 @@ const Schema = mongoose.Schema;
 const FeedCategorySchema = new Schema({
     name: {
         type: String,
+        unique: true,
         trim: true,
         required: true,
     },
@@ -23,8 +24,9 @@ const FeedCategorySchema = new Schema({
             messages: '{VALUE} is not acceptable'
         },
         default: 'enabled',
-    }
+    },
 }, {timestamps: true});
+FeedCategorySchema.index({name: 1}, {unique: true});
 
 const FeedCategory = mongoose.model('FeedCategory', FeedCategorySchema);
 
@@ -39,7 +41,7 @@ FeedCategorySchema.virtual('categoryFeeds', {
 const validateFeedCategoryDto = (feedCategoryData) => {
     const feedCategory = joi.object({
         name: joi.string().required(),
-        description: joi.string().required()
+        description: joi.string().required(),
     });
     return feedCategory.validate(feedCategoryData);
 }
