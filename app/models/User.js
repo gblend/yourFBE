@@ -80,6 +80,7 @@ const UserSchema = new Schema({
 		type: Date
 	}
 }, {timestamps: true, toJSON: {virtuals: true}, toObject: {virtuals: true}});
+UserSchema.index({email: 1}, {unique: true});
 
 UserSchema.virtual('savedForLater', {
 	ref: 'SavedForLater',
