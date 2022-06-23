@@ -52,15 +52,16 @@ const FeedSchema = new Schema({
     },
 }, {timestamps: true});
 
+FeedSchema.index({url: 1}, {unique: true});
 const Feed = mongoose.model('Feed', FeedSchema);
 
 const validateFeedDto = (feedData) => {
     const feed = joi.object({
         url: joi.string().uri().required(),
-        title: joi.string(),
-        status: joi.number(),
-        description: joi.string().min(10),
-        logoUrl: joi.string(),
+        title: joi.string().required(),
+        status: joi.string(),
+        description: joi.string().min(10).required(),
+        logoUrl: joi.string().required(),
         category: joi.string().required(),
         socialHandle: joi.string(),
         socialPage: joi.string(),
@@ -79,6 +80,7 @@ const validateFeedUpdateDto = (feedUpdateData) => {
         category: joi.string(),
         socialHandle: joi.string(),
         socialPage: joi.string(),
+        status: joi.string(),
     });
 
     return feedUpdate.validate(feedUpdateData);
