@@ -9,7 +9,7 @@ const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload')
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
-const {decodeCookies, logger, appStatus, StatusCodes} = require('./app/lib/utils');
+const {decodeCookies, logger, appStatus, StatusCodes, appRoutes} = require('./app/lib/utils');
 const errorHandlerMiddleware = require('./app/middleware/error-handler');
 const feedCategoryRouter = require('./app/routes/feedCategoryRoutes');
 const followedFeedRouter = require('./app/routes/followedFeedRoutes');
@@ -69,4 +69,5 @@ module.exports = {
 	appStatus,
 	StatusCodes,
 	resInterceptor,
+	appRoutes,
 }
