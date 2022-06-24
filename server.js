@@ -29,8 +29,8 @@ const {
 	app,
 	express,
 	appStatus,
-	StatusCodes,
 	resInterceptor,
+	appRoutes,
 } = require('./startup');
 
 app.use(helmet());
@@ -45,13 +45,16 @@ app.use(decodeCookies);
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'app/public')));
 app.use(fileUpload({useTempFiles: true}));
-if (config.app.env === 'development') app.use(morgan('dev'));
+(config.app.env === 'development') ? app.use(morgan('dev')) : '';
 
 app.get('/api/v1/status', (_req, res) => {
 	return res.json({
 		'status': 'success',
 		message: `${config.app.name} backend service is running.`,
-		data: {info: appStatus.compile()},
+		data: {
+			info: appStatus.compile(),
+			routes: appRoutes(app),
+		},
 	});
 });
 app.get('/api/v1/doc', (_req, res) => {
@@ -72,7 +75,6 @@ app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
 process.on('uncaughtException', (err) => {
-	logger.info(`Uncaught Exception - ${err.stack}`);
 	logger.error(`Uncaught Exception - ${err.stack}`);
 	process.exit(1);
 });
