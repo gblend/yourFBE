@@ -70,10 +70,29 @@ const updateConfig = async (req, res) => {
     return res.status(StatusCodes.OK).json({message: 'Config updated successfully.', data: {config}});
 }
 
+const disableConfig = async (req, res) => {
+    const {pathParams: {id: configId}, method, path, user: {id: userId, role}} = adaptRequest(req);
+    await ConfigData.findOneAndUpdate({_id: configId}, {status: 'disabled'}, {
+        new: true,
+        runValidators: true
+    });
+
+    const logData = {
+        action: `disableConfig: ${configId} - by ${role}`,
+        resourceName: 'ConfigData',
+        user: createObjectId(userId),
+    }
+    await saveActivityLog(logData, method, path);
+    return res.status(StatusCodes.OK).json({
+        message: `Config disabled successfully.`,
+    });
+}
+
 module.exports = {
     getAllConfig,
     createConfig,
     getSingleConfig,
     updateConfig,
+    disableConfig,
     getConfigByPath,
 }
