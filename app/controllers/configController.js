@@ -19,7 +19,20 @@ const createConfig = async (req, res) => {
         .json({message: 'Config created successfully.', data: {config}});
 }
 
+const getAllConfig = async (req, res) => {
+    const {path, method} = adaptRequest(req);
+    let configData = await ConfigData.find({});
+    if (configData.length < 1) {
+        logger.info(`${StatusCodes.NOT_FOUND} - No config data found for get_all_config - ${method} ${path}`);
+        throw new CustomError.NotFoundError('No config data found.');
+    }
+    return res.status(StatusCodes.OK).json({
+        message: 'Config data fetched successfully',
+        data: {configData},
+    });
+}
 
 module.exports = {
+    getAllConfig,
     createConfig,
 }
