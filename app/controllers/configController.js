@@ -45,8 +45,22 @@ const getSingleConfig = async (req, res) => {
     });
 }
 
+const getConfigByPath = async (req, res) => {
+    const {queryParams: {value: configPath}, path, method} = adaptRequest(req);
+    const config = await ConfigData.findOne({path: configPath});
+    if (!config) {
+        logger.info(`${StatusCodes.NOT_FOUND} - Config with path ${configPath} not found for get_config_by_path - ${method} ${path}`);
+        throw new CustomError.BadRequestError(`Config not found by path: ${configPath}`);
+    }
+    return res.status(StatusCodes.OK).json({
+        message: `Config fetched successfully.`,
+        data: {config},
+    });
+}
+
 module.exports = {
     getAllConfig,
     createConfig,
     getSingleConfig,
+    getConfigByPath,
 }
