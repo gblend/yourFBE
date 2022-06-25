@@ -58,9 +58,22 @@ const getConfigByPath = async (req, res) => {
     });
 }
 
+const updateConfig = async (req, res) => {
+    const {pathParams: {id: configId}, body, user: {id: userId, role}, method, path} = adaptRequest(req);
+    const config = await ConfigData.findOneAndUpdate({_id: configId}, body, {new: true, runValidators: true});
+    const logData = {
+        action: `updateConfig: ${configId} - by ${role}`,
+        resourceName: 'ConfigData',
+        user: createObjectId(userId),
+    }
+    await saveActivityLog(logData, method, path);
+    return res.status(StatusCodes.OK).json({message: 'Config updated successfully.', data: {config}});
+}
+
 module.exports = {
     getAllConfig,
     createConfig,
     getSingleConfig,
+    updateConfig,
     getConfigByPath,
 }
