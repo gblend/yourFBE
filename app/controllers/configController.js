@@ -88,11 +88,32 @@ const disableConfig = async (req, res) => {
     });
 }
 
+const deleteConfig = async (req, res) => {
+    const {pathParams: {id: configId}, method, path, user: {id: userId, role}} = adaptRequest(req);
+    const config = await ConfigData.findOne({_id: configId});
+    if (!config) {
+        logger.info(`${StatusCodes.NOT_FOUND} Config with id ${configId} not found for delete_config - ${method} ${path}`);
+        throw new CustomError.BadRequestError(`Config with id ${configId} not found.`);
+    }
+    await config.remove();
+
+    const logData = {
+        action: `deleteConfig: ${configId} - by ${role}`,
+        resourceName: 'ConfigData',
+        user: createObjectId(userId),
+    }
+    await saveActivityLog(logData, method, path);
+    return res.status(StatusCodes.OK).json({
+        message: `Config deleted successfully.`,
+    });
+}
+
 module.exports = {
     getAllConfig,
     createConfig,
     getSingleConfig,
     updateConfig,
     disableConfig,
+    deleteConfig,
     getConfigByPath,
 }
