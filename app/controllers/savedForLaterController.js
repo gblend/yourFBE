@@ -59,7 +59,41 @@ const deletePostSavedForLater = async (req, res) => {
 	res.status(StatusCodes.OK).json({ message: 'Post saved for later successfully removed.'});
 }
 
+const getPostsSavedForLater = async (req, res) => {
+	const {user: {id: userId}, path, method, queryParams: {pageSize, pageNumber}} = adaptRequest(req);
+
+	let savedPosts = await redisGetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}`);
+	if (savedPosts && savedPosts.length > 0) {
+		logger.info(`${StatusCodes.OK} - Posts saved for later retrieved from cache - ${method} ${path}`);
+		let {pagination, result} = await paginate(savedPosts, {pageSize, pageNumber});
+
+		return res.status(StatusCodes.OK).json({
+			data: {
+				savedForLater: result,
+				pagination,
+			}
+		});
+	}
+
+	savedPosts = SavedForLater.find({user: createObjectId(userId), status: {$nin: ['disabled']}});
+	const {pagination, result} = await paginate(savedPosts, {pageSize, pageNumber});
+	const savedPostsData = await result;
+
+	if (!savedPostsData || savedPostsData.length < 1) {
+		return res.status(StatusCodes.NOT_FOUND).json({message: 'No saved posts found.'});
+	}
+
+	await redisSetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}`, savedPostsData);
+	return res.status(StatusCodes.OK).json({
+		data: {
+			savedForLater: savedPostsData,
+			pagination,
+		}
+	});
+}
+
 module.exports = {
 	savePostForLater,
+	getPostsSavedForLater,
 	deletePostSavedForLater,
 }
