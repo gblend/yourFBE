@@ -116,9 +116,28 @@ const getPostSavedForLater = async (req, res) => {
 	});
 }
 
+const markPostSavedForLaterAsRead = async (req, res) => {
+	const {pathParams: {id: postId}, method, path, user: {id: userId}} = adaptRequest(req);
+
+	if (!postId || !mongoose.isValidObjectId(postId)) {
+		logger.info(`${StatusCodes.BAD_REQUEST} - Invalid post saved for later id: ${postId} - ${method} ${path}`);
+		throw new BadRequestError('Invalid post saved for later id.');
+	}
+
+	const post = await SavedForLater.findOneAndUpdate({_id: postId}, {status: 'read'}, {runValidators: true, new: true});
+	if (post){
+		await redisSetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}_${postId}`, [post]);
+		logger.info(`${StatusCodes.OK} - Post saved for later marked as read - ${method} ${path}`);
+		return res.status(StatusCodes.OK).json({ message: 'Post saved for later successfully marked as read.', data: { postData: post } });
+	}
+
+	res.status(StatusCodes.NOT_FOUND).json({message: 'Post saved for later not found.'});
+}
+
 module.exports = {
 	savePostForLater,
 	getPostsSavedForLater,
 	getPostSavedForLater,
 	deletePostSavedForLater,
+	markPostSavedForLaterAsRead
 }
