@@ -92,8 +92,33 @@ const getPostsSavedForLater = async (req, res) => {
 	});
 }
 
+const getPostSavedForLater = async (req, res) => {
+	const {user: {id: userId}, path, method, pathParams: {id: postId}} = adaptRequest(req);
+	if (!postId) {
+		logger.info(`${StatusCodes.BAD_REQUEST} - Invalid post saved for later id: ${postId} - ${method} ${path}`);
+		throw new BadRequestError('Invalid post saved for later id');
+	}
+
+	let post = await redisGetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}_${postId}`);
+	if (post.length < 1) {
+		post = await SavedForLater.findOne({_id: postId, status: {$nin: ['disabled']}});
+		if (!post) {
+			throw new NotFoundError('Post saved for later not found.');
+		}
+		await redisSetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}_${post._id}`, [post]);
+	}
+
+	return res.status(StatusCodes.OK).json({
+		message: 'Post saved for later retrieved successfully.',
+		data: {
+			savedForLater: post,
+		}
+	});
+}
+
 module.exports = {
 	savePostForLater,
 	getPostsSavedForLater,
+	getPostSavedForLater,
 	deletePostSavedForLater,
 }
