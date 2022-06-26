@@ -37,6 +37,29 @@ const savePostForLater = async (req, res) => {
 	res.status(StatusCodes.OK).json({ message: 'Post successfully saved for later.', data: { savedForLater: savedPost } });
 }
 
+const deletePostSavedForLater = async (req, res) => {
+	const {pathParams: {id: postId}, method, path, user: {id: userId, role}} = adaptRequest(req);
+	if (!postId || !mongoose.isValidObjectId(postId)) {
+		logger.info(`${StatusCodes.BAD_REQUEST} - Invalid post id: ${postId} - ${method} ${path}`);
+		throw new BadRequestError('Invalid post id.');
+	}
+
+	const deleted = await SavedForLater.findOneAndDelete({_id: postId, user: userId});
+	if(!deleted) {
+		throw new NotFoundError('Post saved for later not found.')
+	}
+	await redisRefreshCache(`${config.cache.savePostForLaterCacheKey}_${userId}_${postId}`);
+
+	const logData = {
+		action: `deletePostSavedForLater: ${postId} - by ${role}`,
+		resourceName: 'saveForLater',
+		user: createObjectId(userId),
+	}
+	await saveActivityLog(logData, method, path);
+	res.status(StatusCodes.OK).json({ message: 'Post saved for later successfully removed.'});
+}
+
 module.exports = {
 	savePostForLater,
+	deletePostSavedForLater,
 }
