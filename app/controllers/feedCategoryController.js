@@ -93,9 +93,34 @@ const disableCategory = async (req, res) => {
 	res.status(StatusCodes.OK).json({ message: 'Category disabled successfully.'});
 }
 
+const deleteCategory = async (req, res) => {
+	const {pathParams: {id: categoryId}, method, path, user: {id: userId, role}} = adaptRequest(req);
+
+	if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
+		logger.info(`${StatusCodes.BAD_REQUEST} - Invalid category id - ${method} ${path}`);
+		throw new BadRequestError('Invalid category id.');
+	}
+logger.info('Category is ' + categoryId);
+	const deleted = await FeedCategory.findOneAndDelete({_id: categoryId});
+	if (!deleted) {
+		logger.info(`${StatusCodes.BAD_REQUEST} - Invalid category id - ${method} ${path}`);
+		throw new BadRequestError(`Invalid category id: ${categoryId}`);
+	}
+
+	//@TODO: clear deleted category from redis cached categories
+	const logData = {
+		action: `deleteCategory: ${categoryId} - by ${role}`,
+		resourceName: 'FeedCategory',
+		user: createObjectId(userId),
+	}
+	await saveActivityLog(logData, method, path);
+	res.status(StatusCodes.OK).json({ message: 'Category deleted successfully.'});
+}
+
 module.exports = {
 	getCategories,
 	createCategory,
 	disableCategory,
+	deleteCategory,
 	getCategoryById,
 }
