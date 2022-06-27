@@ -117,10 +117,34 @@ logger.info('Category is ' + categoryId);
 	res.status(StatusCodes.OK).json({ message: 'Category deleted successfully.'});
 }
 
+const updateCategory = async (req, res) => {
+	const {body, pathParams: {id: categoryId}, method, path, user: {id: userId, role}} = adaptRequest(req);
+
+	if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
+		logger.info(`${StatusCodes.BAD_REQUEST} - Invalid category id - ${method} ${path}`);
+		throw new BadRequestError('Invalid category id.');
+	}
+
+	const updatedCategory = await FeedCategory.findOneAndUpdate({_id: categoryId}, body, {runValidators: true, new: true});
+	if (!updatedCategory) {
+		logger.info(`${StatusCodes.BAD_REQUEST} - Unable to update category - ${method} ${path}`);
+		throw new BadRequestError('Unable to update category. Please try again');
+	}
+	//@TODO: clear updated category from redis cached categories
+	const logData = {
+		action: `updateCategory: ${categoryId} - by ${role}`,
+		resourceName: 'FeedCategory',
+		user: createObjectId(userId),
+	}
+	await saveActivityLog(logData, method, path);
+	res.status(StatusCodes.OK).json({ message: 'Category updated successfully.', date: {category: updatedCategory}});
+}
+
 module.exports = {
 	getCategories,
 	createCategory,
 	disableCategory,
 	deleteCategory,
+	updateCategory,
 	getCategoryById,
 }
