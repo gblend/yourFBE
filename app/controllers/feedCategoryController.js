@@ -28,6 +28,19 @@ const getCategories = async (req, res) => {
 	res.status(StatusCodes.OK).json({message: 'Categories fetched successfully.', data: {categories: categoriesResult, pagination}});
 }
 
+const getCategoryById = async (req, res) => {
+	const {method, path, pathParams: {id: categoryId}} = adaptRequest(req);
+	//@TODO check if categories exists in redis cache and query db if not
+	const category = await FeedCategory.findById(categoryId).populate('categoryFeeds', 'id _id', 'Feed');
+	if (!category) {
+		logger.info(`${StatusCodes.NOT_FOUND} - Category not found - ${method} ${path}`);
+		throw new NotFoundError('Category not found.');
+	}
+
+	res.status(StatusCodes.OK).json({message: 'Category fetched successfully.', data: {category}});
+}
+
 module.exports = {
 	getCategories,
+	getCategoryById,
 }
