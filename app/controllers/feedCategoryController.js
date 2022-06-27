@@ -40,7 +40,34 @@ const getCategoryById = async (req, res) => {
 	res.status(StatusCodes.OK).json({message: 'Category fetched successfully.', data: {category}});
 }
 
+const createCategory = async (req, res) => {
+	const {body, method, path, user: {id: userId, role}} = adaptRequest(req);
+	body.user = createObjectId(userId);
+	const {error} = validateFeedCategoryDto(body);
+
+	if (error) {
+		logger.info(JSON.stringify(JSON.stringify(formatValidationError(error))));
+		return res.status(StatusCodes.BAD_REQUEST).json({ data: {error: formatValidationError(error)}});
+	}
+
+	const category = await FeedCategory.create(body);
+	if (!category) {
+		throw new CustomAPIError('Unable to create feed category. Please try again later.')
+	}
+
+	const logData = {
+		action: `createCategory - by ${role}`,
+		resourceName: 'FeedCategory',
+		user:createObjectId(userId),
+	}
+	await saveActivityLog(logData, method, path);
+
+	logger.info(`${StatusCodes.OK} - Category created successfully - ${method} ${path}`);
+	res.status(StatusCodes.OK).json({ message: 'Category created successfully.', data: {category}})
+}
+
 module.exports = {
 	getCategories,
+	createCategory,
 	getCategoryById,
 }
