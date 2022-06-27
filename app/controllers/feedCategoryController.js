@@ -66,8 +66,36 @@ const createCategory = async (req, res) => {
 	res.status(StatusCodes.OK).json({ message: 'Category created successfully.', data: {category}})
 }
 
+const disableCategory = async (req, res) => {
+	const {pathParams: {id: categoryId}, method, path, user: {id: userId, role}} = adaptRequest(req);
+
+	if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
+		logger.info(`${StatusCodes.BAD_REQUEST} - Invalid category id - ${method} ${path}`);
+		throw new BadRequestError('Invalid category id.');
+	}
+
+	const category = await FeedCategory.findById(categoryId);
+	if (!category) {
+		logger.info(`${StatusCodes.BAD_REQUEST} - Category not found - ${method} ${path}`);
+		throw new BadRequestError('Category not found.');
+	}
+
+	category.status = 'disabled';
+	await category.save();
+
+	//@TODO: clear disabled category from redis cached categories
+	const logData = {
+		action: `disableCategory: ${categoryId} - by ${role}`,
+		resourceName: 'FeedCategory',
+		user: createObjectId(userId),
+	}
+	await saveActivityLog(logData, method, path);
+	res.status(StatusCodes.OK).json({ message: 'Category disabled successfully.'});
+}
+
 module.exports = {
 	getCategories,
 	createCategory,
+	disableCategory,
 	getCategoryById,
 }
