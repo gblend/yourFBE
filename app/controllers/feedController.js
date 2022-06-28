@@ -155,10 +155,31 @@ const getFeedById = async (req, res) => {
 	return res.status(StatusCodes.OK).json({message: 'Feed fetched successfully.', data: {feed}});
 }
 
+const deleteFeed = async (req, res) => {
+	let {path, method, pathParams: {id: feedId}, user} = adaptRequest(req);
+	if (!feedId || !mongoose.isValidObjectId(feedId)) {
+		throw new BadRequestError('Invalid feed id.')
+	}
+	const deletedFeed = await Feed.findOneAndDelete({_id: feedId});
+	if (!deletedFeed) {
+		throw new BadRequestError('Feed was not deleted. Please check feed id.');
+	}
+
+	const logData = {
+		action: `deleteFeed: ${feedId} - by ${user.role}`,
+		resourceName: 'feeds',
+		user: createObjectId(user.id),
+	}
+	await saveActivityLog(logData, method, path);
+	logger.info(`${StatusCodes.OK} - Feed deleted successfully - ${method} ${path}`);
+	return res.status(StatusCodes.OK).json({message: 'Feed deleted successfully.'});
+}
+
 module.exports = {
 	createFeed,
 	getFeeds,
 	getFeedById,
+	deleteFeed,
 	getFeedsByCategoryId,
 	getFeedsByCategory,
 }
