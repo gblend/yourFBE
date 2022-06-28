@@ -111,8 +111,33 @@ const createFeed = async (req, res) => {
 	res.status(StatusCodes.OK).json({message: 'Feed created successfully.', data: {feed}});
 }
 
+const getFeeds = async (req, res) => {
+	let {path, method, queryParams: {fields, sort, pageSize, pageNumber}} = adaptRequest(req);
+	let feeds = Feed.find({status: 'enabled'}).populate('category', '_id name description');
+
+	if (sort) {
+		const sortFields = sort.split(',').join(' ');
+		feeds.sort(sortFields);
+	}
+	if (fields) {
+		const requiredFields = fields.split(',').join(' ');
+		feeds.select(requiredFields);
+	}
+
+	let {pagination, result} = await paginate(feeds, {pageSize, pageNumber});
+	const feedsResult = await result;
+
+	if (feedsResult.length < 1) {
+		logger.info(`${StatusCodes.NOT_FOUND} - No feeds found for get_feeds - ${method} ${path}`);
+		throw new NotFoundError('No feed found.');
+	}
+	logger.info(`${StatusCodes.OK} - Feeds fetched successfully - ${method} ${path}`);
+	return res.status(StatusCodes.OK).json({message: 'Feeds fetched successfully.', data: {feeds: feedsResult, pagination}});
+}
+
 module.exports = {
 	createFeed,
+	getFeeds,
 	getFeedsByCategoryId,
 	getFeedsByCategory,
 }
