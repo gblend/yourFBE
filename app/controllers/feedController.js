@@ -55,6 +55,41 @@ const getFeedsByCategory = async (req, res) => {
 	return res.status(StatusCodes.OK).json({message: `Feeds by category fetched successfully.`, data: {feedsByCategory}});
 }
 
+const getFeedsByCategoryId = async (req, res) => {
+	let {path, method, pathParams: {id: categoryId}, user, queryParams: {sort, pageSize, pageNumber, fields}} = adaptRequest(req);
+	if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
+		throw new BadRequestError('Invalid feed category id.')
+	}
+	const feeds = Feed.find({category: categoryId, status: 'enabled'});
+
+	if (sort) {
+		const sortFields = sort.split(',').join(' ');
+		feeds.sort(sortFields);
+	}
+	if(fields) {
+		const requiredFields = fields.split(',').join(' ')
+		feeds.select(requiredFields)
+	}
+
+	let {pagination, result} = await paginate(feeds, {pageSize, pageNumber});
+	const feedsResult = await result;
+
+	const logData = {
+		action: `getFeedsByCategoryId: ${categoryId} - by ${user.role}`,
+		resourceName: 'feeds',
+		user: createObjectId(user.id),
+	}
+	await saveActivityLog(logData, method, path);
+
+	if (feedsResult.length < 1) {
+		logger.info(`${StatusCodes.NOT_FOUND} - No feed found for get_feeds_by_category_id - ${method} ${path}`);
+		throw new NotFoundError('No feed found for this category.');
+	}
+	logger.info(`${StatusCodes.OK} - Feeds with category id ${categoryId} fetched successfully - ${method} ${path}`);
+	return res.status(StatusCodes.OK).json({message: `Feeds fetched successfully.`, data: {feeds: feedsResult, pagination}});
+}
+
 module.exports = {
+	getFeedsByCategoryId,
 	getFeedsByCategory,
 }
