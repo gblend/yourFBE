@@ -215,12 +215,39 @@ const toggleFeedsStatusByCategoryId = async (req, res) => {
 	return res.status(StatusCodes.OK).json({message: `Feeds with category id: ${categoryId} ${status}.`});
 }
 
+const updateFeed = async (req, res) => {
+	let {path, method, pathParams: {id: feedId}, user, body} = adaptRequest(req);
+	if (!feedId || !mongoose.isValidObjectId(feedId)) {
+		throw new BadRequestError('Invalid feed id.')
+	}
+
+	const {error} = validateFeedUpdateDto(body);
+	if (error) {
+		logger.info(JSON.stringify(JSON.stringify(formatValidationError(error))));
+		return res.status(StatusCodes.BAD_REQUEST).json({data: {errors: formatValidationError(error)}});
+	}
+
+	const feed = await Feed.findOneAndUpdate({_id: feedId}, body, {runValidators: true, new: true});
+	if (!feed) {
+		throw new BadRequestError('Feed update failed. Please check feed id');
+	}
+	const logData = {
+		action: `updateFeed: ${feedId} - by ${user.role}`,
+		resourceName: 'feeds',
+		user: createObjectId(user.id),
+	}
+	await saveActivityLog(logData, method, path);
+	logger.info(`${StatusCodes.OK} - Feed updated successfully - ${method} ${path}`);
+	return res.status(StatusCodes.OK).json({message: 'Feed updated successfully.', data: {feed}});
+}
+
 module.exports = {
 	createFeed,
 	getFeeds,
 	getFeedById,
 	deleteFeed,
 	disableFeedById,
+	updateFeed,
 	toggleFeedsStatusByCategoryId,
 	getFeedsByCategoryId,
 	getFeedsByCategory,
