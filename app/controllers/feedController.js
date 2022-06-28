@@ -89,7 +89,30 @@ const getFeedsByCategoryId = async (req, res) => {
 	return res.status(StatusCodes.OK).json({message: `Feeds fetched successfully.`, data: {feeds: feedsResult, pagination}});
 }
 
+const createFeed = async (req, res) => {
+	const {body, path, method, user} = adaptRequest(req);
+	body.user = createObjectId(user.id);
+	const {error} = validateFeedDto(body);
+
+	if (error) {
+		logger.info(JSON.stringify(JSON.stringify(formatValidationError(error))));
+		return res.status(StatusCodes.BAD_REQUEST).json({data: {errors: formatValidationError(error)}});
+	}
+
+	const feed = await Feed.create(body);
+	const logData = {
+		action: `createFeed - by ${user.role}`,
+		resourceName: 'Feed',
+		user: createObjectId(user.id),
+	}
+	await saveActivityLog(logData, method, path);
+
+	logger.info(`${StatusCodes.OK} - Feed created - ${method} ${path}`);
+	res.status(StatusCodes.OK).json({message: 'Feed created successfully.', data: {feed}});
+}
+
 module.exports = {
+	createFeed,
 	getFeedsByCategoryId,
 	getFeedsByCategory,
 }
