@@ -198,12 +198,30 @@ const disableFeedById = async (req, res) => {
 	return res.status(StatusCodes.OK).json({message: 'Feed disabled successfully.'});
 }
 
+const toggleFeedsStatusByCategoryId = async (req, res) => {
+	let {path, method, pathParams: {id: categoryId}, user, queryParams: {status}} = adaptRequest(req);
+	if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
+		throw new BadRequestError('Invalid feed category id.')
+	}
+	await Feed.updateMany({category: categoryId}, {status}, {runValidators: true, new: true});
+
+	const logData = {
+		action: `disableFeedByCategoryId: ${categoryId} - by ${user.role}`,
+		resourceName: 'feeds',
+		user: createObjectId(user.id),
+	}
+	await saveActivityLog(logData, method, path);
+	logger.info(`${StatusCodes.OK} - Feeds with category id: ${categoryId} ${status} successfully - ${method} ${path}`);
+	return res.status(StatusCodes.OK).json({message: `Feeds with category id: ${categoryId} ${status}.`});
+}
+
 module.exports = {
 	createFeed,
 	getFeeds,
 	getFeedById,
 	deleteFeed,
 	disableFeedById,
+	toggleFeedsStatusByCategoryId,
 	getFeedsByCategoryId,
 	getFeedsByCategory,
 }
