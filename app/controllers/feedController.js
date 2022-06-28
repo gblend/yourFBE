@@ -135,9 +135,30 @@ const getFeeds = async (req, res) => {
 	return res.status(StatusCodes.OK).json({message: 'Feeds fetched successfully.', data: {feeds: feedsResult, pagination}});
 }
 
+const getFeedById = async (req, res) => {
+	let {path, method, fields: selectFields, pathParams: {id: feedId}} = adaptRequest(req);
+	if (!feedId || !mongoose.isValidObjectId(feedId)) {
+		throw new BadRequestError('Invalid feed id.')
+	}
+	let feed = await Feed.findOne({_id: feedId}).populate('category');
+	if (!feed) {
+		logger.info(`${StatusCodes.NOT_FOUND} - No feed found for get_feed_by_id - ${method} ${path}`);
+		throw new NotFoundError(`No feed found with id ${feedId}`);
+	}
+
+	if (selectFields) {
+		selectFields = selectFields.split(',').join(' ');
+		feed.select(selectFields);
+	}
+
+	logger.info(`${StatusCodes.OK} - Feed fetched successfully - ${method} ${path}`);
+	return res.status(StatusCodes.OK).json({message: 'Feed fetched successfully.', data: {feed}});
+}
+
 module.exports = {
 	createFeed,
 	getFeeds,
+	getFeedById,
 	getFeedsByCategoryId,
 	getFeedsByCategory,
 }
