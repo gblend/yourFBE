@@ -175,11 +175,35 @@ const deleteFeed = async (req, res) => {
 	return res.status(StatusCodes.OK).json({message: 'Feed deleted successfully.'});
 }
 
+const disableFeedById = async (req, res) => {
+	let {path, method, pathParams: {id: feedId}, user} = adaptRequest(req);
+	if (!feedId || !mongoose.isValidObjectId(feedId)) {
+		throw new BadRequestError('Invalid feed id.')
+	}
+	const feed = await Feed.findOneAndUpdate({_id: feedId}, {status: 'disabled'}, {runValidators: true, new: true});
+	if (!feed) {
+		throw new BadRequestError('Unable to disable feed. Please check feed id.');
+	}
+	if (feed.status !== 'disabled') {
+		throw new BadRequestError('Unable to disable feed')
+	}
+
+	const logData = {
+		action: `disableFeed: ${feedId} - by ${user.role}`,
+		resourceName: 'feeds',
+		user: createObjectId(user.id),
+	}
+	await saveActivityLog(logData, method, path);
+	logger.info(`${StatusCodes.OK} - Feed disabled successfully - ${method} ${path}`);
+	return res.status(StatusCodes.OK).json({message: 'Feed disabled successfully.'});
+}
+
 module.exports = {
 	createFeed,
 	getFeeds,
 	getFeedById,
 	deleteFeed,
+	disableFeedById,
 	getFeedsByCategoryId,
 	getFeedsByCategory,
 }
