@@ -13,5 +13,6 @@ module.exports.adaptRequest = (req = {}) => {
         user: req.user,
         cookies: req.cookies,
         files: req.files,
+        socialProfile: req.socialProfile
     })
 }

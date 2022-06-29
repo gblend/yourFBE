@@ -2,7 +2,7 @@
 
 const {StatusCodes} = require('http-status-codes');
 
-const resInterceptor = (_req, res, next) => {
+const resInterceptor = (_, res, next) => {
 	const successMessage = 'Request processed successfully.';
 	const errorMessage = 'Request failed.';
 

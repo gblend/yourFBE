@@ -36,7 +36,7 @@ const authenticateUser = async (req, _res, next) => {
 };
 
 const authorizeRoles = (...roles) => {
-    return (req, _res, next) => {
+    return (req, _, next) => {
         const {method, path, user} = adaptRequest(req);
 
         if (!roles.includes(user.role)) {

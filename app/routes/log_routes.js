@@ -1,7 +1,6 @@
 'use strict';
 
-const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 const {authenticateUser, authorizePermissions} = require('../middleware/authentication');
 
 const {getActivityLogs, getActivityLog, getPollingLogs, getPollingLog, searchLogs} = require('../controllers/logController');

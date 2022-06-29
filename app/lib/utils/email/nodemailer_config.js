@@ -1,8 +1,8 @@
 'use strict';
 
 const nodemailer = require('nodemailer');
-const {config} = require('../../../config/config');
 require('dotenv').config({path: '../.env'});
+const {config} = require('../../../config/config');
 
 const transporterInit = () => {
     return nodemailer.createTransport({

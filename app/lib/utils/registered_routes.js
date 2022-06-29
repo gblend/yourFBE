@@ -13,6 +13,7 @@ module.exports.appRoutes = (app) => {
 			routerSTack.handle.stack.forEach((handler) => {
 				const path = handler.route.path;
 				const routeMiddlewares = ['authenticateUser', '<anonymous>'];
+
 				handler.route.stack.forEach((stack) => {
 					if (!routeMiddlewares.includes((stack.name))) {
 						const method = stack.method.toUpperCase().padEnd(7);
