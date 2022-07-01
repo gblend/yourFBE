@@ -2,14 +2,10 @@ const {tearDownTestConnection} = require('../helpers/connection_teardown');
 const {connection} = require('mongoose');
 const app = require('../../server');
 const Joi = require('joi');
-const {decrypt} = require('../../app/lib/utils');
-const {User} = require('../../app/models/User');
 const request = require('supertest')(app);
 
 describe('Auth', () => {
-   let testUser, data, socialProfile = {};
-   let loginTokens = [];
-   let verificationToken = '';
+   let testUser, data = {};
 
    beforeEach(() => {
        data = {
@@ -69,6 +65,28 @@ describe('Auth', () => {
           .set('Content-Type', 'application/json')
           .send(data)
           .expect(500)
+          .expect('Content-Type', 'application/json; charset=utf-8')
+          .expect((res) => {
+
+             const registrationError = Joi.object({
+                status: Joi.string().required(),
+                message: Joi.string().required(),
+                data: Joi.object({
+                   errors: Joi.array().min(1).required()
+                })
+             });
+
+             Joi.assert(res.body, registrationError);
+
+          }).end(done);
+   });
+
+   it('should fail registration due to incomplete parameters', (done) => {
+
+      request.post('/api/v1/auth/signup')
+          .set('Content-Type', 'application/json')
+          .send({})
+          .expect(400)
           .expect('Content-Type', 'application/json; charset=utf-8')
           .expect((res) => {
 
