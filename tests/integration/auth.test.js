@@ -6,6 +6,7 @@ const request = require('supertest')(app);
 
 describe('Auth', () => {
    let testUser, data = {};
+   let loginTokens = [];
 
    beforeEach(() => {
        data = {
@@ -99,6 +100,39 @@ describe('Auth', () => {
              });
 
              Joi.assert(res.body, registrationError);
+
+          }).end(done);
+   });
+
+   it('should successfully login a user with valid credentials', (done) => {
+
+       data = {
+           email:'test@example.com',
+           password: 'password'
+       }
+
+      request.post('/api/v1/auth/login')
+          .set('Content-Type', 'application/json')
+          .send(data)
+          .expect(200)
+          .expect('Content-Type', 'application/json; charset=utf-8')
+          .expect((response) => {
+              loginTokens = response.headers['set-cookie'];
+
+             const loggedInUser = Joi.object({
+                status: testUser.status,
+                message: Joi.string().required(),
+                data: Joi.object({
+                   verificationMsg: Joi.string().required(),
+                   token: Joi.string().required(),
+                   refreshToken: Joi.string().required(),
+                   user: Joi.object(testUser.user)
+                       .options({allowUnknown: true})
+                })
+             });
+
+             Joi.assert(response.body, loggedInUser);
+
 
           }).end(done);
    });
