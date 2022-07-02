@@ -136,4 +136,27 @@ describe('Auth', () => {
 
           }).end(done);
    });
+
+    it('should fail to login with invalid parameters', (done) => {
+
+        request.post('/api/v1/auth/login')
+            .set('Content-Type', 'application/json')
+            .send({})
+            .expect(400)
+            .expect('Content-Type', 'application/json; charset=utf-8')
+            .expect((response) => {
+
+                const loginError = Joi.object({
+                    status: Joi.string().required(),
+                    message: Joi.string().required(),
+                    data: Joi.object({
+                        errors: Joi.array().min(1).required()
+                    })
+                });
+
+                Joi.assert(response.body, loginError);
+
+
+            }).end(done);
+    });
 });
