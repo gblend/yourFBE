@@ -219,4 +219,23 @@ describe('Auth', () => {
                 expect(response.body).toEqual({});
             }).end(done);
     });
+
+    it('should fail to logout user with invalid token', (done) => {
+        request.delete('/api/v1/auth/logout')
+            .set('Cookie', [])
+            .expect(401)
+            .expect((response) => {
+
+                const loginError = Joi.object({
+                    status: Joi.string().required(),
+                    message: Joi.string().required(),
+                    data: Joi.object({
+                        errors: Joi.array().min(1).required()
+                    })
+
+                })
+
+                Joi.assert(response.body, loginError);
+            }).end(done);
+    });
 });
