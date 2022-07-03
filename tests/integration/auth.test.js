@@ -210,4 +210,13 @@ describe('Auth', () => {
 
             }).end(done);
     });
+
+    it('should successfully logout user with valid token', (done) => {
+        request.delete('/api/v1/auth/logout')
+            .set('Cookie', loginTokens)
+            .expect(204)
+            .expect((response) => {
+                expect(response.body).toEqual({});
+            }).end(done);
+    });
 });
