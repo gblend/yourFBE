@@ -256,4 +256,24 @@ describe('Auth', () => {
                 Joi.assert(response.body, forgotPasswordSchema);
             }).end(done);
     });
+
+    it('should fail to initiate forgot password with invalid email', (done) => {
+        request.post('/api/v1/auth/forgot-password')
+            .set('Content-Type', 'application/json')
+            .send({email:''})
+            .expect(400)
+            .expect('Content-Type', 'application/json; charset=utf-8')
+            .expect((response) => {
+
+                const forgotPasswordSchema = Joi.object({
+                    status: Joi.string().required(),
+                    message: Joi.string().required(),
+                    data: Joi.object({
+                        errors: Joi.array().min(1).required()
+                    })
+                });
+
+                Joi.assert(response.body, forgotPasswordSchema);
+            }).end(done);
+    });
 });
