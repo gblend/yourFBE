@@ -238,4 +238,22 @@ describe('Auth', () => {
                 Joi.assert(response.body, loginError);
             }).end(done);
     });
+
+    it('should initiate forgot password for provided email', (done) => {
+        request.post('/api/v1/auth/forgot-password')
+            .set('Content-Type', 'application/json')
+            .send({email:'test@example.com'})
+            .expect(200)
+            .expect('Content-Type', 'application/json; charset=utf-8')
+            .expect((response) => {
+
+                const forgotPasswordSchema = Joi.object({
+                    status: Joi.string().required(),
+                    message: Joi.string().required(),
+                    data: Joi.object({}).required()
+                });
+
+                Joi.assert(response.body, forgotPasswordSchema);
+            }).end(done);
+    });
 });
