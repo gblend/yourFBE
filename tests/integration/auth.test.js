@@ -322,4 +322,28 @@ describe('Auth', () => {
 
         Joi.assert(res.body, resetPasswordError);
     });
+
+    it('should fail to reset password with unregistered email', async () => {
+        data = {
+            email: 'test@example1.com',
+            token: 'xxx9-8000-99088657-rexx',
+            password: 'new password'
+        }
+
+        const res = await request.post('/api/v1/auth/reset-password')
+            .set('Content-Type', 'application/json')
+            .send(data)
+            .expect(400)
+            .expect('Content-Type', 'application/json; charset=utf-8');
+
+        const resetPasswordError = Joi.object({
+            status: Joi.string().required(),
+            message: Joi.string().required(),
+            data: Joi.object({
+                errors: Joi.array().min(1).required()
+            })
+        });
+
+        Joi.assert(res.body, resetPasswordError);
+    });
 });
