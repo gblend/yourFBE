@@ -304,4 +304,22 @@ describe('Auth', () => {
 
         Joi.assert(response.body, resetPasswordSchema);
     });
+
+    it('should fail to reset password with invalid parameters', async () => {
+        const res = await request.post('/api/v1/auth/reset-password')
+            .set('Content-Type', 'application/json')
+            .send({})
+            .expect(400)
+            .expect('Content-Type', 'application/json; charset=utf-8');
+
+        const resetPasswordError = Joi.object({
+            status: Joi.string().required(),
+            message: Joi.string().required(),
+            data: Joi.object({
+                errors: Joi.array().min(1).required()
+            })
+        });
+
+        Joi.assert(res.body, resetPasswordError);
+    });
 });
