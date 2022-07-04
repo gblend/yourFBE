@@ -2,6 +2,7 @@ const {tearDownTestConnection} = require('../helpers/connection_teardown');
 const {connection} = require('mongoose');
 const app = require('../../server');
 const Joi = require('joi');
+const {decrypt} = require('../../app/lib/utils');
 const request = require('supertest')(app);
 
 describe('Auth', () => {
@@ -275,5 +276,32 @@ describe('Auth', () => {
 
                 Joi.assert(response.body, forgotPasswordSchema);
             }).end(done);
+    });
+
+    it('should successfully reset password with email, token and password', async () => {
+        const {body: {data: {user}}} = await request.get(`/api/v1/users/${testUser.data.user._id}`)
+            .set('Cookie', loginTokens)
+            .set('Content-Type', 'application/json')
+            .expect(200);
+
+        data = {
+            email: user.email,
+            token: decrypt(user.passwordToken),
+            password: 'new password'
+        }
+
+        const response = await request.post('/api/v1/auth/reset-password')
+            .set('Content-Type', 'application/json')
+            .send(data)
+            .expect(200)
+            .expect('Content-Type', 'application/json; charset=utf-8');
+
+        const resetPasswordSchema = Joi.object({
+            status: Joi.string().required(),
+            message: Joi.string().required(),
+            data: Joi.object({}).required()
+        });
+
+        Joi.assert(response.body, resetPasswordSchema);
     });
 });
