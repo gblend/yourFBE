@@ -389,4 +389,22 @@ describe('Auth', () => {
 
         Joi.assert(res.body, resendVerificationEmail);
     });
+
+    it('should fail to resend verification email with invalid user token', async () => {
+        const response = await request.post('/api/v1/auth/resend-verification-email')
+            .set('Content-Type', 'application/json')
+            .set('Cookie', [])
+            .expect('Content-Type', 'application/json; charset=utf-8')
+            .expect(401);
+
+        const resendVerificationEmailError = Joi.object({
+            status: Joi.string().required(),
+            message: Joi.string().required(),
+            data: Joi.object({
+                errors: Joi.array().min(1).required()
+            })
+        });
+
+        Joi.assert(response.body, resendVerificationEmailError);
+    });
 });
