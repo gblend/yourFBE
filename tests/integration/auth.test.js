@@ -407,4 +407,28 @@ describe('Auth', () => {
 
         Joi.assert(response.body, resendVerificationEmailError);
     });
+
+    it('should successfully verify user with valid email and token', async () => {
+        const user = await User.findOne({_id: testUser.data.user._id});
+        verificationToken = user?.verificationToken;
+
+        data = {
+            email: user?.email,
+            token: verificationToken
+        }
+
+        const res = await request.post('/api/v1/auth/verify-email')
+            .set('Content-Type', 'application/json')
+            .send(data)
+            .expect(200)
+            .expect('Content-Type', 'application/json; charset=utf-8');
+
+        const verifyEmailSchema = Joi.object({
+            status: Joi.string().required(),
+            message: Joi.string().required(),
+            data: Joi.object({}).required()
+        });
+
+        Joi.assert(res.body, verifyEmailSchema);
+    });
 });
