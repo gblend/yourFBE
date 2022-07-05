@@ -372,4 +372,21 @@ describe('Auth', () => {
 
         Joi.assert(result.body, resetPasswordError);
     });
+
+    it('should resend verification email to user', async () => {
+
+        const res = await request.post('/api/v1/auth/resend-verification-email')
+            .set('Content-Type', 'application/json')
+            .set('Cookie', loginTokens)
+            .expect('Content-Type', 'application/json; charset=utf-8')
+            .expect(200);
+
+        const resendVerificationEmail = Joi.object({
+            status: Joi.string().required(),
+            message: Joi.string().required(),
+            data: Joi.object({})
+        });
+
+        Joi.assert(res.body, resendVerificationEmail);
+    });
 });
