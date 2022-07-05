@@ -3,11 +3,13 @@ const {connection} = require('mongoose');
 const app = require('../../server');
 const Joi = require('joi');
 const {decrypt} = require('../../app/lib/utils');
+const {User} = require('../../app/models/User');
 const request = require('supertest')(app);
 
 describe('Auth', () => {
-   let testUser, data = {};
+   let testUser, data, socialProfile = {};
    let loginTokens = [];
+   let verificationToken = '';
 
    beforeEach(() => {
        data = {
@@ -345,5 +347,29 @@ describe('Auth', () => {
         });
 
         Joi.assert(res.body, resetPasswordError);
+    });
+
+    it('should fail to reset password with invalid token', async () => {
+        data = {
+            email: 'test@example.com',
+            token: 'xx-8000-99088657-xx',
+            password: 'new password'
+        }
+
+        const result = await request.post('/api/v1/auth/reset-password')
+            .set('Content-Type', 'application/json')
+            .send(data)
+            .expect('Content-Type', 'application/json; charset=utf-8')
+            .expect(400);
+
+        const resetPasswordError = Joi.object({
+            status: Joi.string().required(),
+            message: Joi.string().required(),
+            data: Joi.object({
+                errors: Joi.array().min(1).required()
+            })
+        });
+
+        Joi.assert(result.body, resetPasswordError);
     });
 });
