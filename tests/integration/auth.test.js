@@ -431,4 +431,27 @@ describe('Auth', () => {
 
         Joi.assert(res.body, verifyEmailSchema);
     });
+
+    it('should fail to verify user with invalid email', async () => {
+        data = {
+            email: 'test@example1.com',
+            token: verificationToken
+        }
+
+        const response = await request.post('/api/v1/auth/verify-email')
+            .set('Content-Type', 'application/json')
+            .send(data)
+            .expect(401)
+            .expect('Content-Type', 'application/json; charset=utf-8');
+
+        const verifyEmailErrorSchema = Joi.object({
+            status: Joi.string().required(),
+            message: Joi.string().required(),
+            data: Joi.object({
+                errors: Joi.array().min(1).required()
+            })
+        });
+
+        Joi.assert(response.body, verifyEmailErrorSchema);
+    });
 });
