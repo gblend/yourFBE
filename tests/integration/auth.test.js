@@ -477,4 +477,20 @@ describe('Auth', () => {
 
         Joi.assert(res.body, verifyEmailErrorSchema);
     });
+
+    it('should return social login error', async () => {
+
+        const response = await request.get('/api/v1/auth//social-error')
+            .set('Content-Type', 'application/json')
+            .expect('Content-Type', 'application/json; charset=utf-8')
+            .expect(400);
+
+        const socialLoginErrorSchema = Joi.object({
+            status: Joi.string().required(),
+            message: Joi.string().required(),
+            data: Joi.object({})
+        });
+
+        Joi.assert(response.body, socialLoginErrorSchema);
+    });
 });
