@@ -530,7 +530,7 @@ describe('Auth', () => {
                     role: Joi.string().required(),
                     gender: Joi.string().required().allow(null),
                     status: Joi.string().required(),
-                    avatar: socialProfile.profileData.p,
+                    avatar: socialProfile.profileData.picture,
                     socialChannel: socialProfile.profileData.provider,
                     isVerified: Joi.boolean().required(),
                     createdAt: Joi.date().required(),
