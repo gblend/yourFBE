@@ -493,4 +493,52 @@ describe('Auth', () => {
 
         Joi.assert(response.body, socialLoginErrorSchema);
     });
+
+    it('should register social profile with valid parameters', async () => {
+        socialProfile = {
+            profileData: {
+                provider: 'test',
+                id: '633563540',
+                gender: null,
+                name: 'Test User',
+                firstname: 'Test',
+                lastname: 'User',
+                picture: 'http://default.png',
+                email: 'socialtest@example.com',
+                email_verified: false
+            },
+            updateProfile: true
+        }
+
+        const res = await request.post('/api/v1/auth/login/social')
+            .set('Content-Type', 'application/json')
+            .send(socialProfile)
+            .expect('Content-Type', 'application/json; charset=utf-8')
+            .expect(200);
+
+        const socialLoginSchema = Joi.object({
+            status: Joi.string().required(),
+            message: Joi.string().required(),
+            data: Joi.object({
+                token: Joi.string().required(),
+                refreshToken: Joi.string().required(),
+                user: Joi.object({
+                    socialChannelId: socialProfile.profileData.id,
+                    firstname: socialProfile.profileData.firstname,
+                    lastname: socialProfile.profileData.lastname,
+                    email: socialProfile.profileData.email,
+                    role: Joi.string().required(),
+                    gender: Joi.string().required().allow(null),
+                    status: Joi.string().required(),
+                    avatar: socialProfile.profileData.p,
+                    socialChannel: socialProfile.profileData.provider,
+                    isVerified: Joi.boolean().required(),
+                    createdAt: Joi.date().required(),
+                    updatedAt: Joi.date().required()
+                }).options({allowUnknown: true})
+            })
+        });
+
+        Joi.assert(res.body, socialLoginSchema);
+    });
 });
