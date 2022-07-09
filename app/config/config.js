@@ -9,6 +9,8 @@ const config = {
         baseUrlDev: process.env.BASE_URL_DEV,
         baseUrlProd: process.env.BASE_URL_PROD,
         env: process.env.NODE_ENV,
+        baseUrl: (process.env.NODE_ENV === 'production') ? process.env.BASE_URL_PROD : process.env.BASE_URL_DEV,
+        secret: process.env.APP_SECRET || 'yourFeeds:_xx_default_xx'
     },
     rateLimiter: {
         windowMs: process.env.RATE_LIMIT_WINDOW_MS,
