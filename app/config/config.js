@@ -17,8 +17,11 @@ const config = {
         max: process.env.RATE_LIMIT_MAX,
     },
     jwt: {
-        secret: process.env.JWT_SECRET || 'yourFeeds',
+        secret: process.env.JWT_SECRET || 'yourFeeds:_xx_default_xx',
         expiration: process.env.JWT_EXPIRATION,
+    },
+    session: {
+        secret: process.env.APP_SECRET || 'yourFeeds:_xx_default_xx',
     },
     cloudinary: {
         cloudName: process.env.CLOUD_NAME,
@@ -52,6 +55,7 @@ const config = {
       allUsersCacheKey: process.env.ALL_USERS_REDIS_CACHE_KEY,
       allAdminCacheKey: process.env.ALL_ADMINS_REDIS_CACHE_KEY,
       savePostForLaterCacheKey: process.env.SAVED_FOR_LATER_CACHE_KEY,
+      rssFeedCacheKey: process.env.RSS_FEED_CACHE_KEY,
     },
     database: {
         uri: process.env.MONGO_URI,
