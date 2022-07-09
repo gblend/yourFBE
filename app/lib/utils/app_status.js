@@ -25,4 +25,6 @@ const appStatus = {
     }
 }
 
-module.exports = {appStatus};
+module.exports = {
+    appStatus
+};
