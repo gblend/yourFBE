@@ -3,14 +3,15 @@
 const {Token} = require('../models/Token');
 const {config} = require('../config/config');
 const {saveActivityLog} = require('../lib/dbActivityLog');
-const {pushToQueue} = require('../lib/utils/amqplibQueue');
-const {generateToken} = require('../lib/utils/verificationToken');
+const {pushToQueue} = require('../lib/utils/amqplib');
+const {generateToken} = require('../lib/utils/verification_token');
 const {User, validateLogin, validateUserDto} = require('../models/User');
 const {StatusCodes} = require('http-status-codes');
 const {CustomAPIError, UnauthenticatedError, BadRequestError} = require('../lib/errors');
 const {
 	attachCookiesToResponse,
 	createHash,
+	encrypt,
 	formatValidationError,
 	constants,
 	adaptRequest,
@@ -85,14 +86,15 @@ const login = async (req, res) => {
 		throw new BadRequestError(constants.auth.INVALID_CREDENTIALS());
 	}
 
-	if (user.status === 'disabled') {
-		throw new UnauthenticatedError('Account is disabled. Please contact support.');
-	}
-
 	const isMatch = await user.comparePassword(password);
 	if (!isMatch) {
-		throw new UnauthenticatedError('Invalid email or password.');
+		throw new BadRequestError('Invalid email or password.');
 	}
+
+	if (user.status === 'disabled') {
+		throw new UnauthenticatedError('Account is deactivated. Please contact support.');
+	}
+
 	if (!user.isVerified) {
 		verificationMsg = 'Please verify your email to get full access to your account capabilities.';
 	} else verificationMsg = 'Verified';
@@ -145,11 +147,11 @@ const forgotPassword = async (req, res) => {
 
 		const tenMinutes = 1000 * 10 * 60;
 		const passwordTokenExpirationDate = new Date(Date.now() + tenMinutes);
-		user.passwordToken = createHash(passwordToken);
+		user.passwordToken = encrypt(passwordToken);
 		user.passwordTokenExpirationDate = passwordTokenExpirationDate;
 		await user.save();
 	}
-	res.status(StatusCodes.OK).json({message: 'Please check your email for reset link'});
+	res.status(StatusCodes.OK).json({message: 'Please check your email for reset link. You will not get an email if the email address you provided is incorrect'});
 }
 
 const resetPassword = async (req, res) => {
@@ -159,23 +161,28 @@ const resetPassword = async (req, res) => {
 	}
 
 	const user = await User.findOne({email});
-	if (user) {
-		const currentDate = new Date();
-		if (user.passwordTokenExpirationDate < currentDate) {
-			throw new BadRequestError('Password reset link has expired');
-		}
-		if (user.passwordToken === createHash(token)) {
-			user.passwordTokenExpirationDate = null;
-			user.passwordToken = '';
-			user.password = password;
-			await user.save();
-		}
+	if (!user) {
+		throw new BadRequestError('Account not found.');
 	}
+
+	if (user.passwordToken !== encrypt(token)) {
+		throw new BadRequestError('Invalid password reset token');
+	}
+
+	const currentDate = new Date();
+	if (user.passwordTokenExpirationDate < currentDate) {
+		throw new BadRequestError('Password reset link has expired');
+	}
+
+	user.passwordTokenExpirationDate = null;
+	user.passwordToken = '';
+	user.password = password;
+	await user.save();
 
 	const logData = {
 		action: `resetPassword - by ${user.role}`,
 		resourceName: 'users',
-		user: user.id,
+		user: user?.id,
 	}
 	await saveActivityLog(logData, method, path);
 	res.status(StatusCodes.OK).json({
@@ -209,7 +216,7 @@ const saveTokenInfo = async ({_id: userId}, {ip, headers}) => {
 		return isTokenExist;
 	}
 	const refreshToken = generateToken();
-	const userAgent = headers['user-agent'];
+	const userAgent = headers['user-agent'] || 'unknown';
 	const userToken = {refreshToken, ip, userAgent, user: userId};
 	return Token.create(userToken);
 }
