@@ -119,6 +119,10 @@ const login = async (req, res) => {
 	});
 }
 
+const socialLoginError = async (_, res, ) => {
+	return res.status(StatusCodes.BAD_REQUEST).json({});
+}
+
 const socialLogin = async (req, res, ) => {
 	const {headers, ip, socialProfile, body: {profileData, updateProfile = false}} = adaptRequest(req);
 	let user = {};
@@ -289,5 +293,6 @@ module.exports = {
 	forgotPassword,
 	resendVerificationEmail,
 	socialLogin,
+	socialLoginError,
 	verifyEmail
 }
