@@ -66,7 +66,24 @@ const config = {
     },
     imageUpload: {
         maxSize: 2 * 1024 * 1024,
-    }
+    },
+   auth: {
+       google: {
+           clientID: process.env.SOCIAL_OAUTH_GOOGLE_CLIENT_ID,
+           clientSecret: process.env.SOCIAL_OAUTH_GOOGLE_CLIENT_SECRET,
+           callbackURL: process.env.SOCIAL_OAUTH_GOOGLE_CALLBACK_URL
+       },
+       facebook: {
+           clientID: process.env.SOCIAL_OAUTH_FACEBOOK_CLIENT_ID,
+           clientSecret: process.env.SOCIAL_OAUTH_FACEBOOK_CLIENT_SECRET,
+           callbackURL: process.env.SOCIAL_OAUTH_FACEBOOK_CALLBACK_URL
+       },
+       twitter: {
+           consumerKey: process.env.SOCIAL_OAUTH_TWITTER_CLIENT_KEY,
+           consumerSecret: process.env.SOCIAL_OAUTH_TWITTER_CLIENT_SECRET,
+           callbackURL: process.env.SOCIAL_OAUTH_TWITTER_CALLBACK_URL
+       }
+   }
 }
 
 module.exports = {config}
