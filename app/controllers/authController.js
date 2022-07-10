@@ -7,6 +7,7 @@ const {pushToQueue} = require('../lib/utils/amqplib');
 const {generateToken} = require('../lib/utils/verification_token');
 const {User, validateLogin, validateUserDto} = require('../models/User');
 const {StatusCodes} = require('http-status-codes');
+const {registerSocialProfile} = require('../social_auth/register_social_profile');
 const {CustomAPIError, UnauthenticatedError, BadRequestError} = require('../lib/errors');
 const {
 	attachCookiesToResponse,
@@ -113,6 +114,41 @@ const login = async (req, res) => {
 			refreshToken: refreshTokenJWT,
 			verificationMsg,
 			user,
+		},
+		message: constants.auth.SUCCESSFUL('Login'),
+	});
+}
+
+const socialLogin = async (req, res, ) => {
+	const {headers, ip, socialProfile, body: {profileData, updateProfile = false}} = adaptRequest(req);
+	let user = {};
+
+	if(updateProfile) {
+		if (!profileData || !Object.keys(profileData).length || !profileData.email) {
+			throw new CustomAPIError('Invalid social profile parameters.');
+		}
+
+		user = await registerSocialProfile(profileData, (_, __) => { /*unused */ });
+	} else user = socialProfile;
+
+	if (!user || !Object.keys(user).length) {
+		throw new CustomAPIError('Invalid social profile parameters.');
+	}
+
+	if (user.status === 'disabled') {
+		throw new UnauthenticatedError('Account is disabled. Please contact support.');
+	}
+
+	const accessTokenJWT = await user.createJWT();
+	const tokenInfo = await saveTokenInfo(user, {ip, headers});
+	const refreshTokenJWT = await user.createRefreshJWT(user, tokenInfo.refreshToken);
+
+	attachCookiesToResponse({accessTokenJWT, refreshTokenJWT, res});
+	return res.json({
+		data: {
+			token: accessTokenJWT,
+			refreshToken: refreshTokenJWT,
+			user
 		},
 		message: constants.auth.SUCCESSFUL('Login'),
 	});
@@ -252,5 +288,6 @@ module.exports = {
 	resetPassword,
 	forgotPassword,
 	resendVerificationEmail,
-	verifyEmail,
+	socialLogin,
+	verifyEmail
 }
