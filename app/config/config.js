@@ -68,6 +68,16 @@ const config = {
         maxSize: 2 * 1024 * 1024,
     },
    auth: {
+       socketIoUI: {
+           username: process.env.SOCKET_IO_ADMIN_UI_USERNAME,
+           password: process.env.SOCKET_IO_ADMIN_UI_PASSWORD,
+           type: process.env.SOCKET_IO_ADMIN_UI_TYPE,
+           adminUrl: process.env.SOCKET_IO_ADMIN_UI_URL,
+       },
+       socketIo: {
+           prodUrl: process.env.SOCKET_IO_URL_PROD,
+           localUrl: process.env.SOCKET_IO_URL_LOCAL
+       },
        google: {
            clientID: process.env.SOCIAL_OAUTH_GOOGLE_CLIENT_ID,
            clientSecret: process.env.SOCIAL_OAUTH_GOOGLE_CLIENT_SECRET,
