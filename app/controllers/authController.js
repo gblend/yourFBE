@@ -6,12 +6,12 @@ const {saveActivityLog} = require('../lib/dbActivityLog');
 const {pushToQueue} = require('../lib/utils/amqplib');
 const {generateToken} = require('../lib/utils/verification_token');
 const {User, validateLogin, validateUserDto} = require('../models/User');
+const {userNamespaceIo} = require('../socket');
 const {StatusCodes} = require('http-status-codes');
 const {registerSocialProfile} = require('../social_auth/register_social_profile');
 const {CustomAPIError, UnauthenticatedError, BadRequestError} = require('../lib/errors');
 const {
 	attachCookiesToResponse,
-	createHash,
 	encrypt,
 	formatValidationError,
 	constants,
@@ -59,6 +59,8 @@ const register = async (req, res) => {
 	const tokenInfo = await saveTokenInfo(user, {ip, headers});
 	const refreshTokenJWT = await user.createRefreshJWT(user, tokenInfo.refreshToken);
 	attachCookiesToResponse({accessTokenJWT, refreshTokenJWT, res});
+
+	userNamespaceIo.to('users').volatile.emit('admin:user_registered', {user});
 	return res.status(StatusCodes.OK).json({
 		message: 'Please check your email for a link to verify your account',
 		data: {
