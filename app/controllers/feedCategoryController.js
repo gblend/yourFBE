@@ -10,7 +10,7 @@ const {saveActivityLog} = require('../lib/dbActivityLog');
 const getCategories = async (req, res) => {
 	const {method, path, queryParams: {sort, pageSize, pageNumber}} = adaptRequest(req);
 	//@TODO check if categories exists in redis cache and query db if not
-	const categories = FeedCategory.find({status: 'enabled'}).populate('categoryFeeds', 'id _id', 'Feed');
+	const categories = FeedCategory.find({status: 'enabled'}).populate('feedsCount');
 	//@TODO store fetched categories in redis cache
 
 	if (sort) {
@@ -42,7 +42,6 @@ const getCategoryById = async (req, res) => {
 
 const createCategory = async (req, res) => {
 	const {body, method, path, user: {id: userId, role}} = adaptRequest(req);
-	body.user = createObjectId(userId);
 	const {error} = validateFeedCategoryDto(body);
 
 	if (error) {
@@ -50,20 +49,23 @@ const createCategory = async (req, res) => {
 		return res.status(StatusCodes.BAD_REQUEST).json({ data: {error: formatValidationError(error)}});
 	}
 
-	const category = await FeedCategory.create(body);
-	if (!category) {
-		throw new CustomAPIError('Unable to create feed category. Please try again later.')
-	}
+	const isCategoryExist = await FeedCategory.findOne(body);
+	let createdCategory = {}
+	if (!isCategoryExist) {
+		createdCategory = await FeedCategory.create(body);
+		if (!Object.keys(createdCategory).length) {
+			throw new BadRequestError(`Unable to create category. Please try again later.`);
+		}
+		const logData = {
+			action: `createCategory - by ${role}`,
+			resourceName: 'FeedCategory',
+			user: createObjectId(userId),
+		}
+		await saveActivityLog(logData, method, path);
 
-	const logData = {
-		action: `createCategory - by ${role}`,
-		resourceName: 'FeedCategory',
-		user:createObjectId(userId),
+		logger.info(`${StatusCodes.OK} - Category created successfully - ${method} ${path}`);
 	}
-	await saveActivityLog(logData, method, path);
-
-	logger.info(`${StatusCodes.OK} - Category created successfully - ${method} ${path}`);
-	res.status(StatusCodes.OK).json({ message: 'Category created successfully.', data: {category}})
+	res.status(StatusCodes.OK).json({ message: 'Category created successfully.', data: {category: createdCategory}})
 }
 
 const disableCategory = async (req, res) => {
@@ -146,5 +148,5 @@ module.exports = {
 	disableCategory,
 	deleteCategory,
 	updateCategory,
-	getCategoryById,
+	getCategoryById
 }
