@@ -3,8 +3,9 @@
 const {StatusCodes} = require('http-status-codes');
 const {adaptRequest, logger, paginate, formatValidationError, createObjectId} = require('../lib/utils');
 const {FeedCategory, validateFeedCategoryDto} = require('../models/FeedCategory');
-const {NotFoundError, CustomAPIError, BadRequestError} = require('../lib/errors');
+const {NotFoundError, BadRequestError} = require('../lib/errors');
 const mongoose = require('mongoose');
+const {	io } = require('../socket');
 const {saveActivityLog} = require('../lib/dbActivityLog');
 
 const getCategories = async (req, res) => {
@@ -65,6 +66,8 @@ const createCategory = async (req, res) => {
 
 		logger.info(`${StatusCodes.OK} - Category created successfully - ${method} ${path}`);
 	}
+
+	io.to('feeds').emit('feedCategory:created', {category: createdCategory});
 	res.status(StatusCodes.OK).json({ message: 'Category created successfully.', data: {category: createdCategory}})
 }
 
@@ -92,6 +95,8 @@ const disableCategory = async (req, res) => {
 		user: createObjectId(userId),
 	}
 	await saveActivityLog(logData, method, path);
+
+	io.to('feeds').emit('feedCategory:disabled', {categoryId});
 	res.status(StatusCodes.OK).json({ message: 'Category disabled successfully.'});
 }
 
@@ -116,6 +121,8 @@ logger.info('Category is ' + categoryId);
 		user: createObjectId(userId),
 	}
 	await saveActivityLog(logData, method, path);
+
+	io.to('feeds').emit('feedCategory:deleted', {categoryId});
 	res.status(StatusCodes.OK).json({ message: 'Category deleted successfully.'});
 }
 
@@ -139,6 +146,8 @@ const updateCategory = async (req, res) => {
 		user: createObjectId(userId),
 	}
 	await saveActivityLog(logData, method, path);
+
+	io.to('feeds').emit('feedCategory:updated', {category: updatedCategory});
 	res.status(StatusCodes.OK).json({ message: 'Category updated successfully.', date: {category: updatedCategory}});
 }
 
