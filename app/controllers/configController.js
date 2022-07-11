@@ -115,5 +115,5 @@ module.exports = {
     updateConfig,
     disableConfig,
     deleteConfig,
-    getConfigByPath,
+    getConfigByPath
 }
