@@ -1,11 +1,13 @@
 'use strict';
 
 const {StatusCodes} = require('http-status-codes');
-const {adaptRequest, logger, formatValidationError, paginate, createObjectId} = require('../lib/utils');
+const {adaptRequest, logger, formatValidationError, paginate, createObjectId, fetchFeedPosts, redisGet, redisSet} = require('../lib/utils');
 const {validateFeedDto, validateFeedUpdateDto, Feed} = require('../models/Feed');
+const {transformRssFeed} = require('../lib/utils/transform_rssfeed');
 const {saveActivityLog} = require('../lib/dbActivityLog');
 const {BadRequestError, NotFoundError} = require('../lib/errors');
 const mongoose = require('mongoose');
+const {config} = require('../config/config');
 const {	io } = require('../socket');
 
 const getFeedsByCategory = async (req, res) => {
@@ -164,6 +166,36 @@ const getFeedById = async (req, res) => {
 	return res.status(StatusCodes.OK).json({message: 'Feed fetched successfully.', data: {feed}});
 }
 
+const getPostsByFeedId = async (req, res) => {
+	let {path, method, pathParams: {id: feedId}, queryParams: {pageSize = 10, pageNumber = 1}} = adaptRequest(req);
+	if (!feedId || !mongoose.isValidObjectId(feedId)) {
+		throw new BadRequestError('Invalid feed id provided.');
+	}
+	const rssFeedCacheKey = `${config.cache.rssFeedCacheKey}_${feedId}`;
+	let feed = await redisGet(rssFeedCacheKey);
+
+	if (!feed) {
+		let feedDetails = await Feed.findOne({_id: feedId}).select('_id, url');
+		if (!feedDetails) {
+			logger.info(`${StatusCodes.NOT_FOUND} - No feed found for get_posts_by_feed_id - ${method} ${path}`);
+			throw new NotFoundError(`No feed found with the provided id ${feedId}`);
+		}
+		// Retrieve RSS feed posts from external server
+		feed = await fetchFeedPosts(feedDetails.url);
+		if (!feed) {
+			logger.info(`${StatusCodes.NOT_FOUND} - No post found for this feed - ${method} ${path}`);
+			throw new NotFoundError(`No post found for this feed`);
+		}
+
+		await redisSet(rssFeedCacheKey, feed, 86400);
+	}
+
+	feed = (typeof feed === 'string') ? JSON.parse(feed) : feed;
+	const transformedFeed = await transformRssFeed(feed, {pageSize, pageNumber});
+	logger.info(`${StatusCodes.OK} - Feed posts fetched successfully - ${method} ${path}`);
+	return res.status(StatusCodes.OK).json({message: 'Feed posts fetched successfully.', data: {feeds: transformedFeed}});
+}
+
 const deleteFeed = async (req, res) => {
 	let {path, method, pathParams: {id: feedId}, user} = adaptRequest(req);
 	if (!feedId || !mongoose.isValidObjectId(feedId)) {
@@ -266,4 +298,5 @@ module.exports = {
 	toggleFeedsStatusByCategoryId,
 	getFeedsByCategoryId,
 	getFeedsByCategory,
+	getPostsByFeedId
 }
