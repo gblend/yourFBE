@@ -6,9 +6,10 @@ const {validateFeedDto, validateFeedUpdateDto, Feed} = require('../models/Feed')
 const {saveActivityLog} = require('../lib/dbActivityLog');
 const {BadRequestError, NotFoundError} = require('../lib/errors');
 const mongoose = require('mongoose');
+const {	io } = require('../socket');
 
 const getFeedsByCategory = async (req, res) => {
-	let {path, method, queryParams: {sort = 'category.name', pageSize = 10, pageNumber = 1}} = adaptRequest(req);
+	let {path, method, queryParams: {pageSize = 10, pageNumber = 1}} = adaptRequest(req);
 	const feedsByCategory = await Feed.aggregate([
 		{
 			$match: {
@@ -22,7 +23,7 @@ const getFeedsByCategory = async (req, res) => {
 			$unwind: '$category',
 		},
 		{
-			$sort: {[sort]: 1}
+			$sort: {category: -1}
 		},
 		{
 			$skip: (pageNumber - 1) * pageSize
@@ -99,15 +100,23 @@ const createFeed = async (req, res) => {
 		return res.status(StatusCodes.BAD_REQUEST).json({data: {errors: formatValidationError(error)}});
 	}
 
-	const feed = await Feed.create(body);
-	const logData = {
-		action: `createFeed - by ${user.role}`,
-		resourceName: 'Feed',
-		user: createObjectId(user.id),
+	const isFeedExist = await Feed.findOne({url: body.url, title: body.title, category: body.category});
+	let feed = {}
+	if (!isFeedExist) {
+		feed = await Feed.create(body);
+		if (!Object.keys(feed).length) {
+			throw new BadRequestError(`Unable to follow feed. Please try again later.`);
+		}
+		const logData = {
+			action: `createFeed - by ${user.role}`,
+			resourceName: 'Feed',
+			user: createObjectId(user.id),
+		}
+		await saveActivityLog(logData, method, path);
+		logger.info(`${StatusCodes.OK} - Feed created - ${method} ${path}`);
 	}
-	await saveActivityLog(logData, method, path);
 
-	logger.info(`${StatusCodes.OK} - Feed created - ${method} ${path}`);
+	io.to('feeds').emit('feed:created', {feed});
 	res.status(StatusCodes.OK).json({message: 'Feed created successfully.', data: {feed}});
 }
 
@@ -138,7 +147,7 @@ const getFeeds = async (req, res) => {
 const getFeedById = async (req, res) => {
 	let {path, method, fields: selectFields, pathParams: {id: feedId}} = adaptRequest(req);
 	if (!feedId || !mongoose.isValidObjectId(feedId)) {
-		throw new BadRequestError('Invalid feed id.')
+		throw new BadRequestError('Invalid feed id.');
 	}
 	let feed = await Feed.findOne({_id: feedId}).populate('category');
 	if (!feed) {
@@ -172,6 +181,8 @@ const deleteFeed = async (req, res) => {
 	}
 	await saveActivityLog(logData, method, path);
 	logger.info(`${StatusCodes.OK} - Feed deleted successfully - ${method} ${path}`);
+
+	io.to('feeds').emit('feed:deleted', {feedId});
 	return res.status(StatusCodes.OK).json({message: 'Feed deleted successfully.'});
 }
 
@@ -195,6 +206,8 @@ const disableFeedById = async (req, res) => {
 	}
 	await saveActivityLog(logData, method, path);
 	logger.info(`${StatusCodes.OK} - Feed disabled successfully - ${method} ${path}`);
+
+	io.to('feeds').emit('feed:disabled', {feedId});
 	return res.status(StatusCodes.OK).json({message: 'Feed disabled successfully.'});
 }
 
@@ -238,6 +251,8 @@ const updateFeed = async (req, res) => {
 	}
 	await saveActivityLog(logData, method, path);
 	logger.info(`${StatusCodes.OK} - Feed updated successfully - ${method} ${path}`);
+
+	io.to('feeds').emit('feed:updated', {feed});
 	return res.status(StatusCodes.OK).json({message: 'Feed updated successfully.', data: {feed}});
 }
 
