@@ -73,5 +73,5 @@ const adminDashboardStats = async (req, res) => {
 
 module.exports = {
 	userDashboardStats,
-	adminDashboardStats,
+	adminDashboardStats
 }

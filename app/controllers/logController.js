@@ -150,5 +150,5 @@ module.exports = {
 	searchLogs,
 	getActivityLog,
 	getActivityLogs,
-	getPollingLog,
+	getPollingLog
 }
