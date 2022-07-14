@@ -13,7 +13,8 @@ const {
 	redisRefreshCache,
 	redisGetBatchRecords,
 	redisSetBatchRecords,
-	paginate, createObjectId
+	paginate,
+	createObjectId
 } = require('../lib/utils');
 
 const savePostForLater = async (req, res) => {
@@ -28,8 +29,13 @@ const savePostForLater = async (req, res) => {
 			.json({data: {errors: formatValidationError(error)}});
 	}
 
-	const savedPost = await SavedForLater.create(body);
-	if (savedPost) {
+	const isSavedForLater = await SavedForLater.findOne(body);
+	let savedPost = {}
+	if (!isSavedForLater) {
+		savedPost = await SavedForLater.create(body);
+		if (!Object.keys(savedPost).length) {
+			throw new BadRequestError(`Unable to save post for later. Please try again later.`);
+		}
 		await redisSetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}_${savedPost._id}`, [savedPost]);
 		logger.info(`${StatusCodes.OK} - Post saved for later - ${method} ${path}`);
 	}
@@ -65,17 +71,17 @@ const getPostsSavedForLater = async (req, res) => {
 	let savedPosts = await redisGetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}`);
 	if (savedPosts && savedPosts.length > 0) {
 		logger.info(`${StatusCodes.OK} - Posts saved for later retrieved from cache - ${method} ${path}`);
-		let {pagination, result} = await paginate(savedPosts, {pageSize, pageNumber});
+		let {pagination:_pagination, result: _result} = await paginate(savedPosts, {pageSize, pageNumber});
 
 		return res.status(StatusCodes.OK).json({
 			data: {
-				savedForLater: result,
-				pagination,
+				savedForLater: _result,
+				pagination: _pagination,
 			}
 		});
 	}
 
-	savedPosts = SavedForLater.find({user: createObjectId(userId), status: {$nin: ['disabled']}});
+	savedPosts = SavedForLater.find({user: createObjectId(userId), status: {$nin: ['disabled']}}).populate('feed', '_id title url logoUrl', 'Feed');
 	const {pagination, result} = await paginate(savedPosts, {pageSize, pageNumber});
 	const savedPostsData = await result;
 
@@ -101,7 +107,7 @@ const getPostSavedForLater = async (req, res) => {
 
 	let post = await redisGetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}_${postId}`);
 	if (post.length < 1) {
-		post = await SavedForLater.findOne({_id: postId, status: {$nin: ['disabled']}});
+		post = await SavedForLater.findOne({_id: postId, status: {$nin: ['disabled']}}).populate('feed', '_id title url logoUrl', 'Feed');
 		if (!post) {
 			throw new NotFoundError('Post saved for later not found.');
 		}
