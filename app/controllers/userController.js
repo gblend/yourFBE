@@ -2,8 +2,10 @@
 
 const {User, validateUpdateUser, validateUpdatePassword} = require('../models/User');
 const {StatusCodes} = require('http-status-codes');
-const NotFoundError = require('../lib/errors/not-found');
+const NotFoundError = require('../lib/errors/not_found');
 const mongoose = require('mongoose');
+const {config} = require('../config/config');
+const {saveActivityLog} = require('../lib/dbActivityLog');
 const {BadRequestError, UnauthenticatedError, UnauthorizedError} = require('../lib/errors');
 const {
     checkPermissions,
@@ -12,10 +14,10 @@ const {
     formatValidationError,
     logger,
     redisGetBatchRecords,
-    redisSetBatchRecords, paginate, createObjectId,
+    redisSetBatchRecords,
+    paginate,
+    createObjectId
 } = require('../lib/utils');
-const {config} = require('../config/config');
-const {saveActivityLog} = require('../lib/dbActivityLog');
 
 const getAllUsers = async (req, res) => {
     const {method, path: _path, queryParams: {sort, pageSize, pageNumber}} = adaptRequest(req);
@@ -45,13 +47,15 @@ const getDisabledAccounts = async (req, res) => {
         logger.info(`${StatusCodes.NOT_FOUND} - No user found for get_disabled_accounts - ${method} ${_path}`);
         throw new NotFoundError('No user found');
     }
+
     logger.info(JSON.stringify(users));
     return res.status(StatusCodes.OK).json({message: 'Disabled accounts fetched successfully', data: {users}});
 }
 
 const getAllAdmins = async (req, res) => {
     const {queryParams: {sort}, path: _path, method} = adaptRequest(req);
-    let admins = await redisGetBatchRecords(config.cache.allUsersCacheKey);
+    let admins = await redisGetBatchRecords(config.cache.allAdminCacheKey);
+
     if (admins.length < 1) {
         admins = await User.find({role: 'admin'}).select(['-password', '-verificationToken']);
         if (admins.length < 1) {
@@ -68,10 +72,10 @@ const getAllAdmins = async (req, res) => {
     return res.status(StatusCodes.OK).json({message: 'Admins fetched successfully', data: {admins}});
 }
 
-const getSingleUser = async (req, res) => {
+const getUser = async (req, res) => {
     const {pathParams: {id: userId}, user: reqUser, method, path: _path} = adaptRequest(req);
     if (!mongoose.isValidObjectId(userId)) {
-        logger.info(`${StatusCodes.BAD_REQUEST} ${constants.auth.INVALID_CREDENTIALS('user id')} for get_single_user - ${method} ${_path}`);
+        logger.info(`${StatusCodes.BAD_REQUEST} ${constants.auth.INVALID_CREDENTIALS('user id')} for get_user - ${method} ${_path}`);
         throw new BadRequestError(constants.auth.INVALID_CREDENTIALS('user id'));
     }
     const user = await User.findOne({_id: userId, status: 'enabled'}).select(['-password', '-verificationToken']);
@@ -85,14 +89,21 @@ const getSingleUser = async (req, res) => {
 }
 
 const showCurrentUser = async (req, res) => {
-    const {user, path: _path, method} = adaptRequest(req);
-    if (!user) {
+    const {user: {id}, path: _path, method} = adaptRequest(req);
+    if (!id) {
         logger.info(`${StatusCodes.UNAUTHORIZED} - Unauthorized access for show_current_user - ${method} ${_path}`);
         throw new UnauthenticatedError(`Unauthorized access`);
     }
 
-    logger.info(`${StatusCodes.UNAUTHORIZED} - ${JSON.stringify(JSON.stringify(user))} - ${method} ${_path}`);
-    return res.status(StatusCodes.OK).json({message: 'User fetched successfully', data: {user}});
+    const userData = await User.findOne({_id: createObjectId(id), status: 'enabled'})
+        .populate({path: 'savedForLater', populate: {path: 'feed', select: ['_id', 'url', 'title', 'description', 'logoUrl', 'category']}})
+        .populate({path: 'followedFeeds', populate: {path: 'feed', select: ['_id', 'url', 'title', 'description', 'logoUrl', 'category']}})
+        .select(['-password', '-verificationToken']);
+    if (!userData) {
+        logger.info(JSON.stringify(`${StatusCodes.NOT_FOUND} - User with id ${id} does not exist for show_current_user - ${method} ${_path}`));
+        throw new NotFoundError(`User with id ${id} does not exist`);
+    }
+    return res.status(StatusCodes.OK).json({message: 'User fetched successfully', data: {user: userData}});
 }
 
 const updateUser = async (req, res) => {
@@ -210,7 +221,7 @@ const updatePassword = async (req, res) => {
 module.exports = {
     getAllUsers,
     getAllAdmins,
-    getSingleUser,
+    getUser,
     showCurrentUser,
     updateUser,
     updatePassword,
