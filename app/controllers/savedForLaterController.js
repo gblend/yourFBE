@@ -214,11 +214,81 @@ const userStarredFeedPostsStats = async (req, res) => {
 	});
 }
 
+const allStarredFeedPostsStats = async (req, res) => {
+	let {path, method, queryParams: {pageSize: _pageSize, pageNumber: _pageNumber}} = adaptRequest(req);
+	const {pageSize, pageNumber, offset} = adaptPaginateParams(_pageSize, _pageNumber);
+
+	const starredFeedPostsStats = await SavedForLater.aggregate([
+		{
+			$match: {status: {$nin: ['disabled']}}
+		},
+		{
+			$lookup: {from: 'feeds', localField: 'feed', foreignField: '_id', as: 'feed'}
+		},
+		{
+			$unwind: '$feed',
+		},
+		{
+			$group: {
+				_id: '$feed._id',
+				postsCount: {$sum: 1},
+				feed: {$first: '$$ROOT'},
+			}
+		},
+		{
+			$replaceRoot: {
+				newRoot: {
+					$mergeObjects: ['$feed', { postsCount: '$postsCount' }]
+				}
+			}
+		},
+		{
+			$sort: {
+				postsCount: -1
+			}
+		},
+		{
+			$facet: {
+				paginatedResults: [{$skip: offset}, {$limit: pageSize}],
+				feeds: [
+					{
+						$count: 'count'
+					}
+				]
+			}
+		},
+	]);
+
+	if (starredFeedPostsStats.length === 0) {
+		logger.info(`${StatusCodes.NOT_FOUND} - No starred feed posts found - ${method} ${path}`);
+		throw new NotFoundError('No starred feed posts found');
+	}
+	const {result, total, pages, next, previous} = mapPaginatedData(starredFeedPostsStats, _pageSize, _pageNumber);
+
+	logger.info(`${StatusCodes.OK} - All starred feed posts stats fetched successfully - ${method} ${path}`);
+	res.status(StatusCodes.OK).json({
+		message: 'All starred feed posts stats fetched successfully.',
+		data: {
+			starredFeedPostsStats: result,
+			pagination: {
+				pageSize,
+				pageNumber,
+				offset,
+				total,
+				pages,
+				previous,
+				next,
+			}
+		}
+	});
+}
+
 module.exports = {
 	savePostForLater,
 	getPostsSavedForLater,
 	getPostSavedForLater,
 	deletePostSavedForLater,
 	userStarredFeedPostsStats,
+	allStarredFeedPostsStats,
 	markPostSavedForLaterAsRead
 }
