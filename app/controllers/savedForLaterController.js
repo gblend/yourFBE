@@ -16,6 +16,7 @@ const {
 	paginate,
 	createObjectId
 } = require('../lib/utils');
+const {userNamespaceIo} = require('../socket');
 
 const savePostForLater = async (req, res) => {
 	const {body, method, path, user: {id: userId}} = adaptRequest(req);
@@ -40,6 +41,7 @@ const savePostForLater = async (req, res) => {
 		logger.info(`${StatusCodes.OK} - Post saved for later - ${method} ${path}`);
 	}
 
+	userNamespaceIo.to('savedForLater').volatile.emit('admin:post_starred', {post: savedPost, userId});
 	res.status(StatusCodes.OK).json({ message: 'Post successfully saved for later.', data: { savedForLater: savedPost } });
 }
 
@@ -62,6 +64,7 @@ const deletePostSavedForLater = async (req, res) => {
 		user: createObjectId(userId),
 	}
 	await saveActivityLog(logData, method, path);
+	userNamespaceIo.to('savedForLater').volatile.emit('admin:post_deleted', {post: deleted, userId});
 	res.status(StatusCodes.OK).json({ message: 'Post saved for later successfully removed.'});
 }
 
