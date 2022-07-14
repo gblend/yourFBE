@@ -13,6 +13,8 @@ const {
 	redisRefreshCache,
 	redisGetBatchRecords,
 	redisSetBatchRecords,
+	adaptPaginateParams,
+	mapPaginatedData,
 	paginate,
 	createObjectId
 } = require('../lib/utils');
@@ -143,10 +145,80 @@ const markPostSavedForLaterAsRead = async (req, res) => {
 	res.status(StatusCodes.NOT_FOUND).json({message: 'Post saved for later not found.'});
 }
 
+const userStarredFeedPostsStats = async (req, res) => {
+	const {user: {id: userId}, path, method, queryParams: {pageSize: _pageSize, pageNumber: _pageNumber}} = adaptRequest(req);
+	const {pageSize, pageNumber, offset} = adaptPaginateParams(_pageSize, _pageNumber);
+
+	const starredFeedPostsStat = await SavedForLater.aggregate([
+		{
+			$match: {status: {$nin: ['disabled']}, user: createObjectId(userId)}
+		},
+		{
+			$lookup: {from: 'feeds', localField: 'feed', foreignField: '_id', as: 'feed'}
+		},
+		{
+			$unwind: '$feed',
+		},
+		{
+			$group: {
+				_id: '$feed._id',
+				postsCount: {$sum: 1},
+				feed: {$first: '$$ROOT'},
+			}
+		},
+		{
+			$replaceRoot: {
+				newRoot: {
+					$mergeObjects: ['$feed', { postsCount: '$postsCount' }]
+				}
+			}
+		},
+		{
+			$sort: {
+				postsCount: -1
+			}
+		},
+		{
+			$facet: {
+				paginatedResults: [{$skip: offset}, {$limit: pageSize}],
+				feeds: [
+					{
+						$count: 'count'
+					}
+				]
+			}
+		},
+	]);
+
+	if (starredFeedPostsStat.length === 0) {
+		logger.info(`${StatusCodes.NOT_FOUND} - No user starred feed posts found - ${method} ${path}`);
+		throw new NotFoundError('No user starred feed posts found');
+	}
+	const {result, total, pages, next, previous} = mapPaginatedData(starredFeedPostsStat, _pageSize, _pageNumber);
+
+	logger.info(`${StatusCodes.OK} - User starred feed posts stats fetched successfully - ${method} ${path}`);
+	res.status(StatusCodes.OK).json({
+		message: 'User starred feed posts stats fetched successfully.',
+		data: {
+			starredFeedPostsStat: result,
+			pagination: {
+				pageSize,
+				pageNumber,
+				offset,
+				total,
+				pages,
+				previous,
+				next,
+			}
+		}
+	});
+}
+
 module.exports = {
 	savePostForLater,
 	getPostsSavedForLater,
 	getPostSavedForLater,
 	deletePostSavedForLater,
+	userStarredFeedPostsStats,
 	markPostSavedForLaterAsRead
 }
