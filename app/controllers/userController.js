@@ -5,6 +5,7 @@ const {StatusCodes} = require('http-status-codes');
 const NotFoundError = require('../lib/errors/not_found');
 const mongoose = require('mongoose');
 const {config} = require('../config/config');
+const {userNamespaceIo} = require('../socket');
 const {saveActivityLog} = require('../lib/dbActivityLog');
 const {BadRequestError, UnauthenticatedError, UnauthorizedError} = require('../lib/errors');
 const {
@@ -157,6 +158,8 @@ const disableUserAccount = async (req, res) => {
         user: createObjectId(user.id),
     }
     await saveActivityLog(logData, method, path);
+
+    userNamespaceIo.to('users').emit('user:disabled', {userId});
     return res.status(StatusCodes.OK).json({
         message: (user.role === 'admin') ?`${account.firstname} ${account.lastname}'s account disabled successfully` :
             'Account disabled successfully',
