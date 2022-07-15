@@ -5,6 +5,7 @@ const {adaptRequest, formatValidationError, logger, createObjectId,
 	} = require('../lib/utils');
 const {FollowedFeed, validateFollowedFeedDto, validateFollowFeedsInCategoryDto} = require('../models/FollowedFeed');
 const {BadRequestError, CustomAPIError} = require('../lib/errors');
+const {saveActivityLog} = require('../lib/dbActivityLog');
 const {Feed} = require('../models/Feed');
 
 const followFeed = async (req, res) => {
@@ -70,7 +71,33 @@ const followAllFeedsInCategory = async (req, res) => {
 	}
 }
 
+const unfollowAllFeedsInCategory = async (req, res) => {
+	const {body, method, path, user} = adaptRequest(req);
+	const _user = createObjectId(user.id);
+	const categoryId = createObjectId(body.category);
+
+	const {error} = validateFollowFeedsInCategoryDto({user: _user, category: categoryId});
+	if (error) {
+		return res.status(StatusCodes.BAD_REQUEST).json({data: {errors: formatValidationError(error)}});
+	}
+
+	const unfollowedFeeds = await FollowedFeed.deleteMany({user: _user, category: categoryId});
+	if (unfollowedFeeds.deletedCount === 0) {
+		throw new BadRequestError(`You don't follow any feed in this category.`);
+	}
+	logger.info(`${StatusCodes.OK} - All feeds in category: ${categoryId} unfollowed successfully - ${method} ${path}`);
+
+	const logData = {
+		action: `unfollowAllFeedsInCategory - by ${user.role}`,
+		resourceName: 'followedFeeds',
+		user: createObjectId(_user),
+	}
+	await saveActivityLog(logData, method, path);
+	res.status(StatusCodes.OK).json({message: 'All feeds in this category unfollowed successfully.'});
+}
+
 module.exports = {
 	followFeed,
-	followAllFeedsInCategory
+	followAllFeedsInCategory,
+	unfollowAllFeedsInCategory
 }
