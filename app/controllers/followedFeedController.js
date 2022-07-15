@@ -5,6 +5,7 @@ const {adaptRequest, formatValidationError, logger, createObjectId,
 	} = require('../lib/utils');
 const {FollowedFeed, validateFollowedFeedDto, validateFollowFeedsInCategoryDto} = require('../models/FollowedFeed');
 const {BadRequestError, CustomAPIError} = require('../lib/errors');
+const mongoose = require('mongoose');
 const {saveActivityLog} = require('../lib/dbActivityLog');
 const {Feed} = require('../models/Feed');
 
@@ -96,8 +97,24 @@ const unfollowAllFeedsInCategory = async (req, res) => {
 	res.status(StatusCodes.OK).json({message: 'All feeds in this category unfollowed successfully.'});
 }
 
+const unfollowFeed = async (req, res) => {
+	const {pathParams: {id: followedFeedId}, method, path} = adaptRequest(req);
+	if (!followedFeedId || !mongoose.isValidObjectId(followedFeedId)) {
+		throw new BadRequestError(`Invalid followed feed id: ${followedFeedId}`);
+	}
+
+	const deleted = await FollowedFeed.findOneAndDelete({_id: createObjectId(followedFeedId)});
+	if (!deleted) {
+		throw new BadRequestError(`Followed feed ${followedFeedId} does not exist.`);
+	}
+
+	logger.info(`${StatusCodes.OK} - Feed unfollowed successfully - ${method} ${path}`);
+	res.status(StatusCodes.OK).json({message: 'Feed unfollowed successfully.'});
+}
+
 module.exports = {
 	followFeed,
+	unfollowFeed,
 	followAllFeedsInCategory,
 	unfollowAllFeedsInCategory
 }
