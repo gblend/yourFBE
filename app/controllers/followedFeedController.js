@@ -3,8 +3,9 @@
 const {StatusCodes} = require('http-status-codes');
 const {adaptRequest, formatValidationError, logger, createObjectId,
 	} = require('../lib/utils');
-const {FollowedFeed, validateFollowedFeedDto} = require('../models/FollowedFeed');
-const {BadRequestError} = require('../lib/errors');
+const {FollowedFeed, validateFollowedFeedDto, validateFollowFeedsInCategoryDto} = require('../models/FollowedFeed');
+const {BadRequestError, CustomAPIError} = require('../lib/errors');
+const {Feed} = require('../models/Feed');
 
 const followFeed = async (req, res) => {
 	const {body, method, path, user} = adaptRequest(req);
@@ -29,6 +30,47 @@ const followFeed = async (req, res) => {
 	res.status(StatusCodes.CREATED).json({message: 'Feed followed successfully.', data: {followedFeed}});
 }
 
+const followAllFeedsInCategory = async (req, res) => {
+	const {body, method, path, user} = adaptRequest(req);
+	const _user = createObjectId(user.id);
+	const categoryId = createObjectId(body.category);
+
+	const {error} = validateFollowFeedsInCategoryDto({user: _user, category: categoryId});
+	if (error) {
+		return res.status(StatusCodes.BAD_REQUEST).json({data: {errors: formatValidationError(error)}});
+	}
+
+	const categoryFeedsData = await Feed.find({category: categoryId, status: 'enabled'}, {'_id': 1}).populate('category', 'name')
+		.then( (feed) => feed);
+	if (categoryFeedsData.length < 1) {
+		throw new BadRequestError(`No feed found for selected category`);
+	}
+
+	const categoryName = categoryFeedsData[0].category.name;
+	const _categoryFeedsData = categoryFeedsData.map((feed) => {
+		return {
+			user: _user,
+			feed: feed._id,
+		}
+	});
+
+	try {
+		const followCategoryFeeds = await FollowedFeed.insertMany(_categoryFeedsData, {ordered: false});
+		if (!followCategoryFeeds) {
+			return res.status(StatusCodes.BAD_REQUEST).json({message: `Unable to follow ${categoryName} category feeds`})
+		}
+
+		logger.info(`${StatusCodes.OK} - Successfully followed ${categoryName} category feeds  - ${method} ${path}`);
+		res.status(StatusCodes.OK).json({message: `Successfully followed ${categoryName} category feeds`})
+	} catch (err) {
+		if (err.code && err.code === 11000 && err.result && err.result.result.ok) {
+			return res.status(StatusCodes.OK).json({message: `Successfully followed ${categoryName} category feeds`})
+		}
+		throw new CustomAPIError(err.message)
+	}
+}
+
 module.exports = {
-	followFeed
+	followFeed,
+	followAllFeedsInCategory
 }
