@@ -112,9 +112,28 @@ const unfollowFeed = async (req, res) => {
 	res.status(StatusCodes.OK).json({message: 'Feed unfollowed successfully.'});
 }
 
+const unfollowAllFeeds = async (req, res) => {
+	const {user: {id: userId, role}, method, path} = adaptRequest(req);
+
+	const deleted = await FollowedFeed.deleteMany({user: userId});
+	if (deleted.deletedCount === 0) {
+		throw new BadRequestError('No followed feeds found to unfollow.');
+	}
+	logger.info(`${StatusCodes.OK} - All feeds unfollowed successfully - ${method} ${path}`);
+
+	const logData = {
+		action: `unfollowAllFeeds - by ${role}`,
+		resourceName: 'followedFeeds',
+		user: createObjectId(userId),
+	}
+	await saveActivityLog(logData, method, path);
+	res.status(StatusCodes.OK).json({message: 'All feeds unfollowed successfully.'});
+}
+
 module.exports = {
 	followFeed,
 	unfollowFeed,
+	unfollowAllFeeds,
 	followAllFeedsInCategory,
 	unfollowAllFeedsInCategory
 }
