@@ -1,7 +1,7 @@
 'use strict';
 
 const {StatusCodes} = require('http-status-codes');
-const {adaptRequest, formatValidationError, logger, createObjectId,
+const {adaptRequest, formatValidationError, logger, paginate, createObjectId,
 	} = require('../lib/utils');
 const {FollowedFeed, validateFollowedFeedDto, validateFollowFeedsInCategoryDto} = require('../models/FollowedFeed');
 const {BadRequestError, NotFoundError, CustomAPIError} = require('../lib/errors');
@@ -143,11 +143,39 @@ const latestPostsByFollowedFeeds = async (req, res) => {
 	res.status(StatusCodes.OK).json({message: 'Latest posts from followed feeds fetched successfully.', data: {}})
 }
 
+const getFollowedFeeds = async (req, res) => {
+	let {path, method, queryParams: {fields, sort, pageSize, pageNumber}, user} = adaptRequest(req);
+	let followedFeeds = FollowedFeed.find({user: createObjectId(user.id)}).populate('feed', ['title', 'description', 'url', 'logoUrl'], 'Feed', {status: 'enabled'});
+
+	if (sort) {
+		const sortParams = sort.split(',').join(' ');
+		followedFeeds.sort(sortParams);
+	}
+	if (fields) {
+		const requiredFields = fields.split(',').join(' ');
+		followedFeeds.select(requiredFields);
+	} else followedFeeds.select('-user -__v');
+
+	let {pagination, result} = await paginate(followedFeeds, {pageSize, pageNumber});
+	const followedFeedsResult = await result;
+
+	if (followedFeedsResult.length < 1) {
+		logger.info(`${StatusCodes.NOT_FOUND} - No followed feeds found for get_followed_feeds - ${method} ${path}`);
+		throw new NotFoundError('No followed feed found.');
+	}
+	logger.info(`${StatusCodes.OK} - Followed feeds fetched successfully - ${method} ${path}`);
+	return res.status(StatusCodes.OK).json({
+		message: 'Followed feeds fetched successfully.',
+		data: {feeds: followedFeedsResult, pagination}
+	});
+}
+
 module.exports = {
 	followFeed,
 	unfollowFeed,
 	unfollowAllFeeds,
 	latestPostsByFollowedFeeds,
+	getFollowedFeeds,
 	followAllFeedsInCategory,
 	unfollowAllFeedsInCategory
 }
