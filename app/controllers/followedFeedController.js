@@ -4,7 +4,7 @@ const {StatusCodes} = require('http-status-codes');
 const {adaptRequest, formatValidationError, logger, createObjectId,
 	} = require('../lib/utils');
 const {FollowedFeed, validateFollowedFeedDto, validateFollowFeedsInCategoryDto} = require('../models/FollowedFeed');
-const {BadRequestError, CustomAPIError} = require('../lib/errors');
+const {BadRequestError, NotFoundError, CustomAPIError} = require('../lib/errors');
 const mongoose = require('mongoose');
 const {saveActivityLog} = require('../lib/dbActivityLog');
 const {Feed} = require('../models/Feed');
@@ -130,10 +130,24 @@ const unfollowAllFeeds = async (req, res) => {
 	res.status(StatusCodes.OK).json({message: 'All feeds unfollowed successfully.'});
 }
 
+const latestPostsByFollowedFeeds = async (req, res) => {
+	const {user: {id: userId}, path, method} = adaptRequest(req);
+	let followFeeds = await FollowedFeed.find({user: userId}).select('feed');
+
+	if (!followFeeds.length > 0) {
+		logger.info(`No followed feeds found user id ${userId}`);
+		throw new NotFoundError(`No followed feeds found. Please follow available feeds.`);
+	}
+	// @TODO retrieve latest posts from redis ----> feed_post_index as key
+	logger.info(`${StatusCodes.OK} - Latest posts from followed feeds fetched successfully. - ${method} ${path}`);
+	res.status(StatusCodes.OK).json({message: 'Latest posts from followed feeds fetched successfully.', data: {}})
+}
+
 module.exports = {
 	followFeed,
 	unfollowFeed,
 	unfollowAllFeeds,
+	latestPostsByFollowedFeeds,
 	followAllFeedsInCategory,
 	unfollowAllFeedsInCategory
 }
