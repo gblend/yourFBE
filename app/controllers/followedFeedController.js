@@ -2,7 +2,7 @@
 
 const {StatusCodes} = require('http-status-codes');
 const {adaptRequest, formatValidationError, logger, paginate, createObjectId,
-	} = require('../lib/utils');
+	adaptPaginateParams, mapPaginatedData} = require('../lib/utils');
 const {FollowedFeed, validateFollowedFeedDto, validateFollowFeedsInCategoryDto} = require('../models/FollowedFeed');
 const {BadRequestError, NotFoundError, CustomAPIError} = require('../lib/errors');
 const mongoose = require('mongoose');
@@ -170,12 +170,79 @@ const getFollowedFeeds = async (req, res) => {
 	});
 }
 
+const feedsFollowersStats = async (req, res) => {
+	let {path, method, queryParams: {pageSize: _pageSize, pageNumber: _pageNumber}} = adaptRequest(req);
+	const {pageSize, pageNumber, offset} = adaptPaginateParams(_pageSize, _pageNumber);
+
+	const feedsFollowersResult = await FollowedFeed.aggregate([
+		{
+			$lookup: {from: 'feeds', localField: 'feed', foreignField: '_id', as: 'feed'},
+		},
+		{
+			$unwind: '$feed',
+		},
+		{
+			$group: {
+				_id: '$feed._id',
+				followersCount: {$sum: 1},
+				feed: {$first: '$$ROOT'},
+			}
+		},
+		{
+			$replaceRoot: {
+				newRoot: {
+					$mergeObjects: ['$feed', {followersCount: '$followersCount'}]
+				}
+			}
+		},
+		{
+			$sort: {
+				followersCount: -1
+			}
+		},
+		{
+			$facet: {
+				paginatedResults: [{$skip: offset}, {$limit: pageSize}],
+				feeds: [
+					{
+						$count: 'count'
+					}
+				]
+			}
+		},
+	]);
+
+	if (feedsFollowersResult.length < 1) {
+		logger.info(`${StatusCodes.NOT_FOUND} - No feeds followers found - ${method} ${path}`);
+		throw new NotFoundError('No feeds followers found');
+	}
+	const {result, total, pages, next, previous} = mapPaginatedData(feedsFollowersResult, _pageSize, _pageNumber);
+
+	logger.info(`${StatusCodes.OK} - All feeds followers stats fetched successfully - ${method} ${path}`);
+	res.status(StatusCodes.OK).json({
+		message: 'All feeds followers stats fetched successfully.',
+		data: {
+			feedsFollowersStats: result,
+			pagination: {
+				pageSize,
+				pageNumber,
+				offset,
+				total,
+				pages,
+				previous,
+				next,
+			}
+		}
+	});
+}
+
 module.exports = {
 	followFeed,
 	unfollowFeed,
 	unfollowAllFeeds,
 	latestPostsByFollowedFeeds,
 	getFollowedFeeds,
+	feedsFollowersStats,
 	followAllFeedsInCategory,
 	unfollowAllFeedsInCategory
 }
