@@ -1,6 +1,6 @@
 'use strict';
 
-const {sendEmail} = require('./nodemailerConfig');
+const {sendEmail} = require('./nodemailer_config');
 const {logger} = require('../logger');
 const {config} = require('../../../config/config');
 require('dotenv').config();
