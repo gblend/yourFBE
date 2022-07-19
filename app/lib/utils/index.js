@@ -17,6 +17,8 @@ const {generateToken} = require('./verification_token');
 const {redisRefreshCache, redisSetBatchRecords, redisGetBatchRecords, redisSet, redisGet, redisDelete, redisFlushAll} = require('./redis');
 const {appRoutes} = require('./registered_routes');
 const {createObjectId} = require('./create_Objectid_type');
+const {mapPaginatedData} = require('./stats/map_paginated_data');
+const {adaptPaginateParams} = require('./stats/adapt_paginate_params');
 
 module.exports = {
 	createJWT,
@@ -44,6 +46,8 @@ module.exports = {
 	redisGetBatchRecords,
 	appRoutes,
 	createObjectId,
+	mapPaginatedData,
+	adaptPaginateParams,
 	redisSet,
 	redisGet,
 	redisDelete,
