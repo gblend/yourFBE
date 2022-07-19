@@ -2,7 +2,7 @@
 
 const jwt = require('jsonwebtoken');
 const {config} = require('../../config/config');
-const {adaptRequest} = require('./adaptRequest');
+const {adaptRequest} = require('./adapt_request');
 
 const createJWT = (payload) => {
     return jwt.sign(payload, config.jwt.secret);
@@ -27,7 +27,7 @@ const attachCookiesToResponse = ({accessTokenJWT, refreshTokenJWT, res}) => {
         });
 }
 
-const decodeCookies = async (req, _res, next) => {
+const decodeCookies = async (req, _, next) => {
     const {signedCookies, cookies} = adaptRequest(req);
     const {token} = signedCookies || cookies;
     req.user = await jwt.decode(token);

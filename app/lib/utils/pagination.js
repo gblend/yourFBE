@@ -16,7 +16,7 @@ const paginate = async (resultData, params = {}) => {
     } else {
         pagination.total = resultData.length || 0;
         pagination.pages = Math.ceil(pagination.total/pagination.pageSize);
-        result = resultData.slice(pagination.offset, pagination.pageSize);
+        result = resultData.slice(pagination.offset, pagination.pageSize + pagination.offset);
     }
 
     pagination.current =  pagination.pageNumber;
