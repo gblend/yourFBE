@@ -19,6 +19,7 @@ const {appRoutes} = require('./registered_routes');
 const {createObjectId} = require('./create_Objectid_type');
 const {mapPaginatedData} = require('./stats/map_paginated_data');
 const {adaptPaginateParams} = require('./stats/adapt_paginate_params');
+const {fetchFeedPosts} = require('./fetch_feed_posts');
 
 module.exports = {
 	createJWT,
@@ -47,6 +48,7 @@ module.exports = {
 	appRoutes,
 	createObjectId,
 	mapPaginatedData,
+	fetchFeedPosts,
 	adaptPaginateParams,
 	redisSet,
 	redisGet,
