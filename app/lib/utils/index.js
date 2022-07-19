@@ -1,22 +1,22 @@
 'use strict';
 
 const {createJWT, isTokenValid, decodeCookies, attachCookiesToResponse} = require('./jwt');
-const {createTokenUser} = require('./createTokenUser');
-const {checkPermissions} = require('./checkPermissions');
+const {createTokenUser} = require('./create_token_user');
+const {checkPermissions} = require('./check_permission');
 const {sendVerificationEmail, sendResetPasswordEmail} = require('./email/sendEmail');
-const {formatValidationError} = require('./formatJoiValidationError');
+const {formatValidationError} = require('./format_joi_validation_error');
 const {constants} = require('./constant');
-const {adaptRequest} = require('./adaptRequest');
-const createHash = require('./createHash');
-const {capitalizeFirstCharacter} = require('./capitalizeFirstCharacter');
+const {adaptRequest} = require('./adapt_request');
+const {createHash} = require('./cryptography');
+const {capitalizeFirstCharacter} = require('./capitalize_first_character');
 const {logger} = require('./logger');
-const {appStatus} = require('./appStatus');
+const {appStatus} = require('./app_status');
 const {paginate} = require('./pagination');
 const StatusCodes = () => require('http-status-codes').StatusCodes;
-const {generateToken} = require('./verificationToken');
-const {redisRefreshCache, redisSetBatchRecords, redisGetBatchRecords} = require('./redis');
-const {appRoutes} = require('./registeredRoutes');
-const {createObjectId} = require('./createObjectIdType');
+const {generateToken} = require('./verification_token');
+const {redisRefreshCache, redisSetBatchRecords, redisGetBatchRecords, redisSet, redisGet, redisDelete, redisFlushAll} = require('./redis');
+const {appRoutes} = require('./registered_routes');
+const {createObjectId} = require('./create_Objectid_type');
 
 module.exports = {
 	createJWT,
@@ -42,4 +42,8 @@ module.exports = {
 	redisGetBatchRecords,
 	appRoutes,
 	createObjectId,
+	redisSet,
+	redisGet,
+	redisDelete,
+	redisFlushAll
 }
