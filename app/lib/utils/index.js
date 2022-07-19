@@ -7,7 +7,7 @@ const {sendVerificationEmail, sendResetPasswordEmail} = require('./email/sendEma
 const {formatValidationError} = require('./format_joi_validation_error');
 const {constants} = require('./constant');
 const {adaptRequest} = require('./adapt_request');
-const {createHash} = require('./cryptography');
+const {createHash, decrypt, encrypt} = require('./cryptography');
 const {capitalizeFirstCharacter} = require('./capitalize_first_character');
 const {logger} = require('./logger');
 const {appStatus} = require('./app_status');
@@ -28,6 +28,8 @@ module.exports = {
 	sendVerificationEmail,
 	sendResetPasswordEmail,
 	createHash,
+	encrypt,
+	decrypt,
 	formatValidationError,
 	adaptRequest,
 	constants,
