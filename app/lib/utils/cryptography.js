@@ -18,7 +18,13 @@ const encrypt = (value) => {
 	return  cipher.update(value, 'utf-8', 'hex') + cipher.final('hex');
 }
 
+const decrypt = (value) => {
+	const decipher = crypto.createDecipheriv(algorithm, securityKey, initVector);
+	return  decipher.update(value, 'hex', 'utf-8') + decipher.final('utf-8');
+}
+
 module.exports = {
 	createHash,
 	encrypt,
+	decrypt
 }
