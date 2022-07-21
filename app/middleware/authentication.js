@@ -23,7 +23,7 @@ const authenticateUser = async (req, res, next) => {
         });
         if (!isTokenExist || !isTokenExist?.isValid) {
             logger.info(`${StatusCodes.BAD_REQUEST} - Access token invalid - ${method} ${path}`)
-            throw new CustomErr.UnauthenticatedError(constants.auth.AUTHENTICATION_INVALID);
+            res.status(StatusCodes.BAD_REQUEST).json({ message: constants.auth.AUTHENTICATION_INVALID})
         }
 
         const accessTokenJWT = createJWT(payload.user);
@@ -37,7 +37,7 @@ const authenticateUser = async (req, res, next) => {
 }
 
 const authorizePermissions = (...roles) => {
-    return (req, _res, next) => {
+    return (req, _, next) => {
         const {user, method, path} = adaptRequest(req);
         if (!roles.includes(user.role)) {
             logger.info(`${StatusCodes.UNAUTHORIZED} - Unauthorized access error - ${method} ${path}`)
