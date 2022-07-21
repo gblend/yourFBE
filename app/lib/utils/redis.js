@@ -2,6 +2,7 @@
 
 const Redis = require('ioredis');
 const {config} = require('../../config/config');
+const {logger} = require('../utils/logger');
 
 let redis = '';
 
@@ -21,11 +22,14 @@ const initRedisCache = async () => {
  *
  * @param {string} key the key to set its corresponding value
  * @param {*} value the value to set for the specified key
+ * @param {number} ttl the time to live (TTL) in seconds set for the specified key
  * @returns {Promise<void>}
  */
-const redisSet = async (key, value) => {
+const redisSet = async (key, value, ttl=0) => {
     redis = await initRedisCache();
-    redis.set(key, JSON.stringify(value));
+    if (ttl) {
+        return redis.set(key, JSON.stringify(value), 'EX', ttl);
+    } else redis.set(key, JSON.stringify(value));
 }
 
 /**
@@ -37,7 +41,7 @@ const redisGet = async (key) => {
     redis = await initRedisCache();
     return redis.get(key, (err, result) => {
         if (err) {
-            console.log(err);
+            logger.info(err.message);
         }
         return JSON.parse(result);
     });
@@ -81,15 +85,18 @@ const redisFlushAll = async () => {
  *  Add records to cache in batch
  * @returns {*}
  * @param key the key to set the batch records
+ * @param {number} ttl the time to live (TTL) in seconds set for the specified key
  * @param records
  */
-const redisSetBatchRecords = async (key, records) => {
+const redisSetBatchRecords = async (key, records, ttl) => {
     if (Array.isArray(records) && records.length > 0) {
         redis = await initRedisCache();
         const pipeline = redis.pipeline();
         records.map((record, index) => {
             key = `${key}_${index}`;
-            pipeline.set(key, JSON.stringify(record));
+            if (ttl) {
+                pipeline.set(key, JSON.stringify(record),  'EX', ttl);
+            } else pipeline.set(key, JSON.stringify(record));
         });
         return pipeline.exec();
     }
