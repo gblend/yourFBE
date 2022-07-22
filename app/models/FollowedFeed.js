@@ -15,11 +15,10 @@ const FollowedFeedSchema = new Schema({
         ref: 'User',
         required: true,
     },
-}, {timestamps: true});
+}, {timestamps: true, toJSON: {virtuals: true}, toObject: {virtuals: true}});
 FollowedFeedSchema.index({user: 1, feed: 1}, {unique: true});
 
-const FollowedFeed = mongoose.model('FollowedFeed', FollowedFeedSchema);
-FollowedFeedSchema.virtual('feedFollower', {
+FollowedFeedSchema.virtual('feedFollowers', {
     ref: 'User',
     localField: 'user',
     foreignField: '_id',
@@ -32,6 +31,8 @@ FollowedFeedSchema.virtual('feedFollowed', {
     foreignField: '_id',
     justOne: false
 });
+
+const FollowedFeed = mongoose.model('FollowedFeed', FollowedFeedSchema);
 
 const validateFollowedFeedDto = (followedFeedData) => {
     const followedFeed = joi.object({
