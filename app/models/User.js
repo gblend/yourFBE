@@ -39,6 +39,14 @@ const UserSchema = new Schema({
 		},
 		default: 'user',
 	},
+	gender: {
+		type: String,
+		enum: {
+			values: ['male', 'female', 'NA'],
+			messages: '{VALUE} is not acceptable.'
+		},
+		default: 'NA',
+	},
 	status: {
 		type: String,
 		enum: {
@@ -57,7 +65,7 @@ const UserSchema = new Schema({
 	},
 	avatar: {
 		type: String,
-		default: '/uploads/default-avatar.jpeg',
+		default: '/uploads/default_avatar.jpeg',
 		trim: true,
 	},
 	verificationToken: {
@@ -89,7 +97,7 @@ UserSchema.virtual('savedForLater', {
 	justOne: false
 });
 
-UserSchema.virtual('followedFeed', {
+UserSchema.virtual('followedFeeds', {
 	ref: 'FollowedFeed',
 	localField: '_id',
 	foreignField: 'user',
@@ -100,6 +108,7 @@ UserSchema.pre('remove', async function (next) {
 	await this.model('SavedForLater').deleteMany({user: this._id});
 	next();
 });
+
 UserSchema.pre('remove', async function (next) {
 	await this.model('FollowedFeed').deleteMany({user: this._id});
 	next();
@@ -112,7 +121,6 @@ const validateUserDto = (userSchema) => {
 		email: joi.string().email().required(),
 		password: joi.string().min(8).required(),
 		passwordConfirmation: joi.string().valid(joi.ref('password')).required(),
-
 	})
 
 	return user.validate(userSchema);
@@ -147,7 +155,7 @@ const validateLogin = (credentials) => {
 	return login.validate(credentials);
 }
 
-UserSchema.pre('save', async function (_req, _res, next) {
+UserSchema.pre('save', async function (_, __, next) {
 	if (this.isModified('firstname') || this.isModified('lastname')) {
 		capitalizeFirstCharacter(this.firstname, this.lastname);
 	}
