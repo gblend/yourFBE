@@ -52,7 +52,7 @@ const FeedSchema = new Schema({
     },
 }, {timestamps: true});
 
-FeedSchema.index({url: 1}, {unique: true});
+FeedSchema.index({url: 1, title: 'text', description: 'text'}, {unique: true});
 const Feed = mongoose.model('Feed', FeedSchema);
 
 const validateFeedDto = (feedData) => {
