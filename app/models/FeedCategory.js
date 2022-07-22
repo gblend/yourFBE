@@ -25,18 +25,18 @@ const FeedCategorySchema = new Schema({
         },
         default: 'enabled',
     },
-}, {timestamps: true});
-FeedCategorySchema.index({name: 1}, {unique: true});
+}, {timestamps: true, toJSON: {virtuals: true}, toObject: {virtuals: true}});
+FeedCategorySchema.index({name: 'text', description: 'text'}, {unique: true});
 
-const FeedCategory = mongoose.model('FeedCategory', FeedCategorySchema);
-
-FeedCategorySchema.virtual('categoryFeeds', {
+FeedCategorySchema.virtual('feedsCount', {
     ref: 'Feed',
     localField: '_id',
     foreignField: 'category',
     justOne: false,
     count: true,
 });
+
+const FeedCategory = mongoose.model('FeedCategory', FeedCategorySchema);
 
 const validateFeedCategoryDto = (feedCategoryData) => {
     const feedCategory = joi.object({
@@ -45,6 +45,7 @@ const validateFeedCategoryDto = (feedCategoryData) => {
     });
     return feedCategory.validate(feedCategoryData);
 }
+
 module.exports = {
     FeedCategory,
     validateFeedCategoryDto

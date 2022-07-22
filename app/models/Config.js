@@ -42,6 +42,7 @@ const validateConfigDataDto = (configDataPayload) => {
     });
     return configData.validate(configDataPayload);
 }
+
 module.exports = {
     ConfigData,
     validateConfigDataDto
