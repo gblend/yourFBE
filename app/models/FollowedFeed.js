@@ -43,7 +43,17 @@ const validateFollowedFeedDto = (followedFeedData) => {
     return followedFeed.validate(followedFeedData);
 }
 
+const validateFollowFeedsInCategoryDto = (followCategoryFeedsData) => {
+    const followCategoryFeeds = joi.object({
+        category: joi.object().required(),
+        user: joi.object().required(),
+    });
+
+    return followCategoryFeeds.validate(followCategoryFeedsData);
+}
+
 module.exports = {
     FollowedFeed,
+    validateFollowFeedsInCategoryDto,
     validateFollowedFeedDto
 }
