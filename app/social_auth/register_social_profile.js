@@ -120,7 +120,6 @@ const transformFacebookData = (profile) => {
 }
 
 const transformProfileData = (profile) => {
-	console.log('default')
 	const {
 		provider: socialProvider,
 		id: socialProviderID,
