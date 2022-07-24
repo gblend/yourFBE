@@ -18,6 +18,7 @@ const notFoundMiddleware = require('./app/middleware/not_found');
 const resInterceptor = require('./app/middleware/res_interceptor');
 const authRouter = require('./app/routes/auth_routes');
 const userRouter = require('./app/routes/user_routes');
+const searchRouter = require('./app/routes/search_route');
 const feedRouter = require('./app/routes/feed_routes');
 const statRouter = require('./app/routes/stat_routes');
 const logRouter = require('./app/routes/log_routes');
@@ -70,4 +71,5 @@ module.exports = {
 	StatusCodes,
 	resInterceptor,
 	appRoutes,
+	searchRouter,
 }
