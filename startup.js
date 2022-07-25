@@ -16,6 +16,7 @@ const feedCategoryRouter = require('./app/routes/feed_category_routes');
 const followedFeedRouter = require('./app/routes/followed_feed_routes');
 const savedForLaterRouter = require('./app/routes/saved_for_later_routes');
 const notFoundMiddleware = require('./app/middleware/not_found');
+const {handle} = require('./app/middleware/handle_event');
 const resInterceptor = require('./app/middleware/res_interceptor');
 const authRouter = require('./app/routes/auth_routes');
 const userRouter = require('./app/routes/user_routes');
@@ -72,4 +73,5 @@ module.exports = {
 	appRoutes,
 	searchRouter,
 	httpServer,
+	handle,
 }
