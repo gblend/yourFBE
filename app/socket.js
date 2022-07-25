@@ -59,6 +59,18 @@ userNamespaceIo.use(async (client, next) => {
 	next();
 });
 
+userNamespaceIo.on('connection', (authClient) => {
+	logger.info(`Authenticated client: ${authClient.user.id} connected.`);
+
+	authClient.join('feeds');
+	authClient.join('categories');
+	authClient.join('users');
+
+	authClient.on('disconnect', (client) => {
+		logger.info(`Authenticated client ${client.id} disconnected.`);
+	});
+});
+
 
 module.exports = {
 	httpServer,
