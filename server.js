@@ -31,7 +31,13 @@ const {
 	appStatus,
 	resInterceptor,
 	appRoutes,
+	searchRouter,
+	passport,
+	handle,
+	httpServer,
+	session
 } = require('./startup');
+const appEnv = config.app.env;
 
 app.use(helmet());
 app.use(xss());
@@ -45,9 +51,17 @@ app.use(decodeCookies);
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'app/public')));
 app.use(fileUpload({useTempFiles: true}));
-(config.app.env === 'development') ? app.use(morgan('dev')) : '';
+(appEnv === 'development') ? app.use(morgan('dev')) : '';
 
-app.get('/api/v1/status', (_req, res) => {
+app.use(session({
+	secret: config.session.secret,
+	resave: false,
+	saveUninitialized: true
+}));
+app.use(passport.initialize({}));
+app.use(passport.session({}));
+
+app.get('/api/v1/status', (_, res) => {
 	return res.json({
 		'status': 'success',
 		message: `${config.app.name} backend service is running.`,
@@ -57,7 +71,7 @@ app.get('/api/v1/status', (_req, res) => {
 		},
 	});
 });
-app.get('/api/v1/doc', (_req, res) => {
+app.get('/api/v1/doc', (_, res) => {
 	return res.sendFile(path.join(__dirname, 'app/public/index.html'));
 });
 
@@ -67,6 +81,7 @@ app.use('/api/v1/stats', statRouter);
 app.use('/api/v1/feeds', feedRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/config', configRouter);
 app.use('/api/v1/feed-category', feedCategoryRouter);
 app.use('/api/v1/followed-feeds', followedFeedRouter);
@@ -74,37 +89,20 @@ app.use('/api/v1/saved-for-later', savedForLaterRouter);
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
-process.on('uncaughtException', (err) => {
-	logger.error(`Uncaught Exception - ${err.stack}`);
-	process.exit(1);
-});
+process
+	.on('SIGTERM', handle('SIGTERM'))
+	.on('unhandledRejection', handle('unhandledRejection'))
+	.on('uncaughtException', handle('uncaughtException'));
 
-process.on('unhandledRejection', err => {
-	logger.warn(`Unhandled Rejection - ${err.message}`);
-});
-
-let conn, server = null;
-const start = async () => {
-	conn = await connectDB(config.database.uri);
-	server = app.listen(config.app.port, () => {
-		logger.info(`${config.app.name} server running: ${config.app.baseUrlDev}:${config.app.port}`);
-	});
-	return {conn, server};
-}
-
-start().then(data => {
-	conn = data.conn;
-	server = data.server;
-});
-
-process.on('SIGTERM', () => {
-	logger.error('SIGTERM signal received - closing http server.');
-	server.close(() => {
-		logger.info(`${config.app.name} Http server closed.`);
-		conn.connection.close(false, () => {
-			process.exit(0);
+const start = () => {
+	connectDB(config.database.uri).then(() => {
+		if (appEnv === 'test') return;
+		app.server = httpServer.listen(config.app.port, () => {
+			logger.info(`${config.app.name} server running: ${config.app.baseUrl}:${app.server.address().port}`);
 		});
 	});
-});
+}
+
+start();
 
 module.exports = app;
