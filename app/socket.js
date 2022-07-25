@@ -2,6 +2,8 @@ const {Server} = require('socket.io');
 const {config} = require('./config/config');
 const {logger} = require('./lib/utils');
 const {socketErrorText} = require('./lib/utils/socketio_errors');
+const {BadRequestError} = require('./lib/errors');
+const jwt = require('jsonwebtoken');
 const express = require('express');
 const app = express();
 const httpServer = require('http').createServer(app);
@@ -40,10 +42,28 @@ io.on('connection_error', (error) => {
 	logger.error(`Connection error: ${socketErrorText(error.code)} - ${error.message}`);
 });
 
+const userNamespaceIo = io.of('/auth_user');
+// middleware
+userNamespaceIo.use(async (client, next) => {
+	const token = client.handshake.auth.token;
+	if (!token) {
+		return next(new BadRequestError('Invalid token. Please pass a valid token.'));
+	}
+	// decode the token and inject user to socket connection
+	const user = await jwt.decode(token);
+	if (user === null) {
+		return next(new BadRequestError('Invalid token provided. Please pass a valid token.'));
+	}
+	client.user = user;
+
+	next();
+});
+
 
 module.exports = {
 	httpServer,
 	io,
 	express,
 	app,
+	userNamespaceIo
 }
