@@ -5,6 +5,7 @@ const cors = require('cors');
 const path = require("path");
 const xss = require('xss-clean');
 const helmet = require('helmet');
+const {app, express, httpServer} = require('./app/socket');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload')
 const rateLimit = require('express-rate-limit');
@@ -25,8 +26,6 @@ const logRouter = require('./app/routes/log_routes');
 const configRouter = require('./app/routes/config_routes');
 const {config} = require('./app/config/config');
 const connectDB = require('./app/config/db/connect');
-const express = require('express');
-const app = express();
 const cloudinary = require('cloudinary').v2;
 cloudinary.config({
 	cloud_name: config.cloudinary.cloudName,
@@ -72,4 +71,5 @@ module.exports = {
 	resInterceptor,
 	appRoutes,
 	searchRouter,
+	httpServer,
 }
