@@ -5,6 +5,8 @@ const cors = require('cors');
 const path = require("path");
 const xss = require('xss-clean');
 const helmet = require('helmet');
+const passport = require('passport');
+const session = require('express-session');
 const {app, express, httpServer} = require('./app/socket');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload')
@@ -73,5 +75,7 @@ module.exports = {
 	appRoutes,
 	searchRouter,
 	httpServer,
+	passport,
 	handle,
+	session
 }
