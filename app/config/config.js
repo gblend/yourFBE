@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const config = {
     app: {
-        port: process.env.APP_PORT || 5000,
+        port: process.env.PORT || process.env.APP_PORT,
         name: process.env.APP_NAME || 'yourFeeds',
         baseUrlDev: process.env.BASE_URL_DEV,
         baseUrlProd: process.env.BASE_URL_PROD,
