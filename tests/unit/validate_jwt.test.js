@@ -9,6 +9,6 @@ describe('VerifyJWT', () => {
 
 	it('should throw error when provided token is invalid', () => {
 		const token = 'fake token';
-		expect(() => isTokenValid(token)).toThrow('jwt malformed');
+		expect(() => isTokenValid(token)).toThrow('user malformed');
 	});
 });
