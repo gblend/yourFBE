@@ -1,6 +1,6 @@
 'use strict';
 
-const cloudHelpers = require('../../app/lib/utils/cloudinary_upload');
+const cloudHelpers = require('../../app/lib/utils/image_upload');
 
 
 describe('UploadImage', () => {
