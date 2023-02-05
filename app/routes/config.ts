@@ -1,17 +1,16 @@
-'use strict';
+import {Router} from 'express';
+const router = Router();
+import {authenticateUser, authorizePermissions} from '../middleware/authentication';
 
-const router = require('express').Router();
-const {authenticateUser, authorizePermissions} = require('../middleware/authentication');
-
-const {
+import {
 	getAllConfig,
 	createConfig,
 	getSingleConfig,
 	updateConfig,
 	disableConfig,
 	deleteConfig,
-	getConfigByPath,
-} = require('../controllers/configController');
+	getConfigByPath
+} from '../controllers/configController';
 
 
 router.route('/').post(authenticateUser, authorizePermissions('admin'), createConfig)
@@ -22,4 +21,4 @@ router.route('/:id').get(authenticateUser, authorizePermissions('admin'), getSin
 router.route('/paths/get-path').get(authenticateUser, authorizePermissions('admin'), getConfigByPath);
 router.route('/disable/:id').patch(authenticateUser, authorizePermissions('admin'), disableConfig);
 
-module.exports = router;
+export default router;

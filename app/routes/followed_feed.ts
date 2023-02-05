@@ -1,6 +1,5 @@
-'use strict';
-
-const router = require('express').Router();
+import {Router} from 'express';
+const router = Router();
 const {authenticateUser, authorizePermissions} = require('../middleware/authentication');
 
 const {
@@ -23,4 +22,4 @@ router.route('/stats').get(authenticateUser, authorizePermissions('admin'), feed
 router.route('/suggested').get(authenticateUser, feedsFollowersStats);
 router.route('/:id').delete(authenticateUser, unfollowFeed);
 
-module.exports = router;
+export default router;

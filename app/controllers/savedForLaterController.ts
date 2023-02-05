@@ -74,7 +74,7 @@ const getPostsSavedForLater = async (req, res) => {
 	const {user: {id: userId}, path, method, queryParams: {pageSize, pageNumber}} = adaptRequest(req);
 
 	let savedPosts = await redisGetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}`);
-	if (savedPosts && savedPosts.length > 0) {
+	if (savedPosts && savedPosts.length) {
 		logger.info(`${StatusCodes.OK} - Posts saved for later retrieved from cache - ${method} ${path}`);
 		let {pagination:_pagination, result: _result} = await paginate(savedPosts, {pageSize, pageNumber});
 
@@ -90,7 +90,7 @@ const getPostsSavedForLater = async (req, res) => {
 	const {pagination, result} = await paginate(savedPosts, {pageSize, pageNumber});
 	const savedPostsData = await result;
 
-	if (!savedPostsData || savedPostsData.length < 1) {
+	if (!savedPostsData || !savedPostsData.length) {
 		return res.status(StatusCodes.NOT_FOUND).json({message: 'No saved posts found.'});
 	}
 
@@ -111,7 +111,7 @@ const getPostSavedForLater = async (req, res) => {
 	}
 
 	let post = await redisGetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}_${postId}`);
-	if (post.length < 1) {
+	if (!post.length) {
 		post = await SavedForLater.findOne({_id: postId, status: {$nin: ['disabled']}}).populate('feed', '_id title url logoUrl', 'Feed');
 		if (!post) {
 			throw new NotFoundError('Post saved for later not found.');
@@ -190,7 +190,7 @@ const userStarredFeedPostsStats = async (req, res) => {
 		},
 	]);
 
-	if (starredFeedPostsStat.length === 0) {
+	if (!starredFeedPostsStat.length) {
 		logger.info(`${StatusCodes.NOT_FOUND} - No user starred feed posts found - ${method} ${path}`);
 		throw new NotFoundError('No user starred feed posts found');
 	}
@@ -259,7 +259,7 @@ const allStarredFeedPostsStats = async (req, res) => {
 		},
 	]);
 
-	if (starredFeedPostsStats.length === 0) {
+	if (!starredFeedPostsStats.length) {
 		logger.info(`${StatusCodes.NOT_FOUND} - No starred feed posts found - ${method} ${path}`);
 		throw new NotFoundError('No starred feed posts found');
 	}

@@ -1,8 +1,8 @@
-'use strict';
+import {Router} from 'express';
+const router = Router();
+import {Request, Response} from '../types/index';
 
-const router = require('express').Router();
-
-const {
+import {
 	register,
 	login,
 	logout,
@@ -12,12 +12,12 @@ const {
 	resendVerificationEmail,
 	socialLogin,
 	socialLoginError
-} = require('../controllers/authController');
+} from '../controllers/authController';
 
-const {authenticateUser} = require('../middleware/authentication');
-const passportGoogle = require('../social_auth/google');
-const passportFacebook = require('../social_auth/facebook');
-const passportTwitter = require('../social_auth/twitter');
+import {authenticateUser} from '../middleware/authentication';
+import passportGoogle from '../social_auth/google';
+import passportFacebook from '../social_auth/facebook';
+import passportTwitter from '../social_auth/twitter';
 
 router.route('/signup').post(register);
 router.route('/login').post(login);
@@ -30,22 +30,22 @@ router.route('/forgot-password').post(forgotPassword);
 router.route('/resend-verification-email').post(authenticateUser, resendVerificationEmail);
 
 router.route('/google/login').get(passportGoogle
-	.authenticate('google', {scope: [ 'email', 'profile' ]}, (_, __) => { /* auto redirected */} ));
+	.authenticate('google', {scope: [ 'email', 'profile' ]}, (_: Request, __: Response) => { /* auto redirected */} ));
 router.route('/google/callback').get(passportGoogle
 		.authenticate('google', { assignProperty: 'socialProfile', failureRedirect: '/api/v1/social_auth/social-error' }),
-	(req, res) => socialLogin(req, res));
+	(req: Request, res: Response) => socialLogin(req, res));
 
 router.route('/facebook/login').get(passportFacebook
-	.authenticate('facebook', { authType: 'reauthenticate'}, (_, __) => { /* auto redirected */}));
+	.authenticate('facebook', (_: Request, __: Response) => { /* auto redirected */}));
 router.route('/facebook/callback').get(passportFacebook
 		.authenticate('facebook', { assignProperty: 'socialProfile', failureRedirect: '/api/v1/social_auth/social-error' }),
-	(req, res) => socialLogin(req, res));
+	(req: Request, res: Response) => socialLogin(req, res));
 
-router.route('/twitter/login').get(passportFacebook
-	.authenticate('twitter', {}, (_, __) => { /* auto redirected */}));
+router.route('/twitter/login').get(passportTwitter
+	.authenticate('twitter', {}, (_: Request, __: Response) => { /* auto redirected */}));
 router.route('/twitter/callback').get(passportTwitter
 		.authenticate('twitter', { assignProperty: 'socialProfile', failureRedirect: '/api/v1/social_auth/social-error' }),
-	(req, res) => socialLogin(req, res));
+	(req: Request, res: Response) => socialLogin(req, res));
 
-module.exports = router;
+export default router;
 

@@ -1,9 +1,8 @@
-'use strict';
+import {Router} from 'express';
+const router = Router();
+import {authenticateUser, authorizePermissions} from '../middleware/authentication';
 
-const router = require('express').Router();
-const {authenticateUser, authorizePermissions} = require('../middleware/authentication');
-
-const {
+import {
     getAllUsers,
     getAllAdmins,
     getUser,
@@ -13,7 +12,7 @@ const {
     enableUserAccount,
     getDisabledAccounts,
     disableUserAccount
-} = require('../controllers/userController');
+} from '../controllers/userController';
 
 router.route('/').get(authenticateUser, authorizePermissions('admin'), getAllUsers);
 router.route('/disabled-accounts').get(authenticateUser, authorizePermissions('admin'), getDisabledAccounts);
@@ -25,4 +24,4 @@ router.route('/me').get(authenticateUser, showCurrentUser);
 router.route('/:id').get(authenticateUser, getUser);
 router.route('/update/:id').patch(authenticateUser, updateUser);
 
-module.exports = router;
+export default router;

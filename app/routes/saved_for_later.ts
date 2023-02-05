@@ -1,16 +1,15 @@
-'use strict';
-
-const router = require('express').Router();
-const {authenticateUser, authorizePermissions} = require('../middleware/authentication');
-const {
+import {Router} from 'express';
+const router = Router();
+import {authenticateUser, authorizePermissions} from '../middleware/authentication';
+import {
 	savePostForLater,
 	deletePostSavedForLater,
 	getPostsSavedForLater,
 	getPostSavedForLater,
 	markPostSavedForLaterAsRead,
 	userStarredFeedPostsStats,
-	allStarredFeedPostsStats,
-} = require('../controllers/savedForLaterController');
+	allStarredFeedPostsStats
+} from '../controllers/savedForLaterController';
 
 router.route('/posts').post(authenticateUser, savePostForLater).get(authenticateUser, getPostsSavedForLater);
 router.route('/posts/stats').get(authenticateUser, userStarredFeedPostsStats);
@@ -18,4 +17,4 @@ router.route('/posts/all/stats').get(authenticateUser, authorizePermissions('adm
 router.route('/posts/:id').get(authenticateUser, getPostSavedForLater)
 	.delete(authenticateUser, deletePostSavedForLater).patch(authenticateUser, markPostSavedForLaterAsRead);
 
-module.exports = router;
+export default router;

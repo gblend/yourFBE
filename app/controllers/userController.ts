@@ -32,7 +32,7 @@ const getAllUsers = async (req, res) => {
     const {pagination, result} = await paginate(usersQuery, {pageSize, pageNumber});
     const usersData = await result;
 
-    if (usersData.length < 1) {
+    if (!usersData.length) {
         logger.info(`${StatusCodes.NOT_FOUND} - No user found for get_all_users - ${method} ${_path}`);
         throw new NotFoundError('No user found.');
     }
