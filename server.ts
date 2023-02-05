@@ -1,7 +1,5 @@
-'use strict';
-
-require('express-async-errors');
-const {
+import 'express-async-errors';
+import {
 	morgan,
 	errorHandlerMiddleware,
 	notFoundMiddleware,
@@ -25,9 +23,12 @@ const {
 	followedFeedRouter,
 	logRouter,
 	statRouter,
+	notificationRouter,
 	config,
 	app,
 	express,
+	Request,
+	Response,
 	appStatus,
 	resInterceptor,
 	appRoutes,
@@ -36,7 +37,7 @@ const {
 	handle,
 	httpServer,
 	session
-} = require('./startup');
+} from './startup';
 const appEnv = config.app.env;
 
 app.use(helmet());
@@ -58,10 +59,10 @@ app.use(session({
 	resave: false,
 	saveUninitialized: true
 }));
-app.use(passport.initialize({}));
-app.use(passport.session({}));
+app.use(passport.initialize());
+app.use(passport.session());
 
-app.get('/api/v1/status', (_, res) => {
+app.get('/api/v1/status', (_: Request, res: Response) => {
 	return res.json({
 		'status': 'success',
 		message: `${config.app.name} backend service is running.`,
@@ -71,7 +72,7 @@ app.get('/api/v1/status', (_, res) => {
 		},
 	});
 });
-app.get('/api/v1/doc', (_, res) => {
+app.get('/api/v1/doc', (_: Request, res: Response) => {
 	return res.sendFile(path.join(__dirname, 'app/public/index.html'));
 });
 
@@ -85,6 +86,7 @@ app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/config', configRouter);
 app.use('/api/v1/feed-category', feedCategoryRouter);
 app.use('/api/v1/followed-feeds', followedFeedRouter);
+app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/saved-for-later', savedForLaterRouter);
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
@@ -94,15 +96,15 @@ process
 	.on('unhandledRejection', handle('unhandledRejection'))
 	.on('uncaughtException', handle('uncaughtException'));
 
-const start = () => {
+const start = (): void => {
 	connectDB(config.database.uri).then(() => {
 		if (appEnv === 'test') return;
-		app.server = httpServer.listen(config.app.port, () => {
-			logger.info(`${config.app.name} server running: ${config.app.baseUrl}:${app.server.address().port}`);
+		httpServer.listen(config.app.port, () => {
+			logger.info(`${config.app.name} server running: ${config.app.baseUrl}:${config.app.port}`);
 		});
 	});
 }
 
 start();
 
-module.exports = app;
+export default app;

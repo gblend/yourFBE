@@ -1,12 +1,11 @@
-'use strict';
-
-const {StatusCodes} = require('http-status-codes');
-const {SavedForLater, validateSavedForLaterDto} = require('../models/SavedForLater');
-const {config} = require('../config/config');
-const mongoose = require('mongoose');
-const {BadRequestError, NotFoundError} = require('../lib/errors');
-const {saveActivityLog} = require('../lib/dbActivityLog');
-const {
+import {StatusCodes} from 'http-status-codes';
+import {SavedForLater, validateSavedForLaterDto} from '../models/SavedForLater';
+import {config} from '../config/config';
+import mongoose from 'mongoose';
+import {BadRequestError, NotFoundError} from '../lib/errors';
+import {saveActivityLog} from '../lib/dbActivityLog';
+import {Request, Response} from '../types';
+import {
 	adaptRequest,
 	logger,
 	formatValidationError,
@@ -17,10 +16,10 @@ const {
 	mapPaginatedData,
 	paginate,
 	createObjectId
-} = require('../lib/utils');
-const {userNamespaceIo} = require('../socket');
+} from '../lib/utils';
+import {userNamespaceIo} from '../socket';
 
-const savePostForLater = async (req, res) => {
+const savePostForLater = async (req: Request, res: Response) => {
 	const {body, method, path, user: {id: userId}} = adaptRequest(req);
 	body.user = createObjectId(userId);
 	body.feed = createObjectId(body.feed);
@@ -33,7 +32,7 @@ const savePostForLater = async (req, res) => {
 	}
 
 	const isSavedForLater = await SavedForLater.findOne(body);
-	let savedPost = {}
+	let savedPost: any = {}
 	if (!isSavedForLater) {
 		savedPost = await SavedForLater.create(body);
 		if (!Object.keys(savedPost).length) {
@@ -47,7 +46,7 @@ const savePostForLater = async (req, res) => {
 	res.status(StatusCodes.OK).json({ message: 'Post successfully saved for later.', data: { savedForLater: savedPost } });
 }
 
-const deletePostSavedForLater = async (req, res) => {
+const deletePostSavedForLater = async (req: Request, res: Response) => {
 	const {pathParams: {id: postId}, method, path, user: {id: userId, role}} = adaptRequest(req);
 	if (!postId || !mongoose.isValidObjectId(postId)) {
 		logger.info(`${StatusCodes.BAD_REQUEST} - Invalid post id: ${postId} - ${method} ${path}`);
@@ -64,16 +63,18 @@ const deletePostSavedForLater = async (req, res) => {
 		action: `deletePostSavedForLater: ${postId} - by ${role}`,
 		resourceName: 'saveForLater',
 		user: createObjectId(userId),
+		method,
+		path,
 	}
-	await saveActivityLog(logData, method, path);
+	await saveActivityLog(logData);
 	userNamespaceIo.to('savedForLater').volatile.emit('admin:post_deleted', {post: deleted, userId});
 	res.status(StatusCodes.OK).json({ message: 'Post saved for later successfully removed.'});
 }
 
-const getPostsSavedForLater = async (req, res) => {
+const getPostsSavedForLater = async (req: Request, res: Response) => {
 	const {user: {id: userId}, path, method, queryParams: {pageSize, pageNumber}} = adaptRequest(req);
 
-	let savedPosts = await redisGetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}`);
+	let savedPosts: any = await redisGetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}`);
 	if (savedPosts && savedPosts.length) {
 		logger.info(`${StatusCodes.OK} - Posts saved for later retrieved from cache - ${method} ${path}`);
 		let {pagination:_pagination, result: _result} = await paginate(savedPosts, {pageSize, pageNumber});
@@ -103,14 +104,14 @@ const getPostsSavedForLater = async (req, res) => {
 	});
 }
 
-const getPostSavedForLater = async (req, res) => {
+const getPostSavedForLater = async (req: Request, res: Response) => {
 	const {user: {id: userId}, path, method, pathParams: {id: postId}} = adaptRequest(req);
 	if (!postId) {
 		logger.info(`${StatusCodes.BAD_REQUEST} - Invalid post saved for later id: ${postId} - ${method} ${path}`);
 		throw new BadRequestError('Invalid post saved for later id');
 	}
 
-	let post = await redisGetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}_${postId}`);
+	let post: any = await redisGetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}_${postId}`);
 	if (!post.length) {
 		post = await SavedForLater.findOne({_id: postId, status: {$nin: ['disabled']}}).populate('feed', '_id title url logoUrl', 'Feed');
 		if (!post) {
@@ -127,7 +128,7 @@ const getPostSavedForLater = async (req, res) => {
 	});
 }
 
-const markPostSavedForLaterAsRead = async (req, res) => {
+const markPostSavedForLaterAsRead = async (req: Request, res: Response) => {
 	const {pathParams: {id: postId}, method, path, user: {id: userId}} = adaptRequest(req);
 
 	if (!postId || !mongoose.isValidObjectId(postId)) {
@@ -145,7 +146,7 @@ const markPostSavedForLaterAsRead = async (req, res) => {
 	res.status(StatusCodes.NOT_FOUND).json({message: 'Post saved for later not found.'});
 }
 
-const userStarredFeedPostsStats = async (req, res) => {
+const userStarredFeedPostsStats = async (req: Request, res: Response) => {
 	const {user: {id: userId}, path, method, queryParams: {pageSize: _pageSize, pageNumber: _pageNumber}} = adaptRequest(req);
 	const {pageSize, pageNumber, offset} = adaptPaginateParams(_pageSize, _pageNumber);
 
@@ -190,11 +191,11 @@ const userStarredFeedPostsStats = async (req, res) => {
 		},
 	]);
 
-	if (!starredFeedPostsStat.length) {
+	if (!starredFeedPostsStat[0]?.paginatedResults.length || !starredFeedPostsStat[0]?.feeds.length) {
 		logger.info(`${StatusCodes.NOT_FOUND} - No user starred feed posts found - ${method} ${path}`);
 		throw new NotFoundError('No user starred feed posts found');
 	}
-	const {result, total, pages, next, previous} = mapPaginatedData(starredFeedPostsStat, _pageSize, _pageNumber);
+	const {result, total, pages, next, previous} = mapPaginatedData(starredFeedPostsStat, pageSize, pageNumber);
 
 	logger.info(`${StatusCodes.OK} - User starred feed posts stats fetched successfully - ${method} ${path}`);
 	res.status(StatusCodes.OK).json({
@@ -214,7 +215,7 @@ const userStarredFeedPostsStats = async (req, res) => {
 	});
 }
 
-const allStarredFeedPostsStats = async (req, res) => {
+const allStarredFeedPostsStats = async (req: Request, res: Response) => {
 	let {path, method, queryParams: {pageSize: _pageSize, pageNumber: _pageNumber}} = adaptRequest(req);
 	const {pageSize, pageNumber, offset} = adaptPaginateParams(_pageSize, _pageNumber);
 
@@ -259,11 +260,11 @@ const allStarredFeedPostsStats = async (req, res) => {
 		},
 	]);
 
-	if (!starredFeedPostsStats.length) {
+	if (!starredFeedPostsStats[0]?.paginatedResults.length || !starredFeedPostsStats[0]?.feeds.length) {
 		logger.info(`${StatusCodes.NOT_FOUND} - No starred feed posts found - ${method} ${path}`);
 		throw new NotFoundError('No starred feed posts found');
 	}
-	const {result, total, pages, next, previous} = mapPaginatedData(starredFeedPostsStats, _pageSize, _pageNumber);
+	const {result, total, pages, next, previous} = mapPaginatedData(starredFeedPostsStats, pageSize, pageNumber);
 
 	logger.info(`${StatusCodes.OK} - All starred feed posts stats fetched successfully - ${method} ${path}`);
 	res.status(StatusCodes.OK).json({
@@ -283,7 +284,7 @@ const allStarredFeedPostsStats = async (req, res) => {
 	});
 }
 
-module.exports = {
+export {
 	savePostForLater,
 	getPostsSavedForLater,
 	getPostSavedForLater,

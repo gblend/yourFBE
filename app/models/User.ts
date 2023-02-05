@@ -1,12 +1,10 @@
-'use strict';
+import {model, Schema, CallbackWithoutResultAndOptionalError} from 'mongoose';
+import joi, {ValidationResult} from 'joi';
+import bcrypt from 'bcryptjs';
+import {createJWT, capitalizeFirstCharacter} from '../lib/utils';
+import {ITokenUser, IUser, IUpdatePassword, UserModel, IUserMethods} from '../interface';
 
-const mongoose = require('mongoose');
-const joi = require('joi');
-const Schema = mongoose.Schema;
-const bcrypt = require('bcryptjs');
-const {createJWT, capitalizeFirstCharacter} = require('../lib/utils');
-
-const UserSchema = new Schema({
+const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
 	firstname: {
 		type: String,
 		minlength: 3,
@@ -51,7 +49,7 @@ const UserSchema = new Schema({
 		type: String,
 		enum: {
 			values: ['enabled', 'disabled'],
-				messages: '{VALUE} is not acceptable'
+			messages: '{VALUE} is not acceptable'
 		},
 		default: 'enabled',
 	},
@@ -104,17 +102,13 @@ UserSchema.virtual('followedFeeds', {
 	justOne: false
 });
 
-UserSchema.pre('remove', async function (next) {
-	await this.model('SavedForLater').deleteMany({user: this._id});
+UserSchema.pre('save', async function (next: CallbackWithoutResultAndOptionalError): Promise<void> {
+	await this.$model('SavedForLater').deleteMany({user: this._id});
+	await this.$model('FollowedFeed').deleteMany({user: this._id});
 	next();
 });
 
-UserSchema.pre('remove', async function (next) {
-	await this.model('FollowedFeed').deleteMany({user: this._id});
-	next();
-});
-
-const validateUserDto = (userSchema) => {
+const validateUserDto = (userDto: IUser): ValidationResult => {
 	const user = joi.object({
 		firstname: joi.string().min(3).required(),
 		lastname: joi.string().min(3).required(),
@@ -123,41 +117,41 @@ const validateUserDto = (userSchema) => {
 		passwordConfirmation: joi.string().valid(joi.ref('password')).required(),
 	})
 
-	return user.validate(userSchema);
+	return user.validate(userDto);
 }
 
-const validateUpdatePassword = (payload) => {
+const validateUpdatePassword = (updatePasswordDto: IUpdatePassword): ValidationResult => {
 	const password = joi.object({
 		oldPassword: joi.string().min(8).required(),
 		newPassword: joi.string().min(8)
 			.required()
 	})
 
-	return password.validate(payload);
+	return password.validate(updatePasswordDto);
 }
 
-const validateUpdateUser = (userData) => {
+const validateUpdateUser = (updateUserDto: IUser): ValidationResult => {
 	const userUpdate = joi.object({
 		firstname: joi.string().min(3),
 		lastname: joi.string().min(3),
 		email: joi.string().email(),
 	});
 
-	return userUpdate.validate(userData);
+	return userUpdate.validate(updateUserDto);
 }
 
-const validateLogin = (credentials) => {
+const validateLogin = (loginDto: IUser): ValidationResult => {
 	const login = joi.object({
 		email: joi.string().email().required(),
 		password: joi.string().min(8).required()
 	});
 
-	return login.validate(credentials);
+	return login.validate(loginDto);
 }
 
-UserSchema.pre('save', async function (_, __, next) {
+UserSchema.pre('save', async function (next: CallbackWithoutResultAndOptionalError): Promise<void> {
 	if (this.isModified('firstname') || this.isModified('lastname')) {
-		capitalizeFirstCharacter(this.firstname, this.lastname);
+		capitalizeFirstCharacter(this.firstname as string, this.lastname as string);
 	}
 	if (!this.isModified('password') || !this.password) {
 		return next();
@@ -178,22 +172,26 @@ UserSchema.methods.createJWT = function () {
 	return createJWT(payload);
 }
 
-UserSchema.methods.createRefreshJWT = function (user, refreshToken) {
+UserSchema.static('_createJWT', function _createJWT(jwtUserDto: {name: string, _id: string, role: string}): string {
+	return createJWT(jwtUserDto);
+})
+
+UserSchema.methods.createRefreshJWT = function (user: ITokenUser, refreshToken: string): string {
 	const userPayload = {name: `${user.firstname} ${user.lastname}`, id: user._id, role: user.role}
 	return createJWT({user: userPayload, refreshToken});
 
 }
 
-UserSchema.methods.comparePassword = function (enteredPassword) {
-	return bcrypt.compare(enteredPassword, this.password);
+UserSchema.methods.comparePassword = async function (enteredPassword: string): Promise<boolean> {
+	return await bcrypt.compare(enteredPassword, this.password);
 }
 
-const User = mongoose.model('User', UserSchema);
+const User = model<IUser, UserModel>('User', UserSchema);
 
-module.exports = {
+export {
 	User,
 	validateUserDto,
 	validateLogin,
 	validateUpdateUser,
 	validateUpdatePassword
-};
+}

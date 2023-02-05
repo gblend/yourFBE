@@ -1,22 +1,22 @@
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
+import passport from 'passport';
+import {Strategy as GoogleStrategy, Profile} from 'passport-google-oauth20';
+import {config} from '../config/config';
+import init from './init';
+import {registerSocialProfile} from './register_social_profile';
 
-const {config} = require('../config/config');
-const init = require('./init');
-const {registerSocialProfile} = require('./register_social_profile');
-
-passport.use('google', new GoogleStrategy({
+const passportGoogle = passport.use('google', new GoogleStrategy({
 		clientID: config.auth.google.clientID,
 		clientSecret: config.auth.google.clientSecret,
 		callbackURL: config.auth.google.callbackURL,
 	},
-	async (_accessToken, _refreshToken, profile, cb) => {
+	async (_accessToken: string, _refreshToken: string, profile: Profile, cb: Function) => {
 	return registerSocialProfile(profile, cb, 'google');
 	}
-
 ));
 
 // serialize user into the session
 init();
 
-module.exports = passport;
+export {
+	passportGoogle
+}

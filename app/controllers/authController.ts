@@ -1,29 +1,30 @@
-'use strict';
-
-const {Token} = require('../models/Token');
-const {config} = require('../config/config');
-const {saveActivityLog} = require('../lib/dbActivityLog');
-const {pushToQueue} = require('../lib/utils/amqplib');
-const {generateToken} = require('../lib/utils/verification_token');
-const {User, validateLogin, validateUserDto} = require('../models/User');
-const {userNamespaceIo} = require('../socket');
-const {StatusCodes} = require('http-status-codes');
-const {registerSocialProfile} = require('../social_auth/register_social_profile');
-const {CustomAPIError, UnauthenticatedError, BadRequestError} = require('../lib/errors');
-const {
+import {ObjectId} from 'mongoose';
+import {Token} from '../models/Token';
+import {config} from '../config/config';
+import {saveActivityLog} from '../lib/dbActivityLog';
+import {pushToQueue} from '../lib/utils/amqplib';
+import {
+	adaptRequest,
 	attachCookiesToResponse,
+	constants,
+	createObjectId,
 	encrypt,
 	formatValidationError,
-	constants,
-	adaptRequest,
+	generateToken,
 	logger,
-	redisRefreshCache,
-	createObjectId,
-} = require('../lib/utils');
+	redisRefreshCache
+} from '../lib/utils';
+import {User, validateLogin, validateUserDto} from '../models/User';
+import {userNamespaceIo} from '../socket';
+import {StatusCodes} from 'http-status-codes';
+import {Request, Response} from '../types/index';
+import {registerSocialProfile} from '../social_auth/register_social_profile';
+import {BadRequestError, CustomAPIError, UnauthenticatedError} from '../lib/errors';
+import {ITokenUser} from '../interface';
 
-let queueName = '', queueErrorMsg = '';
+let queueName: string = '', queueErrorMsg: string = '';
 
-const register = async (req, res) => {
+const register = async (req: Request, res: Response): Promise<Response> => {
 	const {body, ip, headers} = adaptRequest(req);
 	const {email, firstname, lastname, password} = body;
 	const {error} = validateUserDto(body);
@@ -35,18 +36,18 @@ const register = async (req, res) => {
 
 	const isEmailExist = await User.findOne({email});
 	if (isEmailExist) {
-		throw new CustomAPIError(constants.auth.ALREADY_IN_USE('Email address'));
+		throw new CustomAPIError(constants.auth.ALREADY_IN_USE('This email address'));
 	}
 
-	const isAdminExists = (await User.countDocuments({role: 'admin'})) === 0;
-	const role = isAdminExists ? 'admin' : 'user';
-	const isVerified = isAdminExists;
+	const isAdminExists: boolean = (await User.countDocuments({role: 'admin'})) === 0;
+	const role: string = isAdminExists ? 'admin' : 'user';
+	const isVerified: boolean = isAdminExists;
 
-	const verificationToken = generateToken();
-	const user = await User.create({email, firstname, lastname, password, role, verificationToken, isVerified});
+	const verificationToken: string = generateToken();
+	const user: any = await User.create({email, firstname, lastname, password, role, verificationToken, isVerified});
 	(role === 'admin') ? await redisRefreshCache(config.cache.allAdminCacheKey) : await redisRefreshCache(config.cache.allUsersCacheKey);
 	const accessTokenJWT = await user.createJWT();
-	// send verify email via queue
+	// send account verification email via queue
 	queueErrorMsg = 'Unable to queue verify email, please try again';
 	queueName = config.amqp.verifyEmailQueue;
 	await pushToQueue(queueName, queueErrorMsg, {
@@ -57,10 +58,10 @@ const register = async (req, res) => {
 	user.password = undefined;
 
 	const tokenInfo = await saveTokenInfo(user, {ip, headers});
-	const refreshTokenJWT = await user.createRefreshJWT(user, tokenInfo.refreshToken);
+	const refreshTokenJWT: string = await user.createRefreshJWT(user, tokenInfo.refreshToken);
 	attachCookiesToResponse({accessTokenJWT, refreshTokenJWT, res});
 
-	userNamespaceIo.to('users').volatile.emit('admin:user_registered', {user});
+	userNamespaceIo.to(config.socket.group.users).volatile.emit(config.socket.events.admin.userRegistered, {user});
 	return res.status(StatusCodes.OK).json({
 		message: 'Please check your email for a link to verify your account',
 		data: {
@@ -71,9 +72,9 @@ const register = async (req, res) => {
 	});
 }
 
-const login = async (req, res) => {
+const login = async (req: Request, res: Response) => {
 	const {body, headers, ip} = adaptRequest(req);
-	let verificationMsg = '';
+	let verificationMsg: string = '';
 	const {error} = validateLogin(body);
 	if (error) {
 		return res.status(StatusCodes.BAD_REQUEST).json({
@@ -84,7 +85,7 @@ const login = async (req, res) => {
 	}
 
 	const {email, password} = body;
-	const user = await User.findOne({email}).select('-verificationToken');
+	const user: any = await User.findOne({email}).select('-verificationToken');
 	if (!user) {
 		throw new BadRequestError(constants.auth.INVALID_CREDENTIALS());
 	}
@@ -94,7 +95,7 @@ const login = async (req, res) => {
 		throw new BadRequestError('Invalid email or password.');
 	}
 
-	if (user.status === 'disabled') {
+	if (user.status === constants.STATUS_DISABLED) {
 		throw new UnauthenticatedError('Account is deactivated. Please contact support.');
 	}
 
@@ -103,7 +104,7 @@ const login = async (req, res) => {
 	} else verificationMsg = 'Verified';
 
 	const accessTokenJWT = await user.createJWT();
-	user.lastLogin = Date.now();
+	user.lastLogin = new Date(Date.now());
 	await user.save();
 	const tokenInfo = await saveTokenInfo(user, {ip, headers});
 	const refreshTokenJWT = await user.createRefreshJWT(user, tokenInfo.refreshToken);
@@ -121,27 +122,27 @@ const login = async (req, res) => {
 	});
 }
 
-const socialLoginError = async (_, res, ) => {
+const socialLoginError = async (_: Request, res: Response ): Promise<Response<{}>> => {
 	return res.status(StatusCodes.BAD_REQUEST).json({});
 }
 
-const socialLogin = async (req, res, ) => {
+const socialLogin = async (req: Request, res: Response ) => {
 	const {headers, ip, socialProfile, body: {profileData, updateProfile = false}} = adaptRequest(req);
-	let user = {};
+	let user: any;
 
 	if(updateProfile) {
 		if (!profileData || !Object.keys(profileData).length || !profileData.email) {
-			throw new CustomAPIError('Invalid social profile parameters.');
+			throw new CustomAPIError('Invalid social login parameters.');
 		}
 
-		user = await registerSocialProfile(profileData, (_, __) => { /*unused */ });
+		user = await registerSocialProfile(profileData, (_: any, __: any) => { /*unused */ });
 	} else user = socialProfile;
 
 	if (!user || !Object.keys(user).length) {
-		throw new CustomAPIError('Invalid social profile parameters.');
+		throw new CustomAPIError('Invalid social login parameters.');
 	}
 
-	if (user.status === 'disabled') {
+	if (user.status === constants.STATUS_DISABLED) {
 		throw new UnauthenticatedError('Account is disabled. Please contact support.');
 	}
 
@@ -160,8 +161,8 @@ const socialLogin = async (req, res, ) => {
 	});
 }
 
-const logout = async (req, res) => {
-	const {user, signedCookies} = adaptRequest(req);
+const logout = async (req: Request, res: Response): Promise<void> => {
+	const {user, signedCookies}: {user: ITokenUser | any, signedCookies: any} = adaptRequest(req);
 	await Token.findOneAndDelete({user: user.id});
 
 	signedCookies.accessToken = undefined;
@@ -172,7 +173,7 @@ const logout = async (req, res) => {
 	res.status(StatusCodes.NO_CONTENT).json({});
 }
 
-const forgotPassword = async (req, res) => {
+const forgotPassword = async (req: Request, res: Response): Promise<void> => {
 	const {body: {email}} = adaptRequest(req);
 	if (!email) {
 		throw new BadRequestError('Please enter a valid email');
@@ -180,23 +181,22 @@ const forgotPassword = async (req, res) => {
 
 	const user = await User.findOne({email});
 	if (user) {
-		const passwordToken = generateToken();
+		const passwordToken: string = generateToken();
 
 		// queue reset password email
 		queueErrorMsg = 'Unable to queue reset password email, please try again';
 		queueName = config.amqp.resetEmailQueue;
 		await pushToQueue(queueName, queueErrorMsg, {name: user.firstname, email: user.email, passwordToken});
 
-		const tenMinutes = 1000 * 10 * 60;
-		const passwordTokenExpirationDate = new Date(Date.now() + tenMinutes);
+		const passwordTokenExpirationDate: Date = new Date(Date.now() + config.minutes.ten);
 		user.passwordToken = encrypt(passwordToken);
 		user.passwordTokenExpirationDate = passwordTokenExpirationDate;
 		await user.save();
 	}
-	res.status(StatusCodes.OK).json({message: 'Please check your email for reset link. You will not get an email if the email address you provided is incorrect'});
+	res.status(StatusCodes.OK).json({message: 'Please check your email for reset link. You will not get an email if the email provided is incorrect'});
 }
 
-const resetPassword = async (req, res) => {
+const resetPassword = async (req: Request, res: Response): Promise<void> => {
 	const {body: {email, token, password}, method, path} = adaptRequest(req);
 	if (!email || !token || !password) {
 		throw new BadRequestError('Please provide all values - email, token, password');
@@ -211,12 +211,12 @@ const resetPassword = async (req, res) => {
 		throw new BadRequestError('Invalid password reset token');
 	}
 
-	const currentDate = new Date();
-	if (user.passwordTokenExpirationDate < currentDate) {
+	const currentDate: Date = new Date();
+	if (user.passwordTokenExpirationDate! < currentDate) {
 		throw new BadRequestError('Password reset link has expired');
 	}
 
-	user.passwordTokenExpirationDate = null;
+	user.passwordTokenExpirationDate = new Date(Date.now() - config.minutes.ten);
 	user.passwordToken = '';
 	user.password = password;
 	await user.save();
@@ -225,35 +225,37 @@ const resetPassword = async (req, res) => {
 		action: `resetPassword - by ${user.role}`,
 		resourceName: 'users',
 		user: user?.id,
+		method,
+		path,
 	}
-	await saveActivityLog(logData, method, path);
+	await saveActivityLog(logData);
 	res.status(StatusCodes.OK).json({
 		message: 'Password changed successfully.'
 	});
 }
 
-const verifyEmail = async (req, res) => {
+const verifyEmail = async (req: Request, res: Response) => {
 	const {body: {email, token}} = adaptRequest(req);
 	const user = await User.findOne({email});
 	if (!user) {
-		throw new UnauthenticatedError('Verification failed');
+		throw new UnauthenticatedError('Account verification failed, account not found');
 	}
 	if (user.verificationToken !== token) {
-		throw new UnauthenticatedError('Verification failed, invalid token');
+		throw new UnauthenticatedError('Account verification failed, invalid token');
 	}
 
 	user.isVerified = true;
 	user.verificationToken = '';
-	user.verified = Date.now();
+	user.verified = new Date(Date.now());
 	user.save();
-	res.status(StatusCodes.OK).json({message: 'Email successfully verified'});
+	res.status(StatusCodes.OK).json({message: 'Account successfully verified'});
 }
 
-const saveTokenInfo = async ({_id: userId}, {ip, headers}) => {
+const saveTokenInfo = async ({_id: userId}: {_id?: ObjectId}, {ip, headers}: {ip: string, headers: any}) => {
 	const isTokenExist = await Token.findOne({user: userId});
 	if (isTokenExist) {
 		if (!isTokenExist.isValid) {
-			throw new UnauthenticatedError(constants.auth.INVALID_CREDENTIALS);
+			throw new UnauthenticatedError(constants.auth.INVALID_CREDENTIALS());
 		}
 		return isTokenExist;
 	}
@@ -263,8 +265,8 @@ const saveTokenInfo = async ({_id: userId}, {ip, headers}) => {
 	return Token.create(userToken);
 }
 
-const resendVerificationEmail = async (req, res) => {
-	const {user: {id: userId}} = adaptRequest(req);
+const resendVerificationEmail = async (req: Request, res: Response) => {
+	const {user: {id: userId}}:  {user: any} = adaptRequest(req);
 
 	const userAccount = await User.findOne({_id: createObjectId(userId)});
 	if (!userAccount) {
@@ -273,7 +275,7 @@ const resendVerificationEmail = async (req, res) => {
 
 	userAccount.verificationToken = generateToken();
 	await userAccount.save();
-	// send verify email via queue
+	// resend account verification email via queue
 	queueErrorMsg = 'Unable to queue verify email, please try again';
 	queueName = config.amqp.verifyEmailQueue;
 	await pushToQueue(queueName, queueErrorMsg, {
@@ -287,7 +289,7 @@ const resendVerificationEmail = async (req, res) => {
 	});
 }
 
-module.exports = {
+export {
 	register,
 	logout,
 	login,

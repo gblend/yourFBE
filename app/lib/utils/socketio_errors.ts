@@ -1,12 +1,20 @@
-module.exports.socketErrorText = (code) => {
-	const errors = {
-		0: 'Transport unknown',
-		1: 'Session ID unknown',
-		2: 'Bad handshake method',
-		3: 'Bad request',
-		4: 'Forbidden',
-		5: 'Unsupported protocol version'
+const socketErrorText = (code: number): string => {
+	const errors: string[] = [
+		'Transport unknown',
+		'Session ID unknown',
+		'Bad handshake method',
+		'Bad request',
+		'Forbidden',
+		'Unsupported protocol version'
+	]
+
+	if (code < errors.length) {
+		return errors[code];
 	}
 
-	return errors[code];
+	return '';
+}
+
+export {
+	socketErrorText
 }

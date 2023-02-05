@@ -1,12 +1,12 @@
-'use strict';
+import {ITokenUser} from '../../interface/user';
 
-const createTokenUser = (user) => {
+const createTokenUser = (user: ITokenUser): ITokenUser => {
     if (user) {
         return { name: user.name, id: user._id, role: user.role };
     }
     return user;
 }
 
-module.exports = {
+export {
     createTokenUser
 }

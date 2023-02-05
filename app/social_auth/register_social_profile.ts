@@ -1,8 +1,23 @@
-const {User} = require('../models/User');
-const {logger} = require('../lib/utils');
+import {User} from '../models/User';
+import {logger} from '../lib/utils';
+import {IUser} from '../interface';
+import {Profile as FacebookProfile} from 'passport-facebook';
+import {Profile as GoogleProfile} from 'passport-google-oauth20';
+import {Profile as TwitterProfile} from 'passport-twitter';
+import {CustomAPIError} from '../lib/errors';
 
-module.exports.registerSocialProfile = async (profile, callback, strategy = 'default') => {
-	let data = {};
+const registerSocialProfile = async (profile: any, callback: Function, strategy: string = 'default') => {
+	let data: IUser = {
+		avatar: '',
+		firstname: '',
+		gender: '',
+		lastLogin: new Date(Date.now()),
+		lastname: "",
+		verified: new Date(Date.now()),
+		email: '',
+		isVerified: false
+	};
+	let user: IUser = {}
 
 	switch (strategy) {
 		case 'google':
@@ -22,12 +37,12 @@ module.exports.registerSocialProfile = async (profile, callback, strategy = 'def
 	}
 
 	if (!data.email) data.email = profile.id;
+	if (!data.gender) data.gender = 'NA';
 	data.socialChannel = profile.provider;
 	data.socialChannelId = profile.id;
 
 	const searchQuery = {
-		// socialChannel: data.provider,
-		// socialChannelId: data.id,
+		lastname: data.lastname,
 		email: data.email
 	};
 
@@ -37,23 +52,24 @@ module.exports.registerSocialProfile = async (profile, callback, strategy = 'def
 	};
 
 	try {
-		// update the user if s/he exists or add a new user
-		const user = await User.findOneAndUpdate(searchQuery, data, options);
+		user = await User.findOneAndUpdate(searchQuery, data, options) as IUser;
 		if (strategy === 'default') return user;
 
 		return callback(null, user);
-	} catch (error) {
+	} catch (error: any) {
 		if(error.code && error.code === 11000) {
 			logger.info(`${strategy}Strategy - Duplicate value entered for ${Object.keys(error.keyValue)} field.`);
-			if (strategy === 'default') return user;
+			if (strategy === 'default') {
+				throw new CustomAPIError(`This ${Object.keys(error.keyValue)} is already in use.`);
+			}
 
-			return callback(null, await User.findOne({ email }));
+			return callback(null, await User.findOne({ email: data.email }));
 		}
-		logger.info(`${strategy}Strategy - ${error.message}`)
+		logger.info(`Social login ${strategy}Strategy - ${error.message}`)
 	}
 }
 
-const transformGoogleData = (profile) => {
+const transformGoogleData = (profile: GoogleProfile) => {
 	let {
 		name: displayName,
 		given_name: firstname,
@@ -65,18 +81,18 @@ const transformGoogleData = (profile) => {
 
 	const displayNames = displayName?.split(' ');
 	return {
-		firstname: firstname ?? displayNames[0],
-		lastname: lastname ?? displayNames[1],
+		firstname: firstname ?? displayNames![0],
+		lastname: lastname ?? displayNames![1],
 		email,
-		gender: (profile.gender) ? profile.gender : null,
+		gender: null,
 		avatar: picture,
-		verified: Date.now(),
+		verified: new Date(Date.now()),
 		isVerified: email_verified,
-		lastLogin: Date.now()
+		lastLogin: new Date(Date.now())
 	};
 }
 
-const transformTwitterData = (profile) => {
+const transformTwitterData = (profile: TwitterProfile) => {
 	let {
 		name,
 		profile_image_url_https: profileImg,
@@ -90,13 +106,13 @@ const transformTwitterData = (profile) => {
 		email,
 		gender: (profile.gender) ? profile.gender : null,
 		avatar: profileImg,
-		verified: Date.now(),
+		verified: new Date(Date.now()),
 		isVerified: false,
-		lastLogin: Date.now()
+		lastLogin: new Date(Date.now())
 	};
 }
 
-const transformFacebookData = (profile) => {
+const transformFacebookData = (profile: FacebookProfile) => {
 	let {
 		picture: { data: {url: pictureUrl} },
 		name,
@@ -113,13 +129,13 @@ const transformFacebookData = (profile) => {
 		email,
 		gender: userGender,
 		avatar: pictureUrl ?? '',
-		verified: Date.now(),
+		verified: new Date(Date.now()),
 		isVerified: true,
-		lastLogin: Date.now()
+		lastLogin: new Date(Date.now())
 	};
 }
 
-const transformProfileData = (profile) => {
+const transformProfileData = (profile: any) => {
 	const {
 		provider: socialProvider,
 		id: socialProviderID,
@@ -139,10 +155,14 @@ const transformProfileData = (profile) => {
 		avatar: picture,
 		socialChannel: socialProvider,
 		socialChannelId: socialProviderID,
-		verified: Date.now(),
+		verified: new Date(Date.now()),
 		isVerified: email_verified,
-		lastLogin: Date.now(),
+		lastLogin: new Date(Date.now()),
 		firstname: firstname ?? names[0],
 		lastname: lastname ?? names[1]
 	};
+}
+
+export {
+	registerSocialProfile
 }

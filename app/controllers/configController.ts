@@ -1,12 +1,12 @@
-'use strict';
-
-const {StatusCodes} = require('http-status-codes');
-const {ConfigData, validateConfigDataDto} = require('../models/Config');
-const CustomError = require('../lib/errors');
-const {adaptRequest, formatValidationError, logger, createObjectId} = require('../lib/utils');
+import {StatusCodes} from 'http-status-codes';
+import {ConfigData, validateConfigDataDto} from '../models/Config';
+import {NotFoundError, BadRequestError} from '../lib/errors';
+import {adaptRequest, formatValidationError, logger, createObjectId, paginate, constants} from '../lib/utils';
 const {saveActivityLog} = require('../lib/dbActivityLog');
+import {Request, Response} from '../types/index';
+import {ConfigModel, IResponse} from '../interface';
 
-const createConfig = async (req, res) => {
+const createConfig = async (req: Request, res: Response): Promise<Response<IResponse>> => {
     const {body} = adaptRequest(req);
     const {error} = validateConfigDataDto(body);
     if (error) {
@@ -19,25 +19,26 @@ const createConfig = async (req, res) => {
         .json({message: 'Config created successfully.', data: {config}});
 }
 
-const getAllConfig = async (req, res) => {
-    const {path, method} = adaptRequest(req);
-    let configData = await ConfigData.find({});
-    if (configData.length < 1) {
+const getAllConfig = async (req: Request, res: Response) => {
+    const {path, method, queryParams: {pageSize, pageNumber}} = adaptRequest(req);
+    let configData: ConfigModel[] = await ConfigData.find({});
+    if (!configData.length) {
         logger.info(`${StatusCodes.NOT_FOUND} - No config data found for get_all_config - ${method} ${path}`);
-        throw new CustomError.NotFoundError('No config data found.');
+        throw new NotFoundError('No config data found.');
     }
+    const {pagination, result} = await paginate(configData, {pageSize, pageNumber});
     return res.status(StatusCodes.OK).json({
         message: 'Config data fetched successfully',
-        data: {configData},
+        data: {config: result, pagination},
     });
 }
 
-const getSingleConfig = async (req, res) => {
+const getSingleConfig = async (req: Request, res: Response): Promise<Response<IResponse>> => {
     const {pathParams: {id: configId}, path, method} = adaptRequest(req);
     const config = await ConfigData.findOne({_id: configId});
     if (!config) {
         logger.info(`${StatusCodes.NOT_FOUND} - Config with id ${configId} not found for get_single_config - ${method} ${path}`);
-        throw new CustomError.BadRequestError(`Config not found.`);
+        throw new BadRequestError(`Config not found.`);
     }
     return res.status(StatusCodes.OK).json({
         message: `Config fetched successfully.`,
@@ -45,12 +46,12 @@ const getSingleConfig = async (req, res) => {
     });
 }
 
-const getConfigByPath = async (req, res) => {
-    const {queryParams: {value: configPath}, path, method} = adaptRequest(req);
+const getConfigByPath = async (req: Request, res: Response): Promise<Response<IResponse>> => {
+    const {queryParams: {reference: configPath}, path, method} = adaptRequest(req);
     const config = await ConfigData.findOne({path: configPath});
     if (!config) {
         logger.info(`${StatusCodes.NOT_FOUND} - Config with path ${configPath} not found for get_config_by_path - ${method} ${path}`);
-        throw new CustomError.BadRequestError(`Config not found by path: ${configPath}`);
+        throw new BadRequestError(`Config not found for provided path`);
     }
     return res.status(StatusCodes.OK).json({
         message: `Config fetched successfully.`,
@@ -58,7 +59,7 @@ const getConfigByPath = async (req, res) => {
     });
 }
 
-const updateConfig = async (req, res) => {
+const updateConfig = async (req: Request, res: Response): Promise<Response<IResponse>> => {
     const {pathParams: {id: configId}, body, user: {id: userId, role}, method, path} = adaptRequest(req);
     const config = await ConfigData.findOneAndUpdate({_id: configId}, body, {new: true, runValidators: true});
     const logData = {
@@ -70,9 +71,9 @@ const updateConfig = async (req, res) => {
     return res.status(StatusCodes.OK).json({message: 'Config updated successfully.', data: {config}});
 }
 
-const disableConfig = async (req, res) => {
+const disableConfig = async (req: Request, res: Response): Promise<Response<IResponse>> => {
     const {pathParams: {id: configId}, method, path, user: {id: userId, role}} = adaptRequest(req);
-    await ConfigData.findOneAndUpdate({_id: configId}, {status: 'disabled'}, {
+    await ConfigData.findOneAndUpdate({_id: configId}, {status: constants.STATUS_DISABLED}, {
         new: true,
         runValidators: true
     });
@@ -88,12 +89,12 @@ const disableConfig = async (req, res) => {
     });
 }
 
-const deleteConfig = async (req, res) => {
+const deleteConfig = async (req: Request, res: Response): Promise<Response<IResponse>> => {
     const {pathParams: {id: configId}, method, path, user: {id: userId, role}} = adaptRequest(req);
     const config = await ConfigData.findOne({_id: configId});
     if (!config) {
         logger.info(`${StatusCodes.NOT_FOUND} Config with id ${configId} not found for delete_config - ${method} ${path}`);
-        throw new CustomError.BadRequestError(`Config with id ${configId} not found.`);
+        throw new BadRequestError(`Config not found.`);
     }
     await config.remove();
 
@@ -108,7 +109,7 @@ const deleteConfig = async (req, res) => {
     });
 }
 
-module.exports = {
+export {
     getAllConfig,
     createConfig,
     getSingleConfig,

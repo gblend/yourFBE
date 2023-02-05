@@ -1,10 +1,8 @@
-'use strict';
+import mongoose, {ObjectId, Schema, model} from 'mongoose';
+import joi, {ValidationResult} from 'joi';
+import {ISavedForLater, SavedForLaterModel} from '../interface';
 
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const joi = require('joi');
-
-const SavedForLaterSchema = new Schema({
+const SavedForLaterSchema = new Schema<ISavedForLater, SavedForLaterModel>({
     post: {
         type: Object,
         required: true,
@@ -29,19 +27,19 @@ const SavedForLaterSchema = new Schema({
     },
 }, {timestamps: true});
 
-const SavedForLater = mongoose.model('SavedForLater', SavedForLaterSchema, 'savedForLater');
+const SavedForLater = model<ISavedForLater, SavedForLaterModel>('SavedForLater', SavedForLaterSchema, 'savedForLater');
 
-const validateSavedForLaterDto = (saveForLaterData) => {
+const validateSavedForLaterDto = (saveForLaterDto: {post: any, feed: ObjectId, user: ObjectId}): ValidationResult => {
     const saveForLater = joi.object({
         post: joi.object().required(),
         feed: joi.object().required(),
         user: joi.object().required(),
     });
 
-    return saveForLater.validate(saveForLaterData);
+    return saveForLater.validate(saveForLaterDto);
 }
 
-module.exports = {
+export {
     SavedForLater,
     validateSavedForLaterDto
 }

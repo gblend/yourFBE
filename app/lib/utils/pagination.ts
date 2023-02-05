@@ -1,10 +1,16 @@
-'use strict';
+import {IPagination} from '../../interface';
 
-const paginate = async (resultData, params = {}) => {
+const paginate = async (resultData: any, params: IPagination = {}) => {
     const {pageNumber, pageSize} = params;
     const pagination = {
         pageSize: (!pageSize || pageSize < 1) ? 10 : Number(pageSize),
         pageNumber: (!pageNumber || pageNumber < 1) ? 1 : Number(pageNumber),
+        offset: 0,
+        total: 0,
+        pages: 0,
+        current: 0,
+        previous: 0,
+        next: 0
     }
     pagination.offset = Number((pagination.pageNumber - 1) * pagination.pageSize);
 
@@ -26,6 +32,6 @@ const paginate = async (resultData, params = {}) => {
     return {pagination, result}
 }
 
-module.exports = {
+export {
     paginate
 }

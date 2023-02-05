@@ -1,13 +1,12 @@
-'use strict';
+import {adaptRequest, logger, createObjectId} from '../lib/utils';
+import {FollowedFeed} from '../models/FollowedFeed';
+import {SavedForLater} from '../models/SavedForLater';
+import {StatusCodes} from 'http-status-codes';
+import {Feed} from '../models/Feed';
+import {FeedCategory} from '../models/FeedCategory';
+import {Response, Request} from  '../types';
 
-const {adaptRequest, logger, createObjectId} = require('../lib/utils');
-const {FollowedFeed} = require('../models/FollowedFeed');
-const {SavedForLater} = require('../models/SavedForLater');
-const {StatusCodes} = require('http-status-codes');
-const {Feed} = require('../models/Feed');
-const {FeedCategory} = require('../models/FeedCategory');
-
-const userDashboardStats = async (req, res) => {
+const userDashboardStats = async (req: Request, res: Response) => {
 	const {pathParams: {id: userId}, method, path} = adaptRequest(req);
 
 	const followedFeedsByCategory = await FollowedFeed.aggregate([
@@ -49,7 +48,7 @@ const userDashboardStats = async (req, res) => {
 	});
 }
 
-const adminDashboardStats = async (req, res) => {
+const adminDashboardStats = async (req: Request, res: Response) => {
 	const { method, path} = adaptRequest(req);
 
 	const feedsCount = await Feed.find({status: 'enabled'}).countDocuments();
@@ -71,7 +70,7 @@ const adminDashboardStats = async (req, res) => {
 	});
 }
 
-module.exports = {
+export {
 	userDashboardStats,
 	adminDashboardStats
 }

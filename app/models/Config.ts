@@ -1,10 +1,8 @@
-'use strict';
+import {Schema, model} from 'mongoose';
+import joi, {ValidationResult} from 'joi';
+import {ConfigModel, IConfig, IConfigDto} from '../interface';
 
-const mongoose = require('mongoose');
-const joi = require('joi');
-const Schema = mongoose.Schema;
-
-const ConfigDataSchema = new Schema({
+const ConfigDataSchema = new Schema<IConfig, ConfigModel>({
     name: {
         type: String,
         trim: true,
@@ -32,18 +30,18 @@ const ConfigDataSchema = new Schema({
 }, {timestamps: true});
 ConfigDataSchema.index({path: 1}, {unique: true});
 
-const ConfigData = mongoose.model('ConfigData', ConfigDataSchema, 'configData');
+const ConfigData = model<IConfig, ConfigModel>('ConfigData', ConfigDataSchema, 'configData');
 
-const validateConfigDataDto = (configDataPayload) => {
+const validateConfigDataDto = (configDataDto: IConfigDto): ValidationResult => {
     const configData = joi.object({
         name: joi.string().required(),
         path: joi.string().required(),
         value: joi.string().required()
     });
-    return configData.validate(configDataPayload);
+    return configData.validate(configDataDto);
 }
 
-module.exports = {
+export {
     ConfigData,
     validateConfigDataDto
 };

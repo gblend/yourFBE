@@ -1,18 +1,23 @@
-'use strict';
+import {Request} from '../../types/index';
 
-module.exports.adaptRequest = (req = {}) => {
+const adaptRequest = (req: Request) => {
     return Object.freeze({
-        path: req.path,
-        method: req.method,
+        path: req.path as string,
+        method: req.method as string,
         body: req.body,
-        queryParams: req.query,
-        pathParams: req.params,
+        queryParams: req.query as any,
+        pathParams: req.params as any,
         headers: req.headers,
-        ip: req.ip,
+        ip: req.ip as string,
         signedCookies: req.signedCookies,
-        user: req.user,
+        user: req.user as any,
         cookies: req.cookies,
         files: req.files,
-        socialProfile: req.socialProfile
+        socialProfile: req.socialProfile,
+        fields: req.fields,
     })
+}
+
+export {
+    adaptRequest
 }

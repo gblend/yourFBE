@@ -1,14 +1,13 @@
-'use strict';
+import {UnauthorizedError} from '../errors';
+import {ITokenUser} from '../../interface';
 
-const CustomError = require('../errors');
-
-const checkPermissions = (requestUser, resourceUserId) => {
+const checkPermissions = (requestUser: ITokenUser, resourceUserId: any): boolean => {
     if (requestUser.role !== 'admin' && requestUser.id !== resourceUserId.toHexString()) {
-        throw new CustomError.UnauthorizedError('You are not authorized to access this resource');
+        throw new UnauthorizedError('You are not authorized to access this resource');
     }
     return true;
 }
 
-module.exports = {
+export {
     checkPermissions
 }

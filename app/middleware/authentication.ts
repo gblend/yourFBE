@@ -1,17 +1,24 @@
-'use strict';
+import {UnauthorizedError, UnauthenticatedError} from '../lib/errors';
+import {
+    isTokenValid,
+    attachCookiesToResponse,
+    adaptRequest,
+    logger,
+    constants,
+    StatusCodes,
+    createJWT
+} from '../lib/utils';
+import {Token} from '../models/Token';
+import {Request, Response, NextFunction} from '../types/index';
+import {ITokenUser} from '../interface';
 
-const CustomErr = require('../lib/errors');
-const {isTokenValid, attachCookiesToResponse, adaptRequest, logger, constants, StatusCodes, createJWT} = require('../lib/utils');
-const {Token} = require('../models/Token');
-
-
-const authenticateUser = async (req, res, next) => {
+const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
     const {signedCookies, path, method} = adaptRequest(req);
     const {accessToken, refreshToken} = signedCookies;
 
     try {
         if (accessToken) {
-            const {name, id, role} = isTokenValid(accessToken);
+            const {name, id, role}: ITokenUser = isTokenValid(accessToken);
             req.user = {name, id, role};
             return next();
         }
@@ -27,27 +34,27 @@ const authenticateUser = async (req, res, next) => {
         }
 
         const accessTokenJWT = createJWT(payload.user);
-        attachCookiesToResponse({accessTokenJWT, refreshTokenJWT: isTokenExist.refreshToken, res});
+        attachCookiesToResponse({accessTokenJWT, refreshTokenJWT: isTokenExist!.refreshToken, res});
         req.user = payload.user;
         next();
-    } catch (err) {
+    } catch (err: any) {
         logger.info(`${err.statusCode} - Authentication error: ${err.message} - ${method} ${path}`)
-        throw new CustomErr.UnauthenticatedError(constants.auth.AUTHENTICATION_INVALID);
+        throw new UnauthenticatedError(constants.auth.AUTHENTICATION_INVALID);
     }
 }
 
-const authorizePermissions = (...roles) => {
-    return (req, _, next) => {
-        const {user, method, path} = adaptRequest(req);
-        if (!roles.includes(user.role)) {
+const authorizePermissions = (...roles: string[]) => {
+    return (req: Request, _: Response, next: NextFunction) => {
+        const {user, method, path}: {user: any, method: string, path: string} = adaptRequest(req);
+        if (!roles.includes(user!.role)) {
             logger.info(`${StatusCodes.UNAUTHORIZED} - Unauthorized access error - ${method} ${path}`)
-            throw new CustomErr.UnauthorizedError('You are not authorized to access this resource');
+            throw new UnauthorizedError('You are not authorized to access this resource');
         }
         next();
     }
 }
 
-module.exports = {
+export {
     authenticateUser,
     authorizePermissions
 }

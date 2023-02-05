@@ -1,18 +1,19 @@
-const passport = require('passport');
-const FacebookStrategy = require('passport-facebook').Strategy;
+import passport from 'passport';
+import {Strategy as FacebookStrategy, Profile} from 'passport-facebook';
 
-const {config} = require('../config/config');
-const init = require('./init');
-const {registerSocialProfile} = require("./register_social_profile");
+import {config} from '../config/config';
+import init from './init';
+import {registerSocialProfile} from './register_social_profile';
 
-passport.use('facebook', new FacebookStrategy({
+const passportFacebook = passport.use('facebook', new FacebookStrategy({
 		clientID: config.auth.facebook.clientID,
 		clientSecret: config.auth.facebook.clientSecret,
 		callbackURL: config.auth.facebook.callbackURL,
 		profileFields: ['id', 'displayName', 'photos', 'email', 'gender', 'name', 'profileUrl'],
-		enableProof: true
+		enableProof: true,
+		authType: 'reauthenticate'
 	},
-	async (_accessToken, _refreshToken, profile, cb) => {
+	async (_accessToken: string, _refreshToken: string, profile: Profile, cb: Function) => {
 		return registerSocialProfile(profile, cb, 'facebook');
 	}
 ));
@@ -20,4 +21,6 @@ passport.use('facebook', new FacebookStrategy({
 // serialize user into the session
 init();
 
-module.exports = passport;
+export {
+	passportFacebook
+}

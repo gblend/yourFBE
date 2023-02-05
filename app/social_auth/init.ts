@@ -1,15 +1,18 @@
-const passport = require('passport');
-const {User} = require('../models/User');
+import passport from 'passport';
+import {User} from '../models/User';
+import {ITokenUser, IUser} from '../interface';
+import {ErrorRequestHandler} from '../types/index';
 
 
-module.exports = function() {
 
-	passport.serializeUser((user, cb) => {
+export = function() {
+
+	passport.serializeUser((user, cb: Function): void => {
 		return cb(null, user);
 	});
 
-	passport.deserializeUser((userObj, cb) => {
-		return User.findById(userObj._id, (err, user) => {
+	passport.deserializeUser((userObj: ITokenUser, cb: Function) => {
+		return User.findById(userObj._id, (err: ErrorRequestHandler, user: IUser) => {
 			return cb(err, user);
 		});
 	});

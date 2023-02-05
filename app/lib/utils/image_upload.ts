@@ -1,8 +1,9 @@
-import fs from 'fs';
+import {existsSync, mkdirSync, unlink} from 'fs';
 const path = require("path");
 import {BadRequestError} from '../errors';
 import {config} from '../../config/config';
 import cloudinary from 'cloudinary';
+import {logger} from './index';
 const defaultFolder: string = 'avatar/yourFeeds';
 type imageUrl = { url: string };
 
@@ -28,9 +29,13 @@ const uploadImage = async (files: any, uploadType: string = 'cloudinary', folder
 }
 
 const uploadToLocal = async (imageFile: any): Promise<imageUrl> => {
-    const imgPath = path.join(__dirname, '../public/uploads/'+`${imageFile.name}`)
-    await imageFile.mv(imgPath)
+    const uploadDir = path.join(__dirname, '../../public/uploads');
+    const imgPath = `${uploadDir}/${imageFile.name}`;
+    if (!existsSync(uploadDir)) {
+        mkdirSync(uploadDir, {recursive: true});
+    }
 
+    await imageFile.mv(imgPath)
     return {url: `/uploads/${imageFile.name}`};
 }
 
@@ -39,10 +44,17 @@ const uploadToCloudinary = async (imageFile: any, folder: string = defaultFolder
     const {secure_url} = await cloudinary.v2.uploader.upload(imageFile.tempFilePath, {
         use_filename: true,
         folder: folder
-    })
-    fs.unlinkSync(imageFile.tempFilePath);
+    });
 
+    await unlinkFile(imageFile.tempFilePath);
     return {url: secure_url};
+}
+
+const unlinkFile = async (tempFilePath: string) => {
+    unlink(tempFilePath, (err) => {
+        if (err) logger.error(err.message);
+        logger.info('temporary image file was deleted');
+    });
 }
 
 export {

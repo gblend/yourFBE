@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:18-alpine
 
 ARG APP_PORT
 ARG RABBITMQ_DEFAULT_USER
@@ -12,23 +12,23 @@ ENV APP_PORT ${APP_PORT}
 ENV REDIS_PORT ${REDIS_PORT}
 ENV AMQP_SERVER_PORT ${AMQP_SERVER_PORT}
 
-RUN mkdir -p /app
+RUN mkdir -p /src
 
-WORKDIR /app
+WORKDIR /src
 
-COPY package.json /app
+COPY package.json /src
 
 RUN npm install && \
     # For development environment, we want to use nodemon to keep the code running
     npm install -g nodemon && \
     npm install -g pm2@5.2.0 \
 
-COPY . /app
+COPY ./dist /src
 
 # Expose web service and nodejs debug port
 EXPOSE  5000
 EXPOSE  8585
 
-ENTRYPOINT ["node", "server.js"]
+ENTRYPOINT ["node", "src/server.js"]
 
-CMD ["pm2-docker", "ecosystem.config.js"]
+CMD ["pm2-docker", "src/ecosystem.config.js"]

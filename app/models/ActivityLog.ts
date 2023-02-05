@@ -1,10 +1,8 @@
-'use strict';
+import mongoose, {Model, model, Schema} from 'mongoose';
+import joi, {ValidationResult} from 'joi';
+import {IActivityDto, IActivityLog, ActivityLogModel} from '../interface';
 
-const mongoose = require('mongoose');
-const joi = require('joi');
-const Schema = mongoose.Schema;
-
-const ActivityLogSchema = new Schema({
+const ActivityLogSchema = new Schema<IActivityLog, ActivityLogModel>({
     action: {
         type: String,
         trim: true,
@@ -21,18 +19,20 @@ const ActivityLogSchema = new Schema({
     }
 }, {timestamps: true});
 
-const ActivityLog = mongoose.model('ActivityLog', ActivityLogSchema);
+const ActivityLog = model<IActivityLog, ActivityLogModel>('ActivityLog', ActivityLogSchema);
 
-const validateActivityLogDto = (activityLogSchema) => {
+const validateActivityLogDto = (activityLogDto: IActivityDto):
+    ValidationResult => {
+
     const activityLog = joi.object({
         action: joi.string().required(),
         resourceName: joi.string().required(),
         user: joi.object().required()
     });
-    return activityLog.validate(activityLogSchema);
+    return activityLog.validate(activityLogDto);
 }
 
-module.exports = {
+export {
     ActivityLog,
     validateActivityLogDto
 }

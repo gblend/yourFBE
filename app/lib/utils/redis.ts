@@ -1,19 +1,16 @@
-'use strict';
+import Redis from 'ioredis';
+import {config} from '../../config/config';
+import {logger} from './logger';
 
-const Redis = require('ioredis');
-const {config} = require('../../config/config');
-const {logger} = require('../utils/logger');
-
-let redis = '';
-
-const initRedisCache = async () => {
+let redis: any = '';
+const initRedisCache = (): any => {
     if (!redis) {
         redis = new Redis({
-            port: config.redis.port,
+            port: config.redis.port as number,
             host: config.redis.host,
-            family: config.redis.family,
-            db: config.redis.db,
-        });
+            family: config.redis.family as number,
+            db: config.redis.db as number,
+        })
     }
     return redis;
 }
@@ -25,7 +22,7 @@ const initRedisCache = async () => {
  * @param {number} ttl the time to live (TTL) in seconds set for the specified key
  * @returns {Promise<void>}
  */
-const redisSet = async (key, value, ttl=0) => {
+const redisSet = async (key: string, value: any, ttl: number=0) => {
     redis = await initRedisCache();
     if (ttl) {
         return redis.set(key, JSON.stringify(value), 'EX', ttl);
@@ -37,9 +34,9 @@ const redisSet = async (key, value, ttl=0) => {
  * @param {string} key the key to retrieve its value
  * @returns {Promise<*>}
  */
-const redisGet = async (key) => {
+const redisGet = async (key: string): Promise<any> => {
     redis = await initRedisCache();
-    return redis.get(key, (err, result) => {
+    return redis.get(key, (err: {message: string}, result: any) => {
         if (err) {
             logger.info(err.message);
         }
@@ -48,11 +45,11 @@ const redisGet = async (key) => {
 }
 
 /**
- * Delete a key from thee redis cache
+ * Delete a key from the redis cache
  * @param {string} key the key to delete
  * @returns {Promise<*>}
  */
-const redisDelete = async (key) => {
+const redisDelete = async (key: string) => {
     redis = await initRedisCache();
     return redis.del(key);
 }
@@ -62,9 +59,9 @@ const redisDelete = async (key) => {
  * @param {string} key the key to match
  * @returns {Promise<void>}
  */
-const redisRefreshCache = async (key) => {
+const redisRefreshCache = async (key: string): Promise<void> => {
     redis = await initRedisCache();
-    redis.keys(`*${key}*`).then(async (properties) => {
+    redis.keys(`*${key}*`).then(async (properties: any) => {
         for (const property of properties) {
             await redisDelete(property);
         }
@@ -87,13 +84,15 @@ const redisFlushAll = async () => {
  * @param key the key to set the batch records
  * @param {number} ttl the time to live (TTL) in seconds set for the specified key
  * @param records
+ * @param {boolean} withKey whether to include cache key in record
  */
-const redisSetBatchRecords = async (key, records, ttl) => {
-    if (Array.isArray(records) && records.length > 0) {
+const redisSetBatchRecords = async (key: string, records: any, ttl: number = 0, withKey: boolean = false): Promise<any> => {
+    if (Array.isArray(records) && records.length) {
         redis = await initRedisCache();
         const pipeline = redis.pipeline();
         records.map((record, index) => {
             key = `${key}_${index}`;
+            if (withKey) Object.assign(record, {cacheKey: key});
             if (ttl) {
                 pipeline.set(key, JSON.stringify(record),  'EX', ttl);
             } else pipeline.set(key, JSON.stringify(record));
@@ -108,17 +107,17 @@ const redisSetBatchRecords = async (key, records, ttl) => {
  * @param key the key to get the cached batch records
  * @returns {*}
  */
-const redisGetBatchRecords = async (key) => {
-    const cachedRecords = [];
+const redisGetBatchRecords = async (key: string): Promise<any[]> => {
+    const cachedRecords: any[] = [];
     redis = await initRedisCache();
     const cachedKeys = await redis.keys(`*${key}_*`);
-    if (Array.isArray(cachedKeys) && cachedKeys.length > 0) {
+    if (Array.isArray(cachedKeys) && cachedKeys.length) {
         const pipeline = redis.pipeline();
         cachedKeys.map(cachedKey => {
             pipeline.get(cachedKey);
         });
-        return pipeline.exec().then(result => {
-            if (result && result.length > 0) {
+        return pipeline.exec().then((result: any[]) => {
+            if (result && result.length) {
                 result.map(data => {
                     if (data[1] && data[1] !== '{}') {
                         cachedRecords.push(JSON.parse(data[1]));
@@ -131,12 +130,13 @@ const redisGetBatchRecords = async (key) => {
     return cachedRecords;
 }
 
-module.exports = {
+export {
     redisSet,
     redisGet,
     redisDelete,
     redisRefreshCache,
     redisFlushAll,
+    initRedisCache,
     redisSetBatchRecords,
     redisGetBatchRecords
 }

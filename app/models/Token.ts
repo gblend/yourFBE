@@ -1,9 +1,7 @@
-'use strict';
+import mongoose, {Schema, model} from 'mongoose';
+import {IToken, TokenModel} from '../interface';
 
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-
-const TokenSchema = new Schema({
+const TokenSchema = new Schema<IToken, TokenModel>({
     refreshToken: {
         type: String,
         required: true,
@@ -27,8 +25,8 @@ const TokenSchema = new Schema({
     }
 }, {timestamps: true});
 
-const Token = mongoose.model('Token', TokenSchema);
+const Token = model<IToken, TokenModel>('Token', TokenSchema);
 
-module.exports = {
+export {
     Token
 }

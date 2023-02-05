@@ -1,10 +1,9 @@
-'use strict';
+import mongoose, {Schema, model} from 'mongoose';
+import joi, {ValidationResult} from 'joi';
+import {FollowedFeedModel, IFollowedFeed} from '../interface';
+import {IFollowCategoryFeed} from '../interface';
 
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const joi = require('joi');
-
-const FollowedFeedSchema = new Schema({
+const FollowedFeedSchema = new Schema<IFollowedFeed, FollowedFeedModel>({
     feed: {
         type: mongoose.Types.ObjectId,
         ref: 'Feed',
@@ -32,27 +31,27 @@ FollowedFeedSchema.virtual('feedFollowed', {
     justOne: false
 });
 
-const FollowedFeed = mongoose.model('FollowedFeed', FollowedFeedSchema);
+const FollowedFeed = model<IFollowedFeed, FollowedFeedModel>('FollowedFeed', FollowedFeedSchema);
 
-const validateFollowedFeedDto = (followedFeedData) => {
+const validateFollowedFeedDto = (followedFeedDto: IFollowedFeed): ValidationResult => {
     const followedFeed = joi.object({
         feed: joi.object().required(),
         user: joi.object().required(),
     });
 
-    return followedFeed.validate(followedFeedData);
+    return followedFeed.validate(followedFeedDto);
 }
 
-const validateFollowFeedsInCategoryDto = (followCategoryFeedsData) => {
+const validateFollowFeedsInCategoryDto = (followCategoryFeedsDto: IFollowCategoryFeed): ValidationResult => {
     const followCategoryFeeds = joi.object({
         category: joi.object().required(),
         user: joi.object().required(),
     });
 
-    return followCategoryFeeds.validate(followCategoryFeedsData);
+    return followCategoryFeeds.validate(followCategoryFeedsDto);
 }
 
-module.exports = {
+export {
     FollowedFeed,
     validateFollowFeedsInCategoryDto,
     validateFollowedFeedDto

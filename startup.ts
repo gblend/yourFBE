@@ -1,36 +1,37 @@
-'use strict';
+import morgan from 'morgan';
+import cors from 'cors';
+import path from 'path';
+import xss from 'xss-clean';
+import helmet from 'helmet';
+import passport from 'passport';
+import session from 'express-session';
+import {app, express, httpServer} from './app/socket';
+import { Request, Response } from './app/types';
+import cookieParser from 'cookie-parser';
+import fileUpload from 'express-fileupload';
+import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
+import {decodeCookies, logger, appStatus, StatusCodes, appRoutes} from './app/lib/utils';
+import {errorHandlerMiddleware} from './app/middleware/error_handler';
+import feedCategoryRouter from './app/routes/feed_category';
+import followedFeedRouter from './app/routes/followed_feed';
+import savedForLaterRouter from './app/routes/saved_for_later';
+import notFoundMiddleware from './app/middleware/not_found';
+import {handle} from './app/middleware/handle_event';
+import resInterceptor from './app/middleware/res_interceptor';
+import authRouter from './app/routes/auth';
+import userRouter from './app/routes/user';
+import searchRouter from './app/routes/search';
+import feedRouter from './app/routes/feed';
+import statRouter from './app/routes/stat';
+import logRouter from './app/routes/log';
+import configRouter from './app/routes/config';
+import notificationRouter from './app/routes/notification';
+import {config} from './app/config/config';
+import connectDB from './app/config/db/connect';
+import cloudinary from 'cloudinary';
 
-const morgan = require('morgan');
-const cors = require('cors');
-const path = require("path");
-const xss = require('xss-clean');
-const helmet = require('helmet');
-const passport = require('passport');
-const session = require('express-session');
-const {app, express, httpServer} = require('./app/socket');
-const cookieParser = require('cookie-parser');
-const fileUpload = require('express-fileupload')
-const rateLimit = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
-const {decodeCookies, logger, appStatus, StatusCodes, appRoutes} = require('./app/lib/utils');
-const errorHandlerMiddleware = require('./app/middleware/error_handler');
-const feedCategoryRouter = require('./app/routes/feed_category_routes');
-const followedFeedRouter = require('./app/routes/followed_feed_routes');
-const savedForLaterRouter = require('./app/routes/saved_for_later_routes');
-const notFoundMiddleware = require('./app/middleware/not_found');
-const {handle} = require('./app/middleware/handle_event');
-const resInterceptor = require('./app/middleware/res_interceptor');
-const authRouter = require('./app/routes/auth_routes');
-const userRouter = require('./app/routes/user_routes');
-const searchRouter = require('./app/routes/search_route');
-const feedRouter = require('./app/routes/feed_routes');
-const statRouter = require('./app/routes/stat_routes');
-const logRouter = require('./app/routes/log_routes');
-const configRouter = require('./app/routes/config_routes');
-const {config} = require('./app/config/config');
-const connectDB = require('./app/config/db/connect');
-const cloudinary = require('cloudinary').v2;
-cloudinary.config({
+cloudinary.v2.config({
 	cloud_name: config.cloudinary.cloudName,
 	api_key: config.cloudinary.cloudApiKey,
 	api_secret: config.cloudinary.cloudApiSecret
@@ -42,7 +43,7 @@ const apiRateLimiter = rateLimit({
 	standardHeaders: true,
 });
 
-module.exports = {
+export {
 	morgan,
 	errorHandlerMiddleware,
 	notFoundMiddleware,
@@ -66,8 +67,11 @@ module.exports = {
 	followedFeedRouter,
 	logRouter,
 	statRouter,
+	notificationRouter,
 	config,
 	express,
+	Request,
+	Response,
 	app,
 	appStatus,
 	StatusCodes,

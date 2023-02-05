@@ -1,5 +1,10 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import {objectId} from '../../types';
 
-module.exports.createObjectId = (id) => {
+const createObjectId = (id: objectId): mongoose.Types.ObjectId => {
 	return new mongoose.Types.ObjectId(id);
+}
+
+export {
+	createObjectId
 }

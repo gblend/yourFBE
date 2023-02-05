@@ -1,9 +1,7 @@
-'use strict';
+import winston, {Logger} from 'winston';
+import {config} from '../../config/config';
 
-const winston = require('winston');
-const {config} = require('../../config/config');
-
-const createLogger = () => {
+const createLogger = (): Logger => {
     const _logger = winston.createLogger({
         format: winston.format.json(),
         defaultMeta: {service: 'yourFeeds-backend'},
@@ -44,4 +42,8 @@ const createLogger = () => {
     return _logger;
 }
 
-module.exports = {logger: createLogger()}
+const logger = createLogger()
+
+export {
+    logger
+}

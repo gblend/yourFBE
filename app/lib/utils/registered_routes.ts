@@ -1,20 +1,20 @@
-'use strict';
+import {Application} from '../../types/index';
 
-module.exports.appRoutes = (app) => {
-	let routes = [];
+const appRoutes = (app: Application): Array<string> => {
+	let routes: string[] = [];
 
-	app._router.stack.forEach((routerSTack) => {
+	app._router.stack.forEach((routerSTack: any) => {
 		if (routerSTack.route) { // app routes
 			const path = routerSTack.route.path;
 			const method = Object.keys(routerSTack.route.methods)[0].toUpperCase().padEnd(36);
 
 			routes.push(`${method} ${path}`);
 		} else if (routerSTack.name === 'router') { // router middleware
-			routerSTack.handle.stack.forEach((handler) => {
+			routerSTack.handle.stack.forEach((handler: any) => {
 				const path = handler.route.path;
 				const routeMiddlewares = ['authenticateUser', '<anonymous>'];
 
-				handler.route.stack.forEach((stack) => {
+				handler.route.stack.forEach((stack: any) => {
 					if (!routeMiddlewares.includes((stack.name))) {
 						const method = stack.method.toUpperCase().padEnd(7);
 						const name = stack.name;
@@ -27,4 +27,8 @@ module.exports.appRoutes = (app) => {
 	});
 
 	return routes;
+}
+
+export {
+	appRoutes
 }

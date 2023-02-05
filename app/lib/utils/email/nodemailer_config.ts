@@ -1,13 +1,16 @@
-'use strict';
-
-const nodemailer = require('nodemailer');
-require('dotenv').config({path: '../.env'});
-const {config} = require('../../../config/config');
+import {createTransport} from 'nodemailer';
+import {config} from '../../../config/config';
+import {config as dotenvConfig} from 'dotenv';
+dotenvConfig({path: '../.env'});
 
 const transporterInit = () => {
-    return nodemailer.createTransport({
+    return createTransport({
         host: config.mail.host,
-        port: config.mail.port,
+        port: Number(config.mail.port),
+        secure: config.mail.smtpSecure,
+        tls: {
+            rejectUnauthorized: false,
+        },
         auth: {
             user: config.mail.authUser,
             pass: config.mail.authPassword
@@ -15,7 +18,7 @@ const transporterInit = () => {
     })
 }
 
-const sendEmail = ({to, subject, html}) => {
+const sendEmail = ({to, subject, html}: {to: string, subject: string, html: any}) => {
     const from = config.mail.from
     return transporterInit().sendMail({
         from,
@@ -25,6 +28,6 @@ const sendEmail = ({to, subject, html}) => {
     })
 }
 
-module.exports = {
+export {
     sendEmail
 }

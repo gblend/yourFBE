@@ -1,4 +1,4 @@
-module.exports.adaptPaginateParams = (pageSize, pageNumber) => {
+const adaptPaginateParams = (pageSize: number, pageNumber: number) => {
 	pageSize = (!pageSize || pageSize < 1) ? 10 : Number(pageSize);
 	pageNumber = (!pageNumber || pageNumber < 1) ? 1 : Number(pageNumber);
 	const offset = Number((pageNumber - 1) * pageSize);
@@ -8,4 +8,8 @@ module.exports.adaptPaginateParams = (pageSize, pageNumber) => {
 		pageNumber,
 		offset,
 	}
+}
+
+export {
+	adaptPaginateParams
 }

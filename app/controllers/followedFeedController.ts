@@ -1,15 +1,22 @@
-'use strict';
+import {StatusCodes} from 'http-status-codes';
+import {
+	adaptRequest,
+	formatValidationError,
+	logger,
+	paginate,
+	createObjectId,
+	adaptPaginateParams,
+	mapPaginatedData
+} from '../lib/utils';
+import {FollowedFeed, validateFollowedFeedDto, validateFollowFeedsInCategoryDto} from '../models/FollowedFeed';
+import {BadRequestError, NotFoundError, CustomAPIError} from '../lib/errors';
+import mongoose, {model} from 'mongoose';
+import {saveActivityLog} from '../lib/dbActivityLog';
+import {Feed} from '../models/Feed';
+import {Response, Request} from '../types/index'
+import {match} from "assert";
 
-const {StatusCodes} = require('http-status-codes');
-const {adaptRequest, formatValidationError, logger, paginate, createObjectId,
-	adaptPaginateParams, mapPaginatedData} = require('../lib/utils');
-const {FollowedFeed, validateFollowedFeedDto, validateFollowFeedsInCategoryDto} = require('../models/FollowedFeed');
-const {BadRequestError, NotFoundError, CustomAPIError} = require('../lib/errors');
-const mongoose = require('mongoose');
-const {saveActivityLog} = require('../lib/dbActivityLog');
-const {Feed} = require('../models/Feed');
-
-const followFeed = async (req, res) => {
+const followFeed = async (req: Request, res: Response) => {
 	const {body, method, path, user} = adaptRequest(req);
 	body.user = createObjectId(user.id);
 	body.feed = createObjectId(body.feed);
@@ -29,10 +36,10 @@ const followFeed = async (req, res) => {
 		logger.info(`${StatusCodes.OK} - Followed feed ${body.feed} successfully - ${method} ${path}`);
 	}
 
-	res.status(StatusCodes.CREATED).json({message: 'Feed followed successfully.', data: {followedFeed}});
+	res.status(StatusCodes.CREATED).json({message: 'Feed followed successfully.', data: {followed: followedFeed}});
 }
 
-const followAllFeedsInCategory = async (req, res) => {
+const followAllFeedsInCategory = async (req: Request, res: Response) => {
 	const {body, method, path, user} = adaptRequest(req);
 	const _user = createObjectId(user.id);
 	const categoryId = createObjectId(body.category);
@@ -42,9 +49,9 @@ const followAllFeedsInCategory = async (req, res) => {
 		return res.status(StatusCodes.BAD_REQUEST).json({data: {errors: formatValidationError(error)}});
 	}
 
-	const categoryFeedsData = await Feed.find({category: categoryId, status: 'enabled'}, {'_id': 1}).populate('category', 'name')
-		.then( (feed) => feed);
-	if (categoryFeedsData.length < 1) {
+	const categoryFeedsData = await Feed.find({category: categoryId, status: 'enabled'},
+		{'_id': 1}).populate('category', 'name').then( (feed) => feed);
+	if (!categoryFeedsData.length) {
 		throw new BadRequestError(`No feed found for selected category`);
 	}
 
@@ -64,7 +71,7 @@ const followAllFeedsInCategory = async (req, res) => {
 
 		logger.info(`${StatusCodes.OK} - Successfully followed ${categoryName} category feeds  - ${method} ${path}`);
 		res.status(StatusCodes.OK).json({message: `Successfully followed ${categoryName} category feeds`})
-	} catch (err) {
+	} catch (err: any) {
 		if (err.code && err.code === 11000 && err.result && err.result.result.ok) {
 			return res.status(StatusCodes.OK).json({message: `Successfully followed ${categoryName} category feeds`})
 		}
@@ -72,7 +79,7 @@ const followAllFeedsInCategory = async (req, res) => {
 	}
 }
 
-const unfollowAllFeedsInCategory = async (req, res) => {
+const unfollowAllFeedsInCategory = async (req: Request, res: Response) => {
 	const {body, method, path, user} = adaptRequest(req);
 	const _user = createObjectId(user.id);
 	const categoryId = createObjectId(body.category);
@@ -91,13 +98,15 @@ const unfollowAllFeedsInCategory = async (req, res) => {
 	const logData = {
 		action: `unfollowAllFeedsInCategory - by ${user.role}`,
 		resourceName: 'followedFeeds',
-		user: createObjectId(_user),
+		user: _user,
+		method,
+		path,
 	}
-	await saveActivityLog(logData, method, path);
+	await saveActivityLog(logData);
 	res.status(StatusCodes.OK).json({message: 'All feeds in this category unfollowed successfully.'});
 }
 
-const unfollowFeed = async (req, res) => {
+const unfollowFeed = async (req: Request, res: Response) => {
 	const {pathParams: {id: followedFeedId}, method, path} = adaptRequest(req);
 	if (!followedFeedId || !mongoose.isValidObjectId(followedFeedId)) {
 		throw new BadRequestError(`Invalid followed feed id: ${followedFeedId}`);
@@ -112,7 +121,7 @@ const unfollowFeed = async (req, res) => {
 	res.status(StatusCodes.OK).json({message: 'Feed unfollowed successfully.'});
 }
 
-const unfollowAllFeeds = async (req, res) => {
+const unfollowAllFeeds = async (req: Request, res: Response) => {
 	const {user: {id: userId, role}, method, path} = adaptRequest(req);
 
 	const deleted = await FollowedFeed.deleteMany({user: userId});
@@ -125,27 +134,38 @@ const unfollowAllFeeds = async (req, res) => {
 		action: `unfollowAllFeeds - by ${role}`,
 		resourceName: 'followedFeeds',
 		user: createObjectId(userId),
+		method,
+		path,
 	}
-	await saveActivityLog(logData, method, path);
+	await saveActivityLog(logData);
 	res.status(StatusCodes.OK).json({message: 'All feeds unfollowed successfully.'});
 }
 
-const latestPostsByFollowedFeeds = async (req, res) => {
+const latestPostsByFollowedFeeds = async (req: Request, res: Response) => {
 	const {user: {id: userId}, path, method} = adaptRequest(req);
 	let followFeeds = await FollowedFeed.find({user: userId}).select('feed');
 
-	if (!followFeeds.length > 0) {
-		logger.info(`No followed feeds found user id ${userId}`);
-		throw new NotFoundError(`No followed feeds found. Please follow available feeds.`);
+	if (!followFeeds.length) {
+		logger.info(`No followed feed found`);
+		throw new NotFoundError(`No followed feed found. Please follow available feeds.`);
 	}
 	// @TODO retrieve latest posts from redis ----> feed_post_index as key
 	logger.info(`${StatusCodes.OK} - Latest posts from followed feeds fetched successfully. - ${method} ${path}`);
 	res.status(StatusCodes.OK).json({message: 'Latest posts from followed feeds fetched successfully.', data: {}})
 }
 
-const getFollowedFeeds = async (req, res) => {
+const getFollowedFeeds = async (req: Request, res: Response) => {
 	let {path, method, queryParams: {fields, sort, pageSize, pageNumber}, user} = adaptRequest(req);
-	let followedFeeds = FollowedFeed.find({user: createObjectId(user.id)}).populate('feed', ['title', 'description', 'url', 'logoUrl'], 'Feed', {status: 'enabled'});
+	let followedFeeds = FollowedFeed.find({user: createObjectId(user.id)}).populate({
+		path : 'feed',
+		select: ['title', 'description', 'url', 'logoUrl', 'category'],
+		model: 'Feed',
+		match: {status: 'enabled'},
+		populate : {
+			path : 'category',
+			select: ['_id', 'name', 'description', 'createdAt', 'updatedAt']
+		}
+	});
 
 	if (sort) {
 		const sortParams = sort.split(',').join(' ');
@@ -159,7 +179,7 @@ const getFollowedFeeds = async (req, res) => {
 	let {pagination, result} = await paginate(followedFeeds, {pageSize, pageNumber});
 	const followedFeedsResult = await result;
 
-	if (followedFeedsResult.length < 1) {
+	if (!followedFeedsResult.length) {
 		logger.info(`${StatusCodes.NOT_FOUND} - No followed feeds found for get_followed_feeds - ${method} ${path}`);
 		throw new NotFoundError('No followed feed found.');
 	}
@@ -170,11 +190,11 @@ const getFollowedFeeds = async (req, res) => {
 	});
 }
 
-const feedsFollowersStats = async (req, res) => {
+const feedsFollowersStats = async (req: Request, res: Response) => {
 	let {path, method, queryParams: {pageSize: _pageSize, pageNumber: _pageNumber}} = adaptRequest(req);
 	const {pageSize, pageNumber, offset} = adaptPaginateParams(_pageSize, _pageNumber);
 
-	const feedsFollowersResult = await FollowedFeed.aggregate([
+	const feedsFollowersResult: any = await FollowedFeed.aggregate([
 		{
 			$lookup: {from: 'feeds', localField: 'feed', foreignField: '_id', as: 'feed'},
 		},
@@ -212,11 +232,11 @@ const feedsFollowersStats = async (req, res) => {
 		},
 	]);
 
-	if (feedsFollowersResult.length < 1) {
+	if (!feedsFollowersResult[0]?.paginatedResults.length || !feedsFollowersResult[0]?.feeds.length) {
 		logger.info(`${StatusCodes.NOT_FOUND} - No feeds followers found - ${method} ${path}`);
 		throw new NotFoundError('No feeds followers found');
 	}
-	const {result, total, pages, next, previous} = mapPaginatedData(feedsFollowersResult, _pageSize, _pageNumber);
+	const {result, total, pages, next, previous} = mapPaginatedData(feedsFollowersResult, pageSize, pageNumber);
 
 	logger.info(`${StatusCodes.OK} - All feeds followers stats fetched successfully - ${method} ${path}`);
 	res.status(StatusCodes.OK).json({
@@ -236,7 +256,7 @@ const feedsFollowersStats = async (req, res) => {
 	});
 }
 
-module.exports = {
+export {
 	followFeed,
 	unfollowFeed,
 	unfollowAllFeeds,

@@ -1,15 +1,16 @@
-'use strict';
-
-const {sendEmail} = require('./nodemailer_config');
-const {logger} = require('../logger');
-const {config} = require('../../../config/config');
-require('dotenv').config();
+import {sendEmail} from './nodemailer_config';
+import {logger} from '../logger';
+import {config} from '../../../config/config';
+import {config as dotenvConfig} from 'dotenv';
+dotenvConfig();
 
 let origin = config.app.baseUrlDev;
 if (config.app.env === 'production') {
     origin = config.app.baseUrlProd;
 }
-const sendResetPasswordEmail = async ({name, email, passwordToken}) => {
+type emailDto = {name: string, email: string, passwordToken?: string, verificationToken?: string}
+
+const sendResetPasswordEmail = async ({name, email, passwordToken}: emailDto) => {
     const resetUrl = `${origin}/user/reset-password?token=${passwordToken}&email=${email}`;
     const message = `
     <p>Hello&nbsp;<strong>${name}</strong></p>
@@ -20,12 +21,12 @@ const sendResetPasswordEmail = async ({name, email, passwordToken}) => {
     try {
         await sendEmail({to: email, subject: 'Password Reset', html: message});
         logger.info('Password reset email sent successfully.');
-    } catch (err) {
+    } catch (err: any) {
         logger.error(`Password reset email failed:  ${err.message}`);
     }
 }
 
-const sendVerificationEmail = async ({name, email, verificationToken}) => {
+const sendVerificationEmail = async ({name, email, verificationToken}: emailDto) => {
     const verifyUrl = `${origin}/user/verify-email?token=${verificationToken}&email=${email}`;
     const message = `
     <p>Hello&nbsp;<strong>${name}</strong></p>
@@ -36,12 +37,12 @@ const sendVerificationEmail = async ({name, email, verificationToken}) => {
     try {
         await sendEmail({to: email, subject: 'Email Verification', html: message});
         logger.info('Verification email sent successfully.')
-    } catch (err) {
+    } catch (err: any) {
         logger.error(`Verification email failed:  ${err.message}`);
     }
 }
 
-module.exports = {
+export default {
     sendVerificationEmail,
     sendResetPasswordEmail
 }

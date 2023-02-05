@@ -1,14 +1,13 @@
-'use strict';
-
-const {User, validateUpdateUser, validateUpdatePassword} = require('../models/User');
-const {StatusCodes} = require('http-status-codes');
-const NotFoundError = require('../lib/errors/not_found');
-const mongoose = require('mongoose');
-const {config} = require('../config/config');
-const {userNamespaceIo} = require('../socket');
-const {saveActivityLog} = require('../lib/dbActivityLog');
-const {BadRequestError, UnauthenticatedError, UnauthorizedError} = require('../lib/errors');
-const {
+import {User, validateUpdateUser, validateUpdatePassword} from '../models/User';
+import {StatusCodes} from 'http-status-codes';
+import NotFoundError from '../lib/errors/not_found';
+import mongoose from 'mongoose';
+import {config} from '../config/config';
+import {userNamespaceIo} from '../socket';
+import {saveActivityLog} from '../lib/dbActivityLog';
+import {Request, Response} from '../types';
+import {BadRequestError, UnauthenticatedError, UnauthorizedError} from '../lib/errors';
+import {
     checkPermissions,
     adaptRequest,
     constants,
@@ -18,11 +17,12 @@ const {
     redisSetBatchRecords,
     paginate,
     createObjectId
-} = require('../lib/utils');
+} from '../lib/utils';
+import {IResponse} from '../interface';
 
-const getAllUsers = async (req, res) => {
+const getAllUsers = async (req: Request, res: Response): Promise<Response<IResponse>> => {
     const {method, path: _path, queryParams: {sort, pageSize, pageNumber}} = adaptRequest(req);
-    const usersQuery = User.find({role: 'user', status: 'enabled'}).select(['-password', '-verificationToken']);
+    const usersQuery = User.find({role: 'user', status: constants.STATUS_ENABLED}).select(['-password', '-verificationToken']);
 
     if (sort) {
         const sortFields = sort.split(',').join(' ');
@@ -41,20 +41,21 @@ const getAllUsers = async (req, res) => {
     return res.status(StatusCodes.OK).json({message: 'Users fetched successfully', data: {users: usersData, pagination}});
 }
 
-const getDisabledAccounts = async (req, res) => {
-    const {method, path: _path} = adaptRequest(req);
+const getDisabledAccounts = async (req: Request, res: Response): Promise<Response<IResponse>> => {
+    const {method, path: _path, queryParams: {pageSize, pageNumber}} = adaptRequest(req);
     const users = await User.find({role: 'user', status: 'disabled'}).select(['-password', '-verificationToken']);
     if (!users.length) {
         logger.info(`${StatusCodes.NOT_FOUND} - No user found for get_disabled_accounts - ${method} ${_path}`);
-        throw new NotFoundError('No user found');
+        throw new NotFoundError('No disabled account found');
     }
 
-    logger.info(JSON.stringify(users));
-    return res.status(StatusCodes.OK).json({message: 'Disabled accounts fetched successfully', data: {users}});
+    const {pagination, result} = await paginate(users, {pageSize, pageNumber});
+    logger.info(JSON.stringify(result));
+    return res.status(StatusCodes.OK).json({message: 'Disabled accounts fetched successfully', data: {users: result, pagination}});
 }
 
-const getAllAdmins = async (req, res) => {
-    const {queryParams: {sort}, path: _path, method} = adaptRequest(req);
+const getAllAdmins = async (req: Request, res: Response): Promise<Response<IResponse>> => {
+    const {queryParams: {sort, pageSize, pageNumber}, path: _path, method} = adaptRequest(req);
     let admins = await redisGetBatchRecords(config.cache.allAdminCacheKey);
 
     if (admins.length < 1) {
@@ -69,34 +70,36 @@ const getAllAdmins = async (req, res) => {
         const sortFields = sort.split(',').join(' ')
         admins.sort(sortFields)
     }
+
+    const {pagination, result} = await paginate(admins, {pageSize, pageNumber});
     logger.info(`${StatusCodes.OK} - ${JSON.stringify(admins)} - ${method} ${_path}`);
-    return res.status(StatusCodes.OK).json({message: 'Admins fetched successfully', data: {admins}});
+    return res.status(StatusCodes.OK).json({message: 'Admins fetched successfully', data: {admins: result, pagination}});
 }
 
-const getUser = async (req, res) => {
+const getUser = async (req: Request, res: Response): Promise<Response<IResponse>> => {
     const {pathParams: {id: userId}, user: reqUser, method, path: _path} = adaptRequest(req);
     if (!mongoose.isValidObjectId(userId)) {
         logger.info(`${StatusCodes.BAD_REQUEST} ${constants.auth.INVALID_CREDENTIALS('user id')} for get_user - ${method} ${_path}`);
         throw new BadRequestError(constants.auth.INVALID_CREDENTIALS('user id'));
     }
-    const user = await User.findOne({_id: userId, status: 'enabled'}).select(['-password', '-verificationToken']);
+    const user = await User.findOne({_id: userId, status: constants.STATUS_ENABLED}).select(['-password', '-verificationToken']);
     if (!user) {
         logger.info(JSON.stringify(`${StatusCodes.NOT_FOUND} - User with id ${userId} does not exist for get_single_user - ${method} ${_path}`));
         throw new NotFoundError(`User with id ${userId} does not exist`);
     }
     checkPermissions(reqUser, user._id);
-    logger.info(`${StatusCodes.OK} - ${JSON.stringify(JSON.stringify(user))} - ${method} ${_path}`);
-    return res.status(StatusCodes.OK).json({message: 'User fetched successfully', data: {user}});
+    logger.info(`${StatusCodes.OK} - Account details fetched successfully - ${method} ${_path}`);
+    return res.status(StatusCodes.OK).json({message: 'Account details fetched successfully', data: {user}});
 }
 
-const showCurrentUser = async (req, res) => {
+const showCurrentUser = async (req: Request, res: Response): Promise<Response<IResponse>> => {
     const {user: {id}, path: _path, method} = adaptRequest(req);
     if (!id) {
         logger.info(`${StatusCodes.UNAUTHORIZED} - Unauthorized access for show_current_user - ${method} ${_path}`);
         throw new UnauthenticatedError(`Unauthorized access`);
     }
 
-    const userData = await User.findOne({_id: createObjectId(id), status: 'enabled'})
+    const userData = await User.findOne({_id: createObjectId(id), status: constants.STATUS_ENABLED})
         .populate({path: 'savedForLater', populate: {path: 'feed', select: ['_id', 'url', 'title', 'description', 'logoUrl', 'category']}})
         .populate({path: 'followedFeeds', populate: {path: 'feed', select: ['_id', 'url', 'title', 'description', 'logoUrl', 'category']}})
         .select(['-password', '-verificationToken']);
@@ -104,10 +107,10 @@ const showCurrentUser = async (req, res) => {
         logger.info(JSON.stringify(`${StatusCodes.NOT_FOUND} - User with id ${id} does not exist for show_current_user - ${method} ${_path}`));
         throw new NotFoundError(`User with id ${id} does not exist`);
     }
-    return res.status(StatusCodes.OK).json({message: 'User fetched successfully', data: {user: userData}});
+    return res.status(StatusCodes.OK).json({message: 'Account details fetched successfully', data: {user: userData}});
 }
 
-const updateUser = async (req, res) => {
+const updateUser = async (req: Request, res: Response): Promise<Response<IResponse>> => {
     logger.info(JSON.stringify(req.body));
     const {user, body, path: _path, method, pathParams: {id: userId}} = adaptRequest(req);
     const {error} = validateUpdateUser(body);
@@ -118,10 +121,10 @@ const updateUser = async (req, res) => {
         });
     }
 
-    const account = await User.findOneAndUpdate({_id: userId}, body, {new: true, runValidators: true});
+    const account: any = await User.findOneAndUpdate({_id: userId}, body, {new: true, runValidators: true});
     if (!account) {
         logger.info(JSON.stringify(`${StatusCodes.NOT_FOUND} - User with id ${userId} does not exist for update_account - ${method} ${_path}`));
-        throw new NotFoundError(`User does not exist`);
+        throw new NotFoundError(`Account not found`);
     }
     checkPermissions(user, account._id);
     const token = await account.createJWT();
@@ -131,8 +134,10 @@ const updateUser = async (req, res) => {
         action: `updateUser - by ${user.role}`,
         resourceName: 'users',
         user: createObjectId(user.id),
+        method,
+        _path,
     }
-    await saveActivityLog(logData, method, _path);
+    await saveActivityLog(logData);
     logger.info(`${StatusCodes.OK} - ${JSON.stringify(JSON.stringify(user))} - ${method} ${_path}`);
     return res.status(StatusCodes.OK).json({
         message: 'Information updated successfully',
@@ -140,24 +145,30 @@ const updateUser = async (req, res) => {
     });
 }
 
-const disableUserAccount = async (req, res) => {
+const disableUserAccount = async (req: Request, res: Response): Promise<Response<IResponse>> => {
     const {pathParams: {id: userId}, user, method, path} = adaptRequest(req);
-    const account = await User.findById(userId).select(['-password', '-verificationToken']);
+    const account: any = await User.findById(userId).select(['-password', '-verificationToken']);
 
+    if (!account) {
+        logger.info(`${StatusCodes.NOT_FOUND} - No account found with id ${userId} - ${method} ${path}`);
+        throw new NotFoundError(`Account not found`);
+    }
     if(user.role !== 'admin' && user.id !== account._id.toHexString()) {
         throw new UnauthorizedError('You are not authorized to perform this action.')
     }
     checkPermissions(user, account._id);
 
-    account.status = 'disabled';
+    account.status = constants.STATUS_DISABLED;
     await account.save();
 
     const logData = {
         action: `disableUserAccount: ${userId} - by ${user.role}`,
         resourceName: 'users',
         user: createObjectId(user.id),
+        method,
+        path,
     }
-    await saveActivityLog(logData, method, path);
+    await saveActivityLog(logData);
 
     userNamespaceIo.to('users').emit('user:disabled', {userId});
     return res.status(StatusCodes.OK).json({
@@ -166,27 +177,29 @@ const disableUserAccount = async (req, res) => {
     });
 }
 
-const enableUserAccount = async (req, res) => {
+const enableUserAccount = async (req: Request, res: Response): Promise<Response<IResponse>> => {
     const {pathParams: {id: userId}, user, method, path} = adaptRequest(req);
     if(user.role !== 'admin') {
         throw new UnauthorizedError('You are not authorized to perform this action.')
     }
 
-    const account = await User.findOneAndUpdate({_id: userId}, {status: 'enabled'},
+    const account: any = await User.findOneAndUpdate({_id: userId}, {status: constants.STATUS_ENABLED},
         {new: true, runValidators: true}).select(['-password', '-verificationToken']);
 
     const logData = {
         action: `enableUserAccount: ${userId} - by ${user.role}`,
         resourceName: 'users',
         user: createObjectId(user.id),
+        method,
+        path,
     }
-    await saveActivityLog(logData, method, path);
+    await saveActivityLog(logData);
     return res.status(StatusCodes.OK).json({
         message: `${account.firstname} ${account.lastname} account enabled successfully`,
     });
 }
 
-const updatePassword = async (req, res) => {
+const updatePassword = async (req: Request, res: Response): Promise<Response<IResponse>> => {
     const {body, user: {id: userId, role}, path: _path, method} = adaptRequest(req);
     const {newPassword, oldPassword} = body;
 
@@ -198,15 +211,14 @@ const updatePassword = async (req, res) => {
         });
     }
     if (newPassword.toLowerCase() === oldPassword.toLowerCase()) {
-        logger.info(`${StatusCodes.BAD_REQUEST} - New password must not be the same as old password for update_user_password - ${method} ${_path}`);
         throw new BadRequestError('New password must not be the same as old password');
     }
-    const user = await User.findOne({_id: userId});
+    const user: any = await User.findOne({_id: userId});
     if (!user) {
         throw new UnauthorizedError(`Unauthorized access`);
     }
-    const isPasswordMatch = await user.comparePassword(oldPassword);
-    if (!isPasswordMatch) {
+    const passwordMatch = await user.comparePassword(oldPassword);
+    if (!passwordMatch) {
         throw new UnauthorizedError('Password mismatch');
     }
     user.password = newPassword;
@@ -216,12 +228,14 @@ const updatePassword = async (req, res) => {
         action: `updatePassword - by ${role}`,
         resourceName: 'users',
         user: createObjectId(userId),
+        method,
+        _path,
     }
-    await saveActivityLog(logData, method, _path);
+    await saveActivityLog(logData);
     return res.status(StatusCodes.OK).json({message: 'Password was updated successfully'});
 }
 
-module.exports = {
+export {
     getAllUsers,
     getAllAdmins,
     getUser,

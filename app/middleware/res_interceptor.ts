@@ -1,8 +1,7 @@
-'use strict';
+import {StatusCodes} from 'http-status-codes';
+import {Request, Response, NextFunction} from '../types/index';
 
-const {StatusCodes} = require('http-status-codes');
-
-const resInterceptor = (_, res, next) => {
+export default (_: Request, res: Response, next: NextFunction): void => {
 	const successMessage = 'Request processed successfully.';
 	const errorMessage = 'Request failed.';
 
@@ -18,5 +17,3 @@ const resInterceptor = (_, res, next) => {
 
 	next();
 }
-
-module.exports = resInterceptor;

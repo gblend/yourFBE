@@ -1,17 +1,20 @@
-'use strict';
+import {StatusCodes} from 'http-status-codes';
+import {adaptRequest, logger, paginate, formatValidationError, createObjectId, constants} from '../lib/utils';
+import {FeedCategory, validateFeedCategoryDto} from '../models/FeedCategory';
+import {NotFoundError, BadRequestError} from '../lib/errors';
+import {Request, Response} from '../types/index';
+import mongoose from 'mongoose';
+import {io} from '../socket';
+import {saveActivityLog} from '../lib/dbActivityLog';
+import {IResponse} from '../interface';
+import {config} from "../config/config";
+const feedCategoryRoom: string = config.socket.group.categories;
+const feedCategoryEvent = config.socket.events.feedCategory;
 
-const {StatusCodes} = require('http-status-codes');
-const {adaptRequest, logger, paginate, formatValidationError, createObjectId} = require('../lib/utils');
-const {FeedCategory, validateFeedCategoryDto} = require('../models/FeedCategory');
-const {NotFoundError, BadRequestError} = require('../lib/errors');
-const mongoose = require('mongoose');
-const {	io } = require('../socket');
-const {saveActivityLog} = require('../lib/dbActivityLog');
-
-const getCategories = async (req, res) => {
+const getCategories = async (req: Request, res: Response): Promise<void> => {
 	const {method, path, queryParams: {sort, pageSize, pageNumber}} = adaptRequest(req);
 	//@TODO check if categories exists in redis cache and query db if not
-	const categories = FeedCategory.find({status: 'enabled'}).populate('feedsCount');
+	const categories = FeedCategory.find({status: constants.STATUS_ENABLED}).populate('feedsCount');
 	//@TODO store fetched categories in redis cache
 
 	if (sort) {
@@ -22,17 +25,18 @@ const getCategories = async (req, res) => {
 	const {pagination, result} = await paginate(categories, {pageSize, pageNumber});
 	const categoriesResult = await result;
 
-	if (categoriesResult.length < 1) {
+	if (!categoriesResult.length) {
 		logger.info(`${StatusCodes.NOT_FOUND} - No category found - ${method} ${path}`);
 		throw new NotFoundError('No category found.');
 	}
 	res.status(StatusCodes.OK).json({message: 'Categories fetched successfully.', data: {categories: categoriesResult, pagination}});
 }
 
-const getCategoryById = async (req, res) => {
+const getCategoryById = async (req: Request, res: Response) => {
 	const {method, path, pathParams: {id: categoryId}} = adaptRequest(req);
 	//@TODO check if categories exists in redis cache and query db if not
-	const category = await FeedCategory.findById(categoryId).populate('categoryFeeds', 'id _id', 'Feed');
+	const category = await FeedCategory.findById(categoryId, {status: constants.STATUS_ENABLED}).populate('feeds',
+		'_id url title description logoUrl user createdAt updatedAt', 'Feed', {status: constants.STATUS_ENABLED});
 	if (!category) {
 		logger.info(`${StatusCodes.NOT_FOUND} - Category not found - ${method} ${path}`);
 		throw new NotFoundError('Category not found.');
@@ -41,7 +45,7 @@ const getCategoryById = async (req, res) => {
 	res.status(StatusCodes.OK).json({message: 'Category fetched successfully.', data: {category}});
 }
 
-const createCategory = async (req, res) => {
+const createCategory = async (req: Request, res: Response): Promise<Response<IResponse> | any> => {
 	const {body, method, path, user: {id: userId, role}} = adaptRequest(req);
 	const {error} = validateFeedCategoryDto(body);
 
@@ -61,17 +65,19 @@ const createCategory = async (req, res) => {
 			action: `createCategory - by ${role}`,
 			resourceName: 'FeedCategory',
 			user: createObjectId(userId),
+			method,
+			path,
 		}
-		await saveActivityLog(logData, method, path);
+		await saveActivityLog(logData);
 
 		logger.info(`${StatusCodes.OK} - Category created successfully - ${method} ${path}`);
 	}
 
-	io.to('feeds').emit('feedCategory:created', {category: createdCategory});
+	io.to(feedCategoryRoom).emit(feedCategoryEvent.created, {category: createdCategory});
 	res.status(StatusCodes.OK).json({ message: 'Category created successfully.', data: {category: createdCategory}})
 }
 
-const disableCategory = async (req, res) => {
+const disableCategory = async (req: Request, res: Response): Promise<void> => {
 	const {pathParams: {id: categoryId}, method, path, user: {id: userId, role}} = adaptRequest(req);
 
 	if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
@@ -85,7 +91,7 @@ const disableCategory = async (req, res) => {
 		throw new BadRequestError('Category not found.');
 	}
 
-	category.status = 'disabled';
+	category.status = constants.STATUS_DISABLED;
 	await category.save();
 
 	//@TODO: clear disabled category from redis cached categories
@@ -93,14 +99,16 @@ const disableCategory = async (req, res) => {
 		action: `disableCategory: ${categoryId} - by ${role}`,
 		resourceName: 'FeedCategory',
 		user: createObjectId(userId),
+		method,
+		path,
 	}
-	await saveActivityLog(logData, method, path);
+	await saveActivityLog(logData);
 
-	io.to('feeds').emit('feedCategory:disabled', {categoryId});
+	io.to(feedCategoryRoom).emit(feedCategoryEvent.disabled, {categoryId});
 	res.status(StatusCodes.OK).json({ message: 'Category disabled successfully.'});
 }
 
-const deleteCategory = async (req, res) => {
+const deleteCategory = async (req: Request, res: Response): Promise<void> => {
 	const {pathParams: {id: categoryId}, method, path, user: {id: userId, role}} = adaptRequest(req);
 
 	if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
@@ -119,14 +127,16 @@ logger.info('Category is ' + categoryId);
 		action: `deleteCategory: ${categoryId} - by ${role}`,
 		resourceName: 'FeedCategory',
 		user: createObjectId(userId),
+		method,
+		path,
 	}
-	await saveActivityLog(logData, method, path);
+	await saveActivityLog(logData);
 
-	io.to('feeds').emit('feedCategory:deleted', {categoryId});
+	io.to(feedCategoryRoom).emit(feedCategoryEvent.deleted, {categoryId});
 	res.status(StatusCodes.OK).json({ message: 'Category deleted successfully.'});
 }
 
-const updateCategory = async (req, res) => {
+const updateCategory = async (req: Request, res: Response): Promise<void> => {
 	const {body, pathParams: {id: categoryId}, method, path, user: {id: userId, role}} = adaptRequest(req);
 
 	if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
@@ -137,21 +147,23 @@ const updateCategory = async (req, res) => {
 	const updatedCategory = await FeedCategory.findOneAndUpdate({_id: categoryId}, body, {runValidators: true, new: true});
 	if (!updatedCategory) {
 		logger.info(`${StatusCodes.BAD_REQUEST} - Unable to update category - ${method} ${path}`);
-		throw new BadRequestError('Unable to update category. Please try again');
+		throw new BadRequestError('Category not found.');
 	}
 	//@TODO: clear updated category from redis cached categories
 	const logData = {
 		action: `updateCategory: ${categoryId} - by ${role}`,
 		resourceName: 'FeedCategory',
 		user: createObjectId(userId),
+		method,
+		path,
 	}
-	await saveActivityLog(logData, method, path);
+	await saveActivityLog(logData);
 
-	io.to('feeds').emit('feedCategory:updated', {category: updatedCategory});
+	io.to(feedCategoryRoom).emit(feedCategoryEvent.updated, {category: updatedCategory});
 	res.status(StatusCodes.OK).json({ message: 'Category updated successfully.', date: {category: updatedCategory}});
 }
 
-module.exports = {
+export {
 	getCategories,
 	createCategory,
 	disableCategory,

@@ -1,20 +1,19 @@
-'use strict';
+import {StatusCodes} from 'http-status-codes';
+import {logger, adaptRequest} from '../lib/utils';
+import {Request, Response, NextFunction} from '../types/index';
 
-const {StatusCodes} = require('http-status-codes');
-const {logger, adaptRequest} = require('../lib/utils');
-
-const errorHandlerMiddleware = (err, req, res, _next) => {
+const errorHandlerMiddleware = (err: any, req: Request, res: Response, _next: NextFunction) => {
     const {path, method} = adaptRequest(req);
 
     let customError = {
-        // set default
+        // set defaults
         statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
         message: err.message || 'Something went wrong. Please try again later.',
     };
 
     if (err.name === 'ValidationError') {
-        customError.msg = Object.values(err.errors)
-            .map((item) => item.message)
+        customError.message = Object.values(err.errors)
+            .map((item: any) => item.message)
             .join(',');
         customError.statusCode = 400;
     }
@@ -39,4 +38,6 @@ const errorHandlerMiddleware = (err, req, res, _next) => {
     });
 };
 
-module.exports = errorHandlerMiddleware;
+export {
+    errorHandlerMiddleware
+}

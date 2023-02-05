@@ -6,21 +6,24 @@
     "type": "git",
     "url": "git://github.com/gblend/yourfeedsApi.git"
   },
-  "main": "server.js",
+  "main": "dist/server",
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js",
-    "pm2:dev": "NODE_PATH=. pm2 delete ecosystem.config.js && pm2 start ecosystem.config.js --no-daemon",
-    "pm2": "NODE_PATH=. pm2 delete ecosystem.config.js && pm2 start ecosystem.config.js",
-    "stop": "NODE_PATH=. pm2 stop ecosystem.config.js",
-    "test": "NODE_ENV=test jest --coverage tests/*",
-    "unit": "jest --coverage tests/unit --watchAll",
-    "integration": "NODE_ENV=test jest --coverage tests/integration/auth.test.js --watchAll"
+    "dev": "nodemon dist/server",
+    "build": "tsc",
+    "postbuild": "copyfiles --error .env Procfile tests/**/*.* .github/**/*.* app/public/*.* postman_collection.json dist",
+    "start": "node dist/server",
+    "pm2:dev": "NODE_PATH=. pm2 delete dist/ecosystem.config.js && pm2 start dist/ecosystem.config.js --no-daemon",
+    "pm2": "NODE_PATH=. pm2 delete dist/ecosystem.config.js && pm2 start dist/ecosystem.config.js",
+    "stop": "NODE_PATH=. pm2 stop dist/ecosystem.config.js",
+    "test": "NODE_ENV=test jest --coverage dist/tests/*",
+    "unit": "jest --coverage dist/tests/unit --watchAll",
+    "integration": "NODE_ENV=test jest --coverage dist/tests/integration --watchAll"
   },
-  "author": "gabrielilochi@gmail.com",
+  "author": "gabrielilo190@gmail.com",
   "license": "ISC",
   "dependencies": {
     "@socket.io/admin-ui": "^0.4.0",
+    "@socket.io/redis-adapter": "^8.0.1",
     "amqplib": "^0.8.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.27.1",
@@ -61,9 +64,29 @@
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.9"
+    "@types/amqplib": "^0.10.1",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/cookie-parser": "^1.4.3",
+    "@types/express": "^4.17.15",
+    "@types/express-fileupload": "^1.4.1",
+    "@types/express-rate-limit": "^6.0.0",
+    "@types/express-session": "^1.17.5",
+    "@types/ioredis": "^4.28.10",
+    "@types/jsonwebtoken": "^9.0.1",
+    "@types/morgan": "^1.9.4",
+    "@types/node": "^18.11.18",
+    "@types/nodemailer": "^6.4.7",
+    "@types/passport": "^1.0.11",
+    "@types/passport-facebook": "^2.1.11",
+    "@types/passport-google-oauth20": "^2.0.11",
+    "@types/passport-twitter": "^1.0.37",
+    "@types/socket.io": "^3.0.2",
+    "@types/xml2js": "^0.4.11",
+    "nodemon": "^2.0.9",
+    "socket.io-client": "^4.5.1",
+    "typescript": "^4.9.4"
   },
   "engines": {
-    "node": "14.x"
+    "node": "18.x"
   }
 }

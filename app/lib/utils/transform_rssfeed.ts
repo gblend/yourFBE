@@ -1,7 +1,13 @@
-const {paginate} = require('./index');
+import {paginate} from './index';
+import {IFeedPost, IRssFeed} from '../../interface';
 
-module.exports.transformRssFeed = async (feed, {pageSize, pageNumber}) => {
-	const {result, pagination} = await paginate(feed.item, {pageSize, pageNumber});
+type pageInfo = {
+	pageSize: number,
+	pageNumber: number,
+}
+
+const transformRssFeed = async (feed: any, page: pageInfo): Promise<IRssFeed> => {
+	const {result, pagination} = await paginate(feed.item, {pageSize: page.pageSize, pageNumber: page.pageNumber});
 
 	return {
 		title: feed.title?.[0],
@@ -30,8 +36,8 @@ module.exports.transformRssFeed = async (feed, {pageSize, pageNumber}) => {
 	}
 }
 
-const transformFeedPosts = (posts) => {
-	return posts.map((post) => {
+const transformFeedPosts = (posts: any): IFeedPost => {
+	return posts.map((post: any) => {
 		return {
 			guid: post.guid?.[0]?.['_'],
 			guidIsPermaLink: post.guid?.[0]?.['isPermaLink']?.[0],
@@ -55,4 +61,9 @@ const transformFeedPosts = (posts) => {
 			itunesImageUrl: post['itunes:image']?.[0].url?.[0],
 		};
 	});
+}
+
+
+export {
+	transformRssFeed
 }

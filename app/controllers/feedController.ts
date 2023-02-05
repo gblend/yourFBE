@@ -1,17 +1,31 @@
-'use strict';
+import {StatusCodes} from 'http-status-codes';
+import {
+	adaptRequest,
+	logger,
+	formatValidationError,
+	paginate,
+	createObjectId,
+	fetchFeedPosts,
+	redisGet,
+	redisSet,
+	constants
+} from '../lib/utils';
+import {validateFeedDto, validateFeedUpdateDto, Feed} from '../models/Feed';
+import {transformRssFeed} from '../lib/utils/transform_rssfeed';
+import {saveActivityLog} from '../lib/dbActivityLog';
+import {BadRequestError, NotFoundError} from '../lib/errors';
+import mongoose from 'mongoose';
+import {config} from '../config/config';
+import {Request, Response} from '../types/index'
+import {io} from '../socket';
+const feedRoom: string = config.socket.group.feeds;
+const feedEvent = config.socket.events.feed;
 
-const {StatusCodes} = require('http-status-codes');
-const {adaptRequest, logger, formatValidationError, paginate, createObjectId, fetchFeedPosts, redisGet, redisSet} = require('../lib/utils');
-const {validateFeedDto, validateFeedUpdateDto, Feed} = require('../models/Feed');
-const {transformRssFeed} = require('../lib/utils/transform_rssfeed');
-const {saveActivityLog} = require('../lib/dbActivityLog');
-const {BadRequestError, NotFoundError} = require('../lib/errors');
-const mongoose = require('mongoose');
-const {config} = require('../config/config');
-const {	io } = require('../socket');
-
-const getFeedsByCategory = async (req, res) => {
+const getFeedsByCategory = async (req: Request, res: Response) => {
 	let {path, method, queryParams: {pageSize = 10, pageNumber = 1}} = adaptRequest(req);
+	pageNumber = parseInt(pageNumber);
+	pageSize = parseInt(pageSize);
+
 	const feedsByCategory = await Feed.aggregate([
 		{
 			$match: {
@@ -26,12 +40,6 @@ const getFeedsByCategory = async (req, res) => {
 		},
 		{
 			$sort: {category: -1}
-		},
-		{
-			$skip: (pageNumber - 1) * pageSize
-		},
-		{
-			$limit: pageSize
 		},
 		{
 			$group: {
@@ -49,16 +57,18 @@ const getFeedsByCategory = async (req, res) => {
 		}
 	]);
 
-	if (feedsByCategory.length < 1) {
+	if (!feedsByCategory.length) {
 		logger.info(`${StatusCodes.NOT_FOUND} - No feed found for get_feeds_by_category - ${method} ${path}`);
 		throw new NotFoundError('No feeds found.');
 	}
 
+	const {pagination, result} = await paginate(feedsByCategory, {pageSize, pageNumber});
 	logger.info(`${StatusCodes.OK} - Feeds by category fetched successfully - ${method} ${path}`);
-	return res.status(StatusCodes.OK).json({message: `Feeds by category fetched successfully.`, data: {feedsByCategory}});
+	return res.status(StatusCodes.OK).json({message: `Feeds by category fetched successfully.`,
+		data: {feedsByCategory: result, pagination}});
 }
 
-const getFeedsByCategoryId = async (req, res) => {
+const getFeedsByCategoryId = async (req: Request, res: Response) => {
 	let {path, method, pathParams: {id: categoryId}, user, queryParams: {sort, pageSize, pageNumber, fields}} = adaptRequest(req);
 	if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
 		throw new BadRequestError('Invalid feed category id.')
@@ -81,8 +91,10 @@ const getFeedsByCategoryId = async (req, res) => {
 		action: `getFeedsByCategoryId: ${categoryId} - by ${user.role}`,
 		resourceName: 'feeds',
 		user: createObjectId(user.id),
+		method,
+		path,
 	}
-	await saveActivityLog(logData, method, path);
+	await saveActivityLog(logData);
 
 	if (feedsResult.length < 1) {
 		logger.info(`${StatusCodes.NOT_FOUND} - No feed found for get_feeds_by_category_id - ${method} ${path}`);
@@ -92,7 +104,7 @@ const getFeedsByCategoryId = async (req, res) => {
 	return res.status(StatusCodes.OK).json({message: `Feeds fetched successfully.`, data: {feeds: feedsResult, pagination}});
 }
 
-const createFeed = async (req, res) => {
+const createFeed = async (req: Request, res: Response) => {
 	const {body, path, method, user} = adaptRequest(req);
 	body.user = createObjectId(user.id);
 	const {error} = validateFeedDto(body);
@@ -103,28 +115,30 @@ const createFeed = async (req, res) => {
 	}
 
 	const isFeedExist = await Feed.findOne({url: body.url, title: body.title, category: body.category});
-	let feed = {}
+	let feed: any = {}
 	if (!isFeedExist) {
 		feed = await Feed.create(body);
 		if (!Object.keys(feed).length) {
 			throw new BadRequestError(`Unable to follow feed. Please try again later.`);
 		}
 		const logData = {
-			action: `createFeed - by ${user.role}`,
+			action: `createFeed: ${feed._id} - by ${user.role}`,
 			resourceName: 'Feed',
 			user: createObjectId(user.id),
+			method,
+			path,
 		}
-		await saveActivityLog(logData, method, path);
+		await saveActivityLog(logData);
 		logger.info(`${StatusCodes.OK} - Feed created - ${method} ${path}`);
 	}
 
-	io.to('feeds').emit('feed:created', {feed});
+	io.to(feedRoom).emit(feedEvent.created, {feed});
 	res.status(StatusCodes.OK).json({message: 'Feed created successfully.', data: {feed}});
 }
 
-const getFeeds = async (req, res) => {
+const getFeeds = async (req: Request, res: Response) => {
 	let {path, method, queryParams: {fields, sort, pageSize, pageNumber}} = adaptRequest(req);
-	let feeds = Feed.find({status: 'enabled'}).populate('category', '_id name description');
+	let feeds = Feed.find({status: constants.STATUS_ENABLED}).populate('category', '_id name description');
 
 	if (sort) {
 		const sortFields = sort.split(',').join(' ');
@@ -135,10 +149,10 @@ const getFeeds = async (req, res) => {
 		feeds.select(requiredFields);
 	}
 
-	let {pagination, result} = await paginate(feeds, {pageSize, pageNumber});
+	const {pagination, result} = await paginate(feeds, {pageSize, pageNumber});
 	const feedsResult = await result;
 
-	if (feedsResult.length < 1) {
+	if (!feedsResult.length) {
 		logger.info(`${StatusCodes.NOT_FOUND} - No feeds found for get_feeds - ${method} ${path}`);
 		throw new NotFoundError('No feed found.');
 	}
@@ -146,12 +160,12 @@ const getFeeds = async (req, res) => {
 	return res.status(StatusCodes.OK).json({message: 'Feeds fetched successfully.', data: {feeds: feedsResult, pagination}});
 }
 
-const getFeedById = async (req, res) => {
+const getFeedById = async (req: Request, res: Response) => {
 	let {path, method, fields: selectFields, pathParams: {id: feedId}} = adaptRequest(req);
 	if (!feedId || !mongoose.isValidObjectId(feedId)) {
 		throw new BadRequestError('Invalid feed id.');
 	}
-	let feed = await Feed.findOne({_id: feedId}).populate('category');
+	let feed: any = await Feed.findOne({_id: feedId}).populate('category');
 	if (!feed) {
 		logger.info(`${StatusCodes.NOT_FOUND} - No feed found for get_feed_by_id - ${method} ${path}`);
 		throw new NotFoundError(`No feed found with id ${feedId}`);
@@ -166,7 +180,7 @@ const getFeedById = async (req, res) => {
 	return res.status(StatusCodes.OK).json({message: 'Feed fetched successfully.', data: {feed}});
 }
 
-const getPostsByFeedId = async (req, res) => {
+const getPostsByFeedId = async (req: Request, res: Response) => {
 	let {path, method, pathParams: {id: feedId}, queryParams: {pageSize = 10, pageNumber = 1}} = adaptRequest(req);
 	if (!feedId || !mongoose.isValidObjectId(feedId)) {
 		throw new BadRequestError('Invalid feed id provided.');
@@ -196,7 +210,7 @@ const getPostsByFeedId = async (req, res) => {
 	return res.status(StatusCodes.OK).json({message: 'Feed posts fetched successfully.', data: {feeds: transformedFeed}});
 }
 
-const deleteFeed = async (req, res) => {
+const deleteFeed = async (req: Request, res: Response) => {
 	let {path, method, pathParams: {id: feedId}, user} = adaptRequest(req);
 	if (!feedId || !mongoose.isValidObjectId(feedId)) {
 		throw new BadRequestError('Invalid feed id.')
@@ -210,15 +224,17 @@ const deleteFeed = async (req, res) => {
 		action: `deleteFeed: ${feedId} - by ${user.role}`,
 		resourceName: 'feeds',
 		user: createObjectId(user.id),
+		method,
+		path,
 	}
-	await saveActivityLog(logData, method, path);
+	await saveActivityLog(logData);
 	logger.info(`${StatusCodes.OK} - Feed deleted successfully - ${method} ${path}`);
 
-	io.to('feeds').emit('feed:deleted', {feedId});
+	io.to(feedRoom).emit(feedEvent.deleted, {feedId});
 	return res.status(StatusCodes.OK).json({message: 'Feed deleted successfully.'});
 }
 
-const disableFeedById = async (req, res) => {
+const disableFeedById = async (req: Request, res: Response) => {
 	let {path, method, pathParams: {id: feedId}, user} = adaptRequest(req);
 	if (!feedId || !mongoose.isValidObjectId(feedId)) {
 		throw new BadRequestError('Invalid feed id.')
@@ -235,15 +251,17 @@ const disableFeedById = async (req, res) => {
 		action: `disableFeed: ${feedId} - by ${user.role}`,
 		resourceName: 'feeds',
 		user: createObjectId(user.id),
+		method,
+		path,
 	}
-	await saveActivityLog(logData, method, path);
+	await saveActivityLog(logData);
 	logger.info(`${StatusCodes.OK} - Feed disabled successfully - ${method} ${path}`);
 
-	io.to('feeds').emit('feed:disabled', {feedId});
+	io.to(feedRoom).emit(feedEvent.disabled, {feedId});
 	return res.status(StatusCodes.OK).json({message: 'Feed disabled successfully.'});
 }
 
-const toggleFeedsStatusByCategoryId = async (req, res) => {
+const toggleFeedsStatusByCategoryId = async (req: Request, res: Response) => {
 	let {path, method, pathParams: {id: categoryId}, user, queryParams: {status}} = adaptRequest(req);
 	if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
 		throw new BadRequestError('Invalid feed category id.')
@@ -254,13 +272,15 @@ const toggleFeedsStatusByCategoryId = async (req, res) => {
 		action: `disableFeedByCategoryId: ${categoryId} - by ${user.role}`,
 		resourceName: 'feeds',
 		user: createObjectId(user.id),
+		method,
+		path,
 	}
-	await saveActivityLog(logData, method, path);
+	await saveActivityLog(logData);
 	logger.info(`${StatusCodes.OK} - Feeds with category id: ${categoryId} ${status} successfully - ${method} ${path}`);
 	return res.status(StatusCodes.OK).json({message: `Feeds with category id: ${categoryId} ${status}.`});
 }
 
-const updateFeed = async (req, res) => {
+const updateFeed = async (req: Request, res: Response) => {
 	let {path, method, pathParams: {id: feedId}, user, body} = adaptRequest(req);
 	if (!feedId || !mongoose.isValidObjectId(feedId)) {
 		throw new BadRequestError('Invalid feed id.')
@@ -280,15 +300,17 @@ const updateFeed = async (req, res) => {
 		action: `updateFeed: ${feedId} - by ${user.role}`,
 		resourceName: 'feeds',
 		user: createObjectId(user.id),
+		method,
+		path,
 	}
-	await saveActivityLog(logData, method, path);
+	await saveActivityLog(logData);
 	logger.info(`${StatusCodes.OK} - Feed updated successfully - ${method} ${path}`);
 
-	io.to('feeds').emit('feed:updated', {feed});
+	io.to(feedRoom).emit(feedEvent.updated, {feed});
 	return res.status(StatusCodes.OK).json({message: 'Feed updated successfully.', data: {feed}});
 }
 
-module.exports = {
+export {
 	createFeed,
 	getFeeds,
 	getFeedById,

@@ -1,19 +1,20 @@
-'use strict';
+import {adaptRequest, paginate, logger, constants} from '../lib/utils';
+import {FeedCategory} from '../models/FeedCategory';
+import {Feed} from '../models/Feed';
+import {StatusCodes} from 'http-status-codes';
+import {NotFoundError, BadRequestError} from '../lib/errors';
+import {Request, Response} from '../types';
 
-const {adaptRequest, paginate, logger} = require('../lib/utils');
-const {FeedCategory} = require('../models/FeedCategory');
-const {Feed} = require('../models/Feed');
-const {StatusCodes} = require('http-status-codes');
-const {NotFoundError, BadRequestError} = require('../lib/errors');
-
-const search = async (req, res) => {
+const search = async (req: Request, res: Response) => {
 	const {method, path, body: {searchTerm}, queryParams: {sort, pageNumber, pageSize}} = adaptRequest(req);
 	if (!searchTerm) {
 		throw new BadRequestError('Invalid search term.');
 	}
 
-	let searchCategory = FeedCategory.find({$text: {$search: searchTerm}, status: 'enabled'}).select('_id name description');
-	let searchFeed = Feed.find({$text: {$search: searchTerm}, status: 'enabled'}).select('_id url title description logoUrl');
+	let searchCategory = FeedCategory.find({status: constants.STATUS_ENABLED, $text: {$search: searchTerm}}).select('_id name description');
+	let searchFeed = Feed.find({status: constants.STATUS_ENABLED, $text: {$search: searchTerm}})
+		.populate({path: 'category', select: ['_id', 'name', 'description']})
+		.select('_id url title description logoUrl category');
 
 	if (sort) {
 		const sortFields = sort.split(',').join(' ');
@@ -21,8 +22,8 @@ const search = async (req, res) => {
 		searchFeed.sort(sortFields);
 	}
 
-	let searchResult = await Promise.all([await searchFeed, await searchCategory]);
-	searchResult = searchResult[0].concat(searchResult[1]);
+	const search = await Promise.all([await searchFeed, await searchCategory]);
+	const searchResult = [...search[0], ...search[1]];
 
 	if (!searchResult.length) {
 		logger.info(`${StatusCodes.NOT_FOUND} No result found for: ${searchTerm} - ${method} - ${path}`);
@@ -34,7 +35,7 @@ const search = async (req, res) => {
 	res.status(StatusCodes.OK).json({message: 'Search results retrieved successfully.', data: {result, pagination}});
 }
 
-module.exports = {
+export {
 	search
 }
 

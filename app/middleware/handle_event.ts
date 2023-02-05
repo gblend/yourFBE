@@ -1,9 +1,8 @@
-const {logger} = require('../lib/utils/logger');
-const mongoose = require('mongoose');
+import {logger} from '../lib/utils/logger';
+import mongoose from 'mongoose';
 
-
-module.exports.handle = (event) => {
-	return (err) => {
+const handle = (event: string) => {
+	return (err: any) => {
 		switch (event) {
 			case 'SIGTERM':
 				logger.error(`${event} signal received - closing http server.`);
@@ -21,4 +20,8 @@ module.exports.handle = (event) => {
 				logger.warn(`${event} - ${err.message}`);
 		}
 	}
+}
+
+export {
+	handle
 }

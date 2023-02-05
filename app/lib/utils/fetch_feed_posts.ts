@@ -1,8 +1,9 @@
-const {parseString} = require('xml2js');
-const https = require('https');
+import {parseString} from 'xml2js';
+import https from 'https';
+import http from 'http';
 
-async function fetchFeedPosts (url) {
-	const protocol = url.indexOf('http://') !== 0 ? https : require('http');
+async function fetchFeedPosts (url: string): Promise<any> {
+	const protocol = url.indexOf('http://') !== 0 ? https : http;
 	return new Promise((resolve, reject) => {
 		protocol.get(url, (response) => {
 			const statusCode = response.statusCode;
@@ -19,13 +20,13 @@ async function fetchFeedPosts (url) {
 			}
 
 			if (statusCode === 301) {
-				const newUrl = response.headers['location'];
+				const newUrl: string = response.headers['location']!;
 				return resolve(fetchFeedPosts(newUrl))
 			}
 		}).on('error', (error) => reject(error)).end();
 	});
 }
 
-module.exports = {
+export {
 	fetchFeedPosts
 }

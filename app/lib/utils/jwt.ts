@@ -1,16 +1,17 @@
-'use strict';
+import jwt from 'jsonwebtoken';
+import {config} from '../../config/config';
+import {adaptRequest} from './adapt_request';
+import {Request, Response, NextFunction } from '../../types/index';
+import {IRefreshTokenUser, ITokenUser} from '../../interface';
 
-const jwt = require('jsonwebtoken');
-const {config} = require('../../config/config');
-const {adaptRequest} = require('./adapt_request');
-
-const createJWT = (payload) => {
+const createJWT = (payload: ITokenUser | IRefreshTokenUser) => {
     return jwt.sign(payload, config.jwt.secret);
 }
 
-const isTokenValid = (token) => jwt.verify(token, config.jwt.secret);
+const isTokenValid = (token: string): any => jwt.verify(token, config.jwt.secret);
 
-const attachCookiesToResponse = ({accessTokenJWT, refreshTokenJWT, res}) => {
+const attachCookiesToResponse = ({accessTokenJWT, refreshTokenJWT, res}:
+                                     {accessTokenJWT: string, refreshTokenJWT: string, res: Response}): void => {
     res.cookie('accessToken', accessTokenJWT,
         {
             httpOnly: true,
@@ -27,15 +28,15 @@ const attachCookiesToResponse = ({accessTokenJWT, refreshTokenJWT, res}) => {
         });
 }
 
-const decodeCookies = async (req, _, next) => {
+const decodeCookies = async (req: Request, _: Response, next: NextFunction): Promise<void> => {
     const {signedCookies, cookies} = adaptRequest(req);
     const {token} = signedCookies || cookies;
-    req.user = await jwt.decode(token);
+    req.user = jwt.decode(token)!;
 
     return next();
 }
 
-module.exports = {
+export {
     createJWT,
     isTokenValid,
     attachCookiesToResponse,

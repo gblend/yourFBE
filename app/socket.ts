@@ -1,17 +1,24 @@
-const {Server} = require('socket.io');
-const {config} = require('./config/config');
-const {logger} = require('./lib/utils');
-const {socketErrorText} = require('./lib/utils/socketio_errors');
-const {BadRequestError} = require('./lib/errors');
-const jwt = require('jsonwebtoken');
-const express = require('express');
-const app = express();
-const httpServer = require('http').createServer(app);
+import {Server, Socket} from 'socket.io';
+import {createAdapter} from '@socket.io/redis-adapter';
+import {initRedisCache, redisSet} from './lib/utils/redis';
+import {config} from './config/config';
+import {logger, redisGetBatchRecords} from './lib/utils';
+import {socketErrorText} from './lib/utils/socketio_errors';
+import {BadRequestError} from './lib/errors';
+import {IServerOptions} from './interface';
+import jwt from 'jsonwebtoken';
+import express, {Application} from 'express';
+const app: Application = express();
+import http from 'http';
+import {prepareMissedNotification} from './controllers/notificationController';
+const httpServer = http.createServer(app);
+const socketGroup = config.socket.group;
 
 const appEnv = config.app.env;
-const localUrl = (appEnv === 'production') ? config.auth.socketIo.localUrl : config.auth.socketIo.prodUrl;
+const localUrl: string = (appEnv === 'production') ? config.auth.socketIo.localUrl as string
+	: config.auth.socketIo.prodUrl as string;
 
-const io = new Server (httpServer, {
+const serverOptions: IServerOptions = {
 	cors: {
 		origin: [localUrl],
 		methods: ['GET', 'POST'],
@@ -24,17 +31,21 @@ const io = new Server (httpServer, {
 			maxAge: new Date(Date.now() + config.days.one)
 		}
 	}
-});
+}
 
-io.on('connection', (client) => {
+const io = new Server (httpServer, serverOptions);
+const pubClient = initRedisCache();
+const subClient = pubClient.duplicate();
+io.adapter(createAdapter(pubClient, subClient, {key: 'socket'}));
+
+io.on('connection', (client: Socket | any): void => {
 	logger.info(`New client: ${client.id} connected.`);
 	client.emit('connected', {status: true, message: 'You are now connected.'});
 
-	client.join('feeds');
-	client.join('categories');
+	client.join([socketGroup.feeds, socketGroup.categories]);
 
 	client.on('disconnect', () => {
-		logger.info(`Client: ${client.id} disconnected.`);
+		logger.info(`Unauthenticated client disconnected.`);
 	});
 });
 
@@ -42,14 +53,14 @@ io.on('connection_error', (error) => {
 	logger.error(`Connection error: ${socketErrorText(error.code)} - ${error.message}`);
 });
 
-const userNamespaceIo = io.of('/auth_user');
+const userNamespaceIo = io.of(`/${config.socket.nameSpace.authUser}`);
 // middleware
-userNamespaceIo.use(async (client, next) => {
+userNamespaceIo.use(async (client: Socket | any, next): Promise<string | void> => {
 	const token = client.handshake.auth.token;
 	if (!token) {
 		return next(new BadRequestError('Invalid token. Please pass a valid token.'));
 	}
-	// decode the token and inject user to socket connection
+	// decode the request token and inject user to socket connection
 	const user = await jwt.decode(token);
 	if (user === null) {
 		return next(new BadRequestError('Invalid token provided. Please pass a valid token.'));
@@ -59,20 +70,33 @@ userNamespaceIo.use(async (client, next) => {
 	next();
 });
 
-userNamespaceIo.on('connection', (authClient) => {
-	logger.info(`Authenticated client: ${authClient.user.id} connected.`);
+userNamespaceIo.on('connection', async (authClient: Socket | any): Promise<void> => {
+	const userId = authClient.user.id;
+	logger.info(`Authenticated client: ${userId} connected.`);
 
-	authClient.join('feeds');
-	authClient.join('categories');
-	authClient.join('users');
+	const notifications: any = await redisGetBatchRecords(config.cache.notificationsSentCacheKey);
+	if (notifications.length) {
+		notifications.forEach((data: any) => {
+			if (data.users.indexOf(userId) === -1) {
+				prepareMissedNotification(data.notification, userId).then(notification => {
+					if (notification) authClient.emit(config.socket.events.notification.generated, notification);
+				});
 
-	authClient.on('disconnect', (client) => {
-		logger.info(`Authenticated client ${client.id} disconnected.`);
+				data.users = data.users.concat(`,${userId}`);
+				redisSet(data.cacheKey, data);
+			}
+		})
+	}
+
+	authClient.join([socketGroup.feeds, socketGroup.categories,
+		socketGroup.users, socketGroup.notifications]);
+
+	authClient.on('disconnect', (): void => {
+		logger.info(`Authenticated client: ${userId} disconnected.`);
 	});
 });
 
-
-module.exports = {
+export {
 	httpServer,
 	io,
 	express,

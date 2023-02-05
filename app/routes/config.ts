@@ -18,7 +18,7 @@ router.route('/').post(authenticateUser, authorizePermissions('admin'), createCo
 router.route('/:id').get(authenticateUser, authorizePermissions('admin'), getSingleConfig)
 	.patch(authenticateUser, authorizePermissions('admin'), updateConfig)
 	.delete(authenticateUser, authorizePermissions('admin'), deleteConfig);
-router.route('/paths/get-path').get(authenticateUser, authorizePermissions('admin'), getConfigByPath);
+router.route('/meta/path').get(authenticateUser, authorizePermissions('admin'), getConfigByPath);
 router.route('/disable/:id').patch(authenticateUser, authorizePermissions('admin'), disableConfig);
 
 export default router;

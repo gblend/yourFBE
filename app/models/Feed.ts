@@ -1,10 +1,8 @@
-'use strict';
+import mongoose, {model, Schema} from 'mongoose';
+import joi, {ValidationResult} from 'joi';
+import {FeedModel, IFeed} from '../interface';
 
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const joi = require('joi');
-
-const FeedSchema = new Schema({
+const FeedSchema = new Schema<IFeed, FeedModel>({
     url: {
         type: String,
         trim: true,
@@ -52,10 +50,10 @@ const FeedSchema = new Schema({
     },
 }, {timestamps: true});
 
-FeedSchema.index({url: 1, title: 'text', description: 'text'}, {unique: true});
-const Feed = mongoose.model('Feed', FeedSchema);
+FeedSchema.index({title: 'text', description: 'text'}, {unique: true});
+const Feed = model<IFeed, FeedModel>('Feed', FeedSchema);
 
-const validateFeedDto = (feedData) => {
+const validateFeedDto = (feedDto: IFeed): ValidationResult => {
     const feed = joi.object({
         url: joi.string().uri().required(),
         title: joi.string().required(),
@@ -68,10 +66,10 @@ const validateFeedDto = (feedData) => {
         user: joi.object().required(),
     });
 
-    return feed.validate(feedData);
+    return feed.validate(feedDto);
 }
 
-const validateFeedUpdateDto = (feedUpdateData) => {
+const validateFeedUpdateDto = (feedUpdateDto: IFeed): ValidationResult => {
     const feedUpdate = joi.object({
         url: joi.string().uri(),
         title: joi.string(),
@@ -83,10 +81,10 @@ const validateFeedUpdateDto = (feedUpdateData) => {
         status: joi.string(),
     });
 
-    return feedUpdate.validate(feedUpdateData);
+    return feedUpdate.validate(feedUpdateDto);
 }
 
-module.exports = {
+export {
     Feed,
     validateFeedDto,
     validateFeedUpdateDto,

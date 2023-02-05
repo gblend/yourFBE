@@ -1,27 +1,26 @@
-'use strict';
+import {validateActivityLogDto, ActivityLog} from '../models/ActivityLog';
+import {validatePollingLogDto, PollingLog} from '../models/PollingLog';
+import {IActivityDto, IPollingDto} from '../interface'
+import {logger} from '../lib/utils';
+import {StatusCodes} from 'http-status-codes';
 
-const {validateActivityLogDto, ActivityLog} = require('../models/ActivityLog');
-const {validatePollingLogDto, PollingLog} = require('../models/PollingLog');
-const {logger} = require('../lib/utils');
-const {StatusCodes} = require('http-status-codes');
-
-const saveActivityLog = async (payload, method = '', path= '') => {
-	const {error} = validateActivityLogDto(payload);
+const saveActivityLog = async (activityLog: IActivityDto): Promise<void> => {
+	const {error} = validateActivityLogDto(activityLog);
 	if (!error) {
-		await ActivityLog.create(payload);
-		logger.info(`${StatusCodes.OK} - ActivityLog saved - ${method} ${path}`);
+		await ActivityLog.create(activityLog);
+		logger.info(`${StatusCodes.OK} - ActivityLog saved - ${activityLog.method} ${activityLog.path}`);
 	}
 }
 
-const savePollingLog = async (payload, method = '', path = '') => {
-	const {error} = validatePollingLogDto(payload);
+const savePollingLog = async (pollingLog: IPollingDto): Promise<void> => {
+	const {error} = validatePollingLogDto(pollingLog);
 	if (!error) {
-		await PollingLog.create(payload);
-		logger.info(`${StatusCodes.OK} - ActivityLog saved - ${method} ${path}`);
+		await PollingLog.create(pollingLog);
+		logger.info(`${StatusCodes.OK} - ActivityLog saved - ${pollingLog.method} ${pollingLog.path}`);
 	}
 }
 
-module.exports = {
+export {
 	savePollingLog,
 	saveActivityLog,
 }

@@ -1,10 +1,14 @@
-'use strict';
-
-module.exports.constants = {
+const constants = {
     auth: {
-        INVALID_CREDENTIALS: (name = 'credentials provided') => `Invalid ${name}.`,
-        ALREADY_IN_USE: (name) => `${name} is already in use.`,
+        INVALID_CREDENTIALS: (name: string = 'credentials provided') => `Invalid ${name}.`,
+        ALREADY_IN_USE: (name: string) => `${name} is already in use.`,
         AUTHENTICATION_INVALID: 'Authentication invalid.',
-        SUCCESSFUL: (name) => `${name} successful.`
-    }
+        SUCCESSFUL: (name: string) => `${name} successful.`
+    },
+    STATUS_ENABLED: 'enabled',
+    STATUS_DISABLED: 'disabled',
+}
+
+export {
+    constants
 }

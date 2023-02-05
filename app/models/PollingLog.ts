@@ -1,10 +1,8 @@
-'use strict';
+import {Schema, model} from 'mongoose';
+import joi, {ValidationResult} from 'joi';
+import {IPollingDto, PollingDtoModel} from '../interface';
 
-const mongoose = require('mongoose');
-const joi = require('joi');
-const Schema = mongoose.Schema;
-
-const PollingLogSchema = new Schema({
+const PollingLogSchema = new Schema<IPollingDto, PollingDtoModel>({
     url: {
         type: String,
         trim: true,
@@ -20,16 +18,16 @@ const PollingLogSchema = new Schema({
     }
 }, {timestamps: true});
 
-const PollingLog = mongoose.model('PollingLog', PollingLogSchema);
+const PollingLog = model<IPollingDto, PollingDtoModel>('PollingLog', PollingLogSchema);
 
-const validatePollingLogDto = (pollingLogSchema) => {
+const validatePollingLogDto = (pollingLogSchema: IPollingDto): ValidationResult => {
     const pollingLog = joi.object({
         url: joi.string().uri().required()
     });
     return pollingLog.validate(pollingLogSchema);
 }
 
-module.exports = {
+export {
     PollingLog,
     validatePollingLogDto
 }
