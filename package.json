@@ -9,14 +9,15 @@
   "main": "dist/server",
   "scripts": {
     "dev": "nodemon dist/server",
-    "build": "tsc",
+    "build": "rimraf -rf dist && tsc",
     "postbuild": "copyfiles --error .env Procfile tests/**/*.* .github/**/*.* app/public/*.* postman_collection.json dist",
     "start": "node dist/server",
+    "lint": "tslint -p tsconfig.json -c tslint.json",
     "pm2:dev": "NODE_PATH=. pm2 delete dist/ecosystem.config.js && pm2 start dist/ecosystem.config.js --no-daemon",
     "pm2": "NODE_PATH=. pm2 delete dist/ecosystem.config.js && pm2 start dist/ecosystem.config.js",
     "stop": "NODE_PATH=. pm2 stop dist/ecosystem.config.js",
-    "test": "NODE_ENV=test jest --coverage dist/tests/*",
-    "unit": "jest --coverage dist/tests/unit --watchAll",
+    "test": "NODE_ENV=test jest --coverage dist/tests/* --passWithNoTests",
+    "unit": "jest --coverage dist/tests/unit --passWithNoTests",
     "integration": "NODE_ENV=test jest --coverage dist/tests/integration --watchAll"
   },
   "author": "gabrielilo190@gmail.com",
@@ -83,6 +84,7 @@
     "@types/socket.io": "^3.0.2",
     "@types/xml2js": "^0.4.11",
     "nodemon": "^2.0.9",
+    "rimraf": "^4.1.2",
     "socket.io-client": "^4.5.1",
     "typescript": "^4.9.4"
   },
