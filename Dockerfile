@@ -29,6 +29,6 @@ COPY ./dist /src
 EXPOSE  5000
 EXPOSE  8585
 
-ENTRYPOINT ["node", "src/server.js"]
+#ENTRYPOINT ["node", "src/server.js"]
 
 CMD ["pm2-docker", "src/ecosystem.config.js"]

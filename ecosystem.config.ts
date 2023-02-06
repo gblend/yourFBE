@@ -3,7 +3,7 @@ import {IEcosystemConfig} from './app/interface';
 
 const configOption: IEcosystemConfig = {
   name: config.app.name,
-  script: 'server.js',
+  script: 'dist/server.js',
   min_uptime: 36000,
   watch: '.',
   ignore_watch: ['logs', 'coverage', '.git', '.gitignore'],

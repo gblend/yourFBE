@@ -52,7 +52,7 @@ app.use(decodeCookies);
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'app/public')));
 app.use(fileUpload({useTempFiles: true}));
-(appEnv === 'development') ? app.use(morgan('dev')) : '';
+if (appEnv === 'development') app.use(morgan('dev'));
 
 app.use(session({
 	secret: config.session.secret,
