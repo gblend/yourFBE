@@ -5,13 +5,13 @@ import {ErrorRequestHandler} from '../types/index';
 
 
 
-export = function() {
+export = () => {
 
-	passport.serializeUser((user, cb: Function): void => {
+	passport.serializeUser((user, cb: (...args: any) => any): void => {
 		return cb(null, user);
 	});
 
-	passport.deserializeUser((userObj: ITokenUser, cb: Function) => {
+	passport.deserializeUser((userObj: ITokenUser, cb: (...payload: any) => any) => {
 		return User.findById(userObj._id, (err: ErrorRequestHandler, user: IUser) => {
 			return cb(err, user);
 		});

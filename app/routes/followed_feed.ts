@@ -1,8 +1,8 @@
 import {Router} from 'express';
 const router = Router();
-const {authenticateUser, authorizePermissions} = require('../middleware/authentication');
+import {authenticateUser, authorizePermissions} from '../middleware/authentication';
 
-const {
+import {
 	followFeed,
 	unfollowFeed,
 	unfollowAllFeeds,
@@ -10,8 +10,8 @@ const {
 	getFollowedFeeds,
 	feedsFollowersStats,
 	followAllFeedsInCategory,
-	unfollowAllFeedsInCategory,
-} = require('../controllers/followedFeedController');
+	unfollowAllFeedsInCategory
+} from '../controllers/followedFeedController';
 
 router.route('/').post(authenticateUser, followFeed).get(authenticateUser, getFollowedFeeds)
 	.delete(authenticateUser, unfollowAllFeeds);

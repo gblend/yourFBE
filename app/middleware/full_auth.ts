@@ -34,7 +34,7 @@ const authenticateUser = async (req: Request, _res: Response, next: NextFunction
     }
 };
 
-const authorizeRoles = (...roles: string[]): Function => {
+const authorizeRoles = (...roles: string[]): any => {
     return (req: Request, _: Response, next: NextFunction) => {
         const {method, path, user}: {method: string, path: string, user: any} = adaptRequest(req);
 

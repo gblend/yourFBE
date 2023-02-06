@@ -39,17 +39,17 @@ const transformRssFeed = async (feed: any, page: pageInfo): Promise<IRssFeed> =>
 const transformFeedPosts = (posts: any): IFeedPost => {
 	return posts.map((post: any) => {
 		return {
-			guid: post.guid?.[0]?.['_'],
-			guidIsPermaLink: post.guid?.[0]?.['isPermaLink']?.[0],
+			guid: post.guid?.[0]?._,
+			guidIsPermaLink: post.guid?.[0]?.isPermaLink?.[0],
 			title: post.title?.[0],
 			description: post.description?.[0],
 			pubDate: post.pubDate?.[0],
 			author: post.author?.[0],
 			link: post.link?.[0],
 			contentEncoded: post['content:encoded']?.[0],
-			enclosureLength: post['enclosure']?.[0].length?.[0],
-			enclosureType: post['enclosure']?.[0].type?.[0],
-			enclosureUrl: post['enclosure']?.[0].url?.[0],
+			enclosureLength: post.enclosure?.[0].length?.[0],
+			enclosureType: post.enclosure?.[0].type?.[0],
+			enclosureUrl: post.enclosure?.[0].url?.[0],
 			itunesDuration: post['itunes:duration']?.[0],
 			itunesTitle: post['itunes:title']?.[0],
 			itunesAuthor: post['itunes:author']?.[0],

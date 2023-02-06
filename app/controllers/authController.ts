@@ -22,7 +22,8 @@ import {registerSocialProfile} from '../social_auth/register_social_profile';
 import {BadRequestError, CustomAPIError, UnauthenticatedError} from '../lib/errors';
 import {ITokenUser} from '../interface';
 
-let queueName: string = '', queueErrorMsg: string = '';
+let queueName: string = '';
+let	queueErrorMsg: string = '';
 
 const register = async (req: Request, res: Response): Promise<Response> => {
 	const {body, ip, headers} = adaptRequest(req);

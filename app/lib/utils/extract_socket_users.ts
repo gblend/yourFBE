@@ -1,4 +1,4 @@
-const extractSocketUsers = async (allActiveSockets: Array<any>) => {
+const extractSocketUsers = async (allActiveSockets: any[]) => {
     const activeSocketIds: string[] = [];
 
     if (allActiveSockets.length) {

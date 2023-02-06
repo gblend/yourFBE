@@ -77,7 +77,7 @@ const getPostsSavedForLater = async (req: Request, res: Response) => {
 	let savedPosts: any = await redisGetBatchRecords(`${config.cache.savePostForLaterCacheKey}_${userId}`);
 	if (savedPosts && savedPosts.length) {
 		logger.info(`${StatusCodes.OK} - Posts saved for later retrieved from cache - ${method} ${path}`);
-		let {pagination:_pagination, result: _result} = await paginate(savedPosts, {pageSize, pageNumber});
+		const {pagination:_pagination, result: _result} = await paginate(savedPosts, {pageSize, pageNumber});
 
 		return res.status(StatusCodes.OK).json({
 			data: {
@@ -216,7 +216,7 @@ const userStarredFeedPostsStats = async (req: Request, res: Response) => {
 }
 
 const allStarredFeedPostsStats = async (req: Request, res: Response) => {
-	let {path, method, queryParams: {pageSize: _pageSize, pageNumber: _pageNumber}} = adaptRequest(req);
+	const {path, method, queryParams: {pageSize: _pageSize, pageNumber: _pageNumber}} = adaptRequest(req);
 	const {pageSize, pageNumber, offset} = adaptPaginateParams(_pageSize, _pageNumber);
 
 	const starredFeedPostsStats = await SavedForLater.aggregate([

@@ -9,7 +9,7 @@ const passportGoogle = passport.use('google', new GoogleStrategy({
 		clientSecret: config.auth.google.clientSecret,
 		callbackURL: config.auth.google.callbackURL,
 	},
-	async (_accessToken: string, _refreshToken: string, profile: Profile, cb: Function) => {
+	async (_accessToken: string, _refreshToken: string, profile: Profile, cb: (...args: any) => any) => {
 	return registerSocialProfile(profile, cb, 'google');
 	}
 ));

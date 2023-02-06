@@ -27,8 +27,8 @@ import {mapPaginatedData} from './stats/map_paginated_data';
 import {adaptPaginateParams} from './stats/adapt_paginate_params';
 import {fetchFeedPosts} from './fetch_feed_posts';
 import {StatusCodes} from 'http-status-codes';
-const sendVerificationEmail: Function = mailer.sendVerificationEmail;
-const sendResetPasswordEmail: Function = mailer.sendResetPasswordEmail;
+const sendVerificationEmail:  (...args: any) => void = mailer.sendVerificationEmail;
+const sendResetPasswordEmail: (...args: any) => void = mailer.sendResetPasswordEmail;
 
 export {
 	createJWT,

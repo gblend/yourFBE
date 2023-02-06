@@ -1,8 +1,8 @@
 import amqp from 'amqplib';
 import {BadRequestError} from '../errors';
 import mailer from './email/sendEmail';
-const sendVerificationEmail: Function = mailer.sendVerificationEmail;
-const sendResetPasswordEmail: Function = mailer.sendResetPasswordEmail;
+const sendVerificationEmail: (...args: any) => void = mailer.sendVerificationEmail;
+const sendResetPasswordEmail: (...args: any) => void = mailer.sendResetPasswordEmail;
 import {config} from '../../config/config';
 
 let channel: any = ''; let connection : any = '';
@@ -38,13 +38,13 @@ const pushToQueue = async (queue: string, queueErrorMsg: string, data: any) => {
     await execConsumeQueues();
 }
 
-const initConsumeQueue = async (fn: Function, queue: string): Promise<void> => {
+const initConsumeQueue = async (fn: (payload: any) => void, queue: string): Promise<void> => {
     const {channel: ch} = await createAmqpChannel(queue);
     await ch.assertExchange(queue, 'direct', {durable: true});
     // the parameters -- queue, exchange, bindingKey
     await ch.bindQueue(queue, queue, queue.toLowerCase());
     await ch.consume(queue, async (data: any) => {
-        let queuePayload = JSON.parse(data.content);
+        const queuePayload = JSON.parse(data.content);
         await fn(queuePayload[queue]);
         ch.ack(data)
     })

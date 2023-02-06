@@ -10,11 +10,10 @@ import {
 } from '../lib/utils';
 import {FollowedFeed, validateFollowedFeedDto, validateFollowFeedsInCategoryDto} from '../models/FollowedFeed';
 import {BadRequestError, NotFoundError, CustomAPIError} from '../lib/errors';
-import mongoose, {model} from 'mongoose';
+import mongoose from 'mongoose';
 import {saveActivityLog} from '../lib/dbActivityLog';
 import {Feed} from '../models/Feed';
 import {Response, Request} from '../types/index'
-import {match} from "assert";
 
 const followFeed = async (req: Request, res: Response) => {
 	const {body, method, path, user} = adaptRequest(req);
@@ -143,7 +142,7 @@ const unfollowAllFeeds = async (req: Request, res: Response) => {
 
 const latestPostsByFollowedFeeds = async (req: Request, res: Response) => {
 	const {user: {id: userId}, path, method} = adaptRequest(req);
-	let followFeeds = await FollowedFeed.find({user: userId}).select('feed');
+	const followFeeds = await FollowedFeed.find({user: userId}).select('feed');
 
 	if (!followFeeds.length) {
 		logger.info(`No followed feed found`);
@@ -155,8 +154,8 @@ const latestPostsByFollowedFeeds = async (req: Request, res: Response) => {
 }
 
 const getFollowedFeeds = async (req: Request, res: Response) => {
-	let {path, method, queryParams: {fields, sort, pageSize, pageNumber}, user} = adaptRequest(req);
-	let followedFeeds = FollowedFeed.find({user: createObjectId(user.id)}).populate({
+	const {path, method, queryParams: {fields, sort, pageSize, pageNumber}, user} = adaptRequest(req);
+	const followedFeeds = FollowedFeed.find({user: createObjectId(user.id)}).populate({
 		path : 'feed',
 		select: ['title', 'description', 'url', 'logoUrl', 'category'],
 		model: 'Feed',
@@ -176,7 +175,7 @@ const getFollowedFeeds = async (req: Request, res: Response) => {
 		followedFeeds.select(requiredFields);
 	} else followedFeeds.select('-user -__v');
 
-	let {pagination, result} = await paginate(followedFeeds, {pageSize, pageNumber});
+	const {pagination, result} = await paginate(followedFeeds, {pageSize, pageNumber});
 	const followedFeedsResult = await result;
 
 	if (!followedFeedsResult.length) {
@@ -191,7 +190,7 @@ const getFollowedFeeds = async (req: Request, res: Response) => {
 }
 
 const feedsFollowersStats = async (req: Request, res: Response) => {
-	let {path, method, queryParams: {pageSize: _pageSize, pageNumber: _pageNumber}} = adaptRequest(req);
+	const {path, method, queryParams: {pageSize: _pageSize, pageNumber: _pageNumber}} = adaptRequest(req);
 	const {pageSize, pageNumber, offset} = adaptPaginateParams(_pageSize, _pageNumber);
 
 	const feedsFollowersResult: any = await FollowedFeed.aggregate([

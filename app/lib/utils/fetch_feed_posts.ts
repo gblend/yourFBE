@@ -20,7 +20,7 @@ async function fetchFeedPosts (url: string): Promise<any> {
 			}
 
 			if (statusCode === 301) {
-				const newUrl: string = response.headers['location']!;
+				const newUrl: string = response.headers.location!;
 				return resolve(fetchFeedPosts(newUrl))
 			}
 		}).on('error', (error) => reject(error)).end();

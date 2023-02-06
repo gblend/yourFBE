@@ -2,7 +2,7 @@ import {StatusCodes} from 'http-status-codes';
 import {ConfigData, validateConfigDataDto} from '../models/Config';
 import {NotFoundError, BadRequestError} from '../lib/errors';
 import {adaptRequest, formatValidationError, logger, createObjectId, paginate, constants} from '../lib/utils';
-const {saveActivityLog} = require('../lib/dbActivityLog');
+import {saveActivityLog} from '../lib/dbActivityLog';
 import {Request, Response} from '../types/index';
 import {ConfigModel, IResponse} from '../interface';
 
@@ -21,7 +21,7 @@ const createConfig = async (req: Request, res: Response): Promise<Response<IResp
 
 const getAllConfig = async (req: Request, res: Response) => {
     const {path, method, queryParams: {pageSize, pageNumber}} = adaptRequest(req);
-    let configData: ConfigModel[] = await ConfigData.find({});
+    const configData: ConfigModel[] = await ConfigData.find({});
     if (!configData.length) {
         logger.info(`${StatusCodes.NOT_FOUND} - No config data found for get_all_config - ${method} ${path}`);
         throw new NotFoundError('No config data found.');
@@ -66,8 +66,10 @@ const updateConfig = async (req: Request, res: Response): Promise<Response<IResp
         action: `updateConfig: ${configId} - by ${role}`,
         resourceName: 'ConfigData',
         user: createObjectId(userId),
+        path,
+        method,
     }
-    await saveActivityLog(logData, method, path);
+    await saveActivityLog(logData);
     return res.status(StatusCodes.OK).json({message: 'Config updated successfully.', data: {config}});
 }
 
@@ -82,8 +84,10 @@ const disableConfig = async (req: Request, res: Response): Promise<Response<IRes
         action: `disableConfig: ${configId} - by ${role}`,
         resourceName: 'ConfigData',
         user: createObjectId(userId),
+        path,
+        method
     }
-    await saveActivityLog(logData, method, path);
+    await saveActivityLog(logData);
     return res.status(StatusCodes.OK).json({
         message: `Config disabled successfully.`,
     });
@@ -102,8 +106,10 @@ const deleteConfig = async (req: Request, res: Response): Promise<Response<IResp
         action: `deleteConfig: ${configId} - by ${role}`,
         resourceName: 'ConfigData',
         user: createObjectId(userId),
+        path,
+        method
     }
-    await saveActivityLog(logData, method, path);
+    await saveActivityLog(logData);
     return res.status(StatusCodes.OK).json({
         message: `Config deleted successfully.`,
     });

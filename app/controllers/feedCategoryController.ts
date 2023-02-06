@@ -7,15 +7,15 @@ import mongoose from 'mongoose';
 import {io} from '../socket';
 import {saveActivityLog} from '../lib/dbActivityLog';
 import {IResponse} from '../interface';
-import {config} from "../config/config";
+import {config} from '../config/config';
 const feedCategoryRoom: string = config.socket.group.categories;
 const feedCategoryEvent = config.socket.events.feedCategory;
 
 const getCategories = async (req: Request, res: Response): Promise<void> => {
 	const {method, path, queryParams: {sort, pageSize, pageNumber}} = adaptRequest(req);
-	//@TODO check if categories exists in redis cache and query db if not
+	// @TODO check if categories exists in redis cache and query db if not
 	const categories = FeedCategory.find({status: constants.STATUS_ENABLED}).populate('feedsCount');
-	//@TODO store fetched categories in redis cache
+	// @TODO store fetched categories in redis cache
 
 	if (sort) {
 		const sortFields = sort.split(',').join(' ');
@@ -34,7 +34,7 @@ const getCategories = async (req: Request, res: Response): Promise<void> => {
 
 const getCategoryById = async (req: Request, res: Response) => {
 	const {method, path, pathParams: {id: categoryId}} = adaptRequest(req);
-	//@TODO check if categories exists in redis cache and query db if not
+	// @TODO check if categories exists in redis cache and query db if not
 	const category = await FeedCategory.findById(categoryId, {status: constants.STATUS_ENABLED}).populate('feeds',
 		'_id url title description logoUrl user createdAt updatedAt', 'Feed', {status: constants.STATUS_ENABLED});
 	if (!category) {
@@ -94,7 +94,7 @@ const disableCategory = async (req: Request, res: Response): Promise<void> => {
 	category.status = constants.STATUS_DISABLED;
 	await category.save();
 
-	//@TODO: clear disabled category from redis cached categories
+	// @TODO: clear disabled category from redis cached categories
 	const logData = {
 		action: `disableCategory: ${categoryId} - by ${role}`,
 		resourceName: 'FeedCategory',
@@ -122,7 +122,7 @@ logger.info('Category is ' + categoryId);
 		throw new BadRequestError(`Invalid category id: ${categoryId}`);
 	}
 
-	//@TODO: clear deleted category from redis cached categories
+	// @TODO: clear deleted category from redis cached categories
 	const logData = {
 		action: `deleteCategory: ${categoryId} - by ${role}`,
 		resourceName: 'FeedCategory',
@@ -149,7 +149,7 @@ const updateCategory = async (req: Request, res: Response): Promise<void> => {
 		logger.info(`${StatusCodes.BAD_REQUEST} - Unable to update category - ${method} ${path}`);
 		throw new BadRequestError('Category not found.');
 	}
-	//@TODO: clear updated category from redis cached categories
+	// @TODO: clear updated category from redis cached categories
 	const logData = {
 		action: `updateCategory: ${categoryId} - by ${role}`,
 		resourceName: 'FeedCategory',

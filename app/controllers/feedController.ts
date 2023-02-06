@@ -8,7 +8,7 @@ import {
 	fetchFeedPosts,
 	redisGet,
 	redisSet,
-	constants
+	constants, adaptPaginateParams
 } from '../lib/utils';
 import {validateFeedDto, validateFeedUpdateDto, Feed} from '../models/Feed';
 import {transformRssFeed} from '../lib/utils/transform_rssfeed';
@@ -22,9 +22,8 @@ const feedRoom: string = config.socket.group.feeds;
 const feedEvent = config.socket.events.feed;
 
 const getFeedsByCategory = async (req: Request, res: Response) => {
-	let {path, method, queryParams: {pageSize = 10, pageNumber = 1}} = adaptRequest(req);
-	pageNumber = parseInt(pageNumber);
-	pageSize = parseInt(pageSize);
+	const {path, method, queryParams: {pageSize: _pageSize = 10, pageNumber: _pageNumber = 1}} = adaptRequest(req);
+	const {pageSize, pageNumber} = adaptPaginateParams(_pageSize, _pageNumber);
 
 	const feedsByCategory = await Feed.aggregate([
 		{
@@ -69,7 +68,7 @@ const getFeedsByCategory = async (req: Request, res: Response) => {
 }
 
 const getFeedsByCategoryId = async (req: Request, res: Response) => {
-	let {path, method, pathParams: {id: categoryId}, user, queryParams: {sort, pageSize, pageNumber, fields}} = adaptRequest(req);
+	const {path, method, pathParams: {id: categoryId}, user, queryParams: {sort, pageSize, pageNumber, fields}} = adaptRequest(req);
 	if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
 		throw new BadRequestError('Invalid feed category id.')
 	}
@@ -84,7 +83,7 @@ const getFeedsByCategoryId = async (req: Request, res: Response) => {
 		feeds.select(requiredFields)
 	}
 
-	let {pagination, result} = await paginate(feeds, {pageSize, pageNumber});
+	const {pagination, result} = await paginate(feeds, {pageSize, pageNumber});
 	const feedsResult = await result;
 
 	const logData = {
@@ -137,8 +136,8 @@ const createFeed = async (req: Request, res: Response) => {
 }
 
 const getFeeds = async (req: Request, res: Response) => {
-	let {path, method, queryParams: {fields, sort, pageSize, pageNumber}} = adaptRequest(req);
-	let feeds = Feed.find({status: constants.STATUS_ENABLED}).populate('category', '_id name description');
+	const {path, method, queryParams: {fields, sort, pageSize, pageNumber}} = adaptRequest(req);
+	const feeds = Feed.find({status: constants.STATUS_ENABLED}).populate('category', '_id name description');
 
 	if (sort) {
 		const sortFields = sort.split(',').join(' ');
@@ -161,19 +160,19 @@ const getFeeds = async (req: Request, res: Response) => {
 }
 
 const getFeedById = async (req: Request, res: Response) => {
-	let {path, method, fields: selectFields, pathParams: {id: feedId}} = adaptRequest(req);
+	const {path, method, fields: selectFields, pathParams: {id: feedId}} = adaptRequest(req);
 	if (!feedId || !mongoose.isValidObjectId(feedId)) {
 		throw new BadRequestError('Invalid feed id.');
 	}
-	let feed: any = await Feed.findOne({_id: feedId}).populate('category');
+	const feed: any = await Feed.findOne({_id: feedId}).populate('category');
 	if (!feed) {
 		logger.info(`${StatusCodes.NOT_FOUND} - No feed found for get_feed_by_id - ${method} ${path}`);
 		throw new NotFoundError(`No feed found with id ${feedId}`);
 	}
 
 	if (selectFields) {
-		selectFields = selectFields.split(',').join(' ');
-		feed.select(selectFields);
+		const _selectFields = selectFields.split(',').join(' ');
+		feed.select(_selectFields);
 	}
 
 	logger.info(`${StatusCodes.OK} - Feed fetched successfully - ${method} ${path}`);
@@ -181,7 +180,7 @@ const getFeedById = async (req: Request, res: Response) => {
 }
 
 const getPostsByFeedId = async (req: Request, res: Response) => {
-	let {path, method, pathParams: {id: feedId}, queryParams: {pageSize = 10, pageNumber = 1}} = adaptRequest(req);
+	const {path, method, pathParams: {id: feedId}, queryParams: {pageSize = 10, pageNumber = 1}} = adaptRequest(req);
 	if (!feedId || !mongoose.isValidObjectId(feedId)) {
 		throw new BadRequestError('Invalid feed id provided.');
 	}
@@ -189,7 +188,7 @@ const getPostsByFeedId = async (req: Request, res: Response) => {
 	let feed = await redisGet(rssFeedCacheKey);
 
 	if (!feed) {
-		let feedDetails = await Feed.findOne({_id: feedId}).select('_id, url');
+		const feedDetails = await Feed.findOne({_id: feedId}).select('_id, url');
 		if (!feedDetails) {
 			logger.info(`${StatusCodes.NOT_FOUND} - No feed found for get_posts_by_feed_id - ${method} ${path}`);
 			throw new NotFoundError(`No feed found with the provided id ${feedId}`);
@@ -211,7 +210,7 @@ const getPostsByFeedId = async (req: Request, res: Response) => {
 }
 
 const deleteFeed = async (req: Request, res: Response) => {
-	let {path, method, pathParams: {id: feedId}, user} = adaptRequest(req);
+	const {path, method, pathParams: {id: feedId}, user} = adaptRequest(req);
 	if (!feedId || !mongoose.isValidObjectId(feedId)) {
 		throw new BadRequestError('Invalid feed id.')
 	}
@@ -235,7 +234,7 @@ const deleteFeed = async (req: Request, res: Response) => {
 }
 
 const disableFeedById = async (req: Request, res: Response) => {
-	let {path, method, pathParams: {id: feedId}, user} = adaptRequest(req);
+	const {path, method, pathParams: {id: feedId}, user} = adaptRequest(req);
 	if (!feedId || !mongoose.isValidObjectId(feedId)) {
 		throw new BadRequestError('Invalid feed id.')
 	}
@@ -262,7 +261,7 @@ const disableFeedById = async (req: Request, res: Response) => {
 }
 
 const toggleFeedsStatusByCategoryId = async (req: Request, res: Response) => {
-	let {path, method, pathParams: {id: categoryId}, user, queryParams: {status}} = adaptRequest(req);
+	const {path, method, pathParams: {id: categoryId}, user, queryParams: {status}} = adaptRequest(req);
 	if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
 		throw new BadRequestError('Invalid feed category id.')
 	}
@@ -281,7 +280,7 @@ const toggleFeedsStatusByCategoryId = async (req: Request, res: Response) => {
 }
 
 const updateFeed = async (req: Request, res: Response) => {
-	let {path, method, pathParams: {id: feedId}, user, body} = adaptRequest(req);
+	const {path, method, pathParams: {id: feedId}, user, body} = adaptRequest(req);
 	if (!feedId || !mongoose.isValidObjectId(feedId)) {
 		throw new BadRequestError('Invalid feed id.')
 	}

@@ -1,5 +1,5 @@
 import {existsSync, mkdirSync, unlink} from 'fs';
-const path = require("path");
+import path from 'path';
 import {BadRequestError} from '../errors';
 import {config} from '../../config/config';
 import cloudinary from 'cloudinary';
@@ -12,20 +12,20 @@ const uploadImage = async (files: any, uploadType: string = 'cloudinary', folder
         throw new BadRequestError('No file uploaded');
     }
 
-    const uploadImage = files.uploadImage;
-    if (!uploadImage.mimetype.startsWith('image/')) {
+    const uploadImageData = files.uploadImage;
+    if (!uploadImageData.mimetype.startsWith('image/')) {
         throw new BadRequestError('Please provide a valid image');
     }
 
-    if (uploadImage.size > config.imageUpload.maxSize) {
+    if (uploadImageData.size > config.imageUpload.maxSize) {
         throw new BadRequestError('File exceeds maximum size of 2mb');
     }
 
     if (uploadType === 'cloudinary') {
-        return uploadToCloudinary(uploadImage, folder)
+        return uploadToCloudinary(uploadImageData, folder)
     }
 
-    return uploadToLocal(uploadImage);
+    return uploadToLocal(uploadImageData);
 }
 
 const uploadToLocal = async (imageFile: any): Promise<imageUrl> => {
@@ -43,7 +43,7 @@ const uploadToCloudinary = async (imageFile: any, folder: string = defaultFolder
     if (folder === '' || folder === null) folder = defaultFolder;
     const {secure_url} = await cloudinary.v2.uploader.upload(imageFile.tempFilePath, {
         use_filename: true,
-        folder: folder
+        folder
     });
 
     await unlinkFile(imageFile.tempFilePath);

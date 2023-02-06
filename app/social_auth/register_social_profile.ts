@@ -6,13 +6,13 @@ import {Profile as GoogleProfile} from 'passport-google-oauth20';
 import {Profile as TwitterProfile} from 'passport-twitter';
 import {CustomAPIError} from '../lib/errors';
 
-const registerSocialProfile = async (profile: any, callback: Function, strategy: string = 'default') => {
+const registerSocialProfile = async (profile: any, callback: (...payload: any) => any, strategy: string = 'default') => {
 	let data: IUser = {
 		avatar: '',
 		firstname: '',
 		gender: '',
 		lastLogin: new Date(Date.now()),
-		lastname: "",
+		lastname: '',
 		verified: new Date(Date.now()),
 		email: '',
 		isVerified: false
@@ -70,7 +70,7 @@ const registerSocialProfile = async (profile: any, callback: Function, strategy:
 }
 
 const transformGoogleData = (profile: GoogleProfile) => {
-	let {
+	const {
 		name: displayName,
 		given_name: firstname,
 		family_name: lastname,
@@ -93,7 +93,7 @@ const transformGoogleData = (profile: GoogleProfile) => {
 }
 
 const transformTwitterData = (profile: TwitterProfile) => {
-	let {
+	const {
 		name,
 		profile_image_url_https: profileImg,
 		email = null,
@@ -113,7 +113,7 @@ const transformTwitterData = (profile: TwitterProfile) => {
 }
 
 const transformFacebookData = (profile: FacebookProfile) => {
-	let {
+	const {
 		picture: { data: {url: pictureUrl} },
 		name,
 		email = null,

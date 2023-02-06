@@ -13,7 +13,7 @@ const passportFacebook = passport.use('facebook', new FacebookStrategy({
 		enableProof: true,
 		authType: 'reauthenticate'
 	},
-	async (_accessToken: string, _refreshToken: string, profile: Profile, cb: Function) => {
+	async (_accessToken: string, _refreshToken: string, profile: Profile, cb: (...args: any) => any ) => {
 		return registerSocialProfile(profile, cb, 'facebook');
 	}
 ));

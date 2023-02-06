@@ -7,7 +7,9 @@ const config = {
         port: process.env.PORT || process.env.APP_PORT as numberUnknown,
         name: process.env.APP_NAME || 'yourFeeds',
         baseUrlDev: process.env.BASE_URL_DEV as string,
+        frontendBaseUrlDev: process.env.FRONTEND_BASE_URL_DEV as string,
         baseUrlProd: process.env.BASE_URL_PROD as string,
+        frontendBaseUrlProd: process.env.FRONTEND_BASE_URL_PROD as string,
         env: process.env.NODE_ENV as string,
         baseUrl: (process.env.NODE_ENV === 'production') ? process.env.BASE_URL_PROD : process.env.BASE_URL_DEV as string,
         secret: process.env.APP_SECRET || 'yourFeeds:_xx_default_xx' as string

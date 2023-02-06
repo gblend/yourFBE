@@ -11,8 +11,8 @@ const search = async (req: Request, res: Response) => {
 		throw new BadRequestError('Invalid search term.');
 	}
 
-	let searchCategory = FeedCategory.find({status: constants.STATUS_ENABLED, $text: {$search: searchTerm}}).select('_id name description');
-	let searchFeed = Feed.find({status: constants.STATUS_ENABLED, $text: {$search: searchTerm}})
+	const searchCategory = FeedCategory.find({status: constants.STATUS_ENABLED, $text: {$search: searchTerm}}).select('_id name description');
+	const searchFeed = Feed.find({status: constants.STATUS_ENABLED, $text: {$search: searchTerm}})
 		.populate({path: 'category', select: ['_id', 'name', 'description']})
 		.select('_id url title description logoUrl category');
 
@@ -22,8 +22,8 @@ const search = async (req: Request, res: Response) => {
 		searchFeed.sort(sortFields);
 	}
 
-	const search = await Promise.all([await searchFeed, await searchCategory]);
-	const searchResult = [...search[0], ...search[1]];
+	const searchData = await Promise.all([await searchFeed, await searchCategory]);
+	const searchResult = [...searchData[0], ...searchData[1]];
 
 	if (!searchResult.length) {
 		logger.info(`${StatusCodes.NOT_FOUND} No result found for: ${searchTerm} - ${method} - ${path}`);

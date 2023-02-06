@@ -10,7 +10,7 @@ const passportTwitter = passport.use('twitter', new TwitterStrategy({
 		consumerSecret: config.auth.twitter.consumerSecret,
 		callbackURL: config.auth.twitter.callbackURL,
 	},
-	async (_accessToken: string, _refreshToken: string, profile: Profile, cb: Function): Promise<any> => {
+	async (_accessToken: string, _refreshToken: string, profile: Profile, cb: (...args: any) => any): Promise<any> => {
 		return registerSocialProfile(profile, cb, 'twitter');
 	}
 ));

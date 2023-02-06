@@ -5,7 +5,7 @@ import {Request, Response, NextFunction} from '../types/index';
 const errorHandlerMiddleware = (err: any, req: Request, res: Response, _next: NextFunction) => {
     const {path, method} = adaptRequest(req);
 
-    let customError = {
+    const customError = {
         // set defaults
         statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
         message: err.message || 'Something went wrong. Please try again later.',

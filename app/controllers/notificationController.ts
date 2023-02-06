@@ -16,7 +16,7 @@ import mongoose from 'mongoose';
 import {objectId, Request, Response} from '../types/index'
 import {userNamespaceIo} from '../socket';
 import {config} from '../config/config';
-import {NotificationLog, validateNotificationLogDto} from "../models/NotificationLog";
+import {NotificationLog, validateNotificationLogDto} from '../models/NotificationLog';
 const notificationRoom = config.socket.group.notifications;
 const notificationEvent = config.socket.events.notification;
 
@@ -73,8 +73,8 @@ const createNotification = async (req: Request, res: Response) => {
 }
 
 const getNotifications = async (req: Request, res: Response) => {
-	let {path, method, queryParams: {pageSize, pageNumber}} = adaptRequest(req);
-	let notifications = Notification.find({status: constants.STATUS_ENABLED}).select('_id title text createdAt');
+	const {path, method, queryParams: {pageSize, pageNumber}} = adaptRequest(req);
+	const notifications = Notification.find({status: constants.STATUS_ENABLED}).select('_id title text createdAt');
 
 	const {pagination,result} = await paginate(notifications, {pageSize,pageNumber});
 	const notificationsResult = await result;
@@ -89,7 +89,7 @@ const getNotifications = async (req: Request, res: Response) => {
 }
 
 const deleteNotification = async (req: Request, res: Response) => {
-	let {path, method, pathParams: {id: notificationId}, user} = adaptRequest(req);
+	const {path, method, pathParams: {id: notificationId}, user} = adaptRequest(req);
 	if (!notificationId || !mongoose.isValidObjectId(notificationId)) {
 		throw new BadRequestError('Invalid notification id.')
 	}
@@ -114,7 +114,7 @@ const deleteNotification = async (req: Request, res: Response) => {
 }
 
 const updateNotification = async (req: Request, res: Response) => {
-	let {path, method, pathParams: {id: notificationId}, user, body} = adaptRequest(req);
+	const {path, method, pathParams: {id: notificationId}, user, body} = adaptRequest(req);
 	if (!notificationId || !mongoose.isValidObjectId(notificationId)) {
 		throw new BadRequestError('Invalid notification id.')
 	}

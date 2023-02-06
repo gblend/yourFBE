@@ -6,7 +6,7 @@ import {Response, Request} from '../types'
 
 const getActivityLogs = async (req: Request, res: Response) => {
 	const {queryParams: {pageSize, pageNumber, sort, fields}, method, path} = adaptRequest(req);
-	let activityLogs = ActivityLog.find();
+	const activityLogs = ActivityLog.find();
 
 	if(sort) {
 		const sortFields = sort.split(',').join(' ')
@@ -16,7 +16,7 @@ const getActivityLogs = async (req: Request, res: Response) => {
 		const requiredFields = fields.split(',').join(' ')
 		activityLogs.select(requiredFields)
 	}
-	let {pagination, result} = await paginate(activityLogs,{pageSize, pageNumber});
+	const {pagination, result} = await paginate(activityLogs,{pageSize, pageNumber});
 	const logs = await result;
 
 	if (!logs.length) {
@@ -34,7 +34,7 @@ const getActivityLogs = async (req: Request, res: Response) => {
 
 const getActivityLog = async (req: Request, res: Response) => {
 	const {pathParams: {id: logId}, path, method} = adaptRequest(req);
-	let activityLog = await ActivityLog.findById(logId);
+	const activityLog = await ActivityLog.findById(logId);
 
 	if (!activityLog) {
 		logger.info(`${StatusCodes.NOT_FOUND} - Activity log with id ${logId} does not exist. - ${method} ${path}`)
@@ -51,7 +51,7 @@ const getActivityLog = async (req: Request, res: Response) => {
 
 const getPollingLog = async (req: Request, res: Response) => {
 	const {pathParams: {id: logId}, path, method} = adaptRequest(req);
-	let pollingLog = await PollingLog.findById(logId);
+	const pollingLog = await PollingLog.findById(logId);
 
 	if (!pollingLog) {
 		logger.info(`${StatusCodes.NOT_FOUND} - Polling log with id ${logId} does not exist. - ${method} ${path}`)
@@ -68,7 +68,7 @@ const getPollingLog = async (req: Request, res: Response) => {
 
 const getPollingLogs = async (req: Request, res: Response) => {
 	const {method, path, queryParams: {sort, fields, pageSize, pageNumber}} = adaptRequest(req);
-	let pollingLogs = PollingLog.find({});
+	const pollingLogs = PollingLog.find({});
 
 	if(sort) {
 		const sortFields = sort.split(',').join(' ')
@@ -79,7 +79,7 @@ const getPollingLogs = async (req: Request, res: Response) => {
 		pollingLogs.select(requiredFields)
 	}
 
-	let {pagination, result} = await paginate(pollingLogs, {pageSize, pageNumber});
+	const {pagination, result} = await paginate(pollingLogs, {pageSize, pageNumber});
 	const logs = await result;
 
 	if (!logs.length) {
@@ -128,7 +128,7 @@ const searchLogs = async (req: Request, res: Response) => {
 		searchResult = ActivityLog.find(query);
 	}
 
-	let {pagination, result} = await paginate(searchResult, {pageSize, pageNumber});
+	const {pagination, result} = await paginate(searchResult, {pageSize, pageNumber});
 	const logs = await result;
 
 	if (!logs.length) {

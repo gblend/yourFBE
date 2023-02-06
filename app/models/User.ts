@@ -174,12 +174,11 @@ UserSchema.methods.createJWT = function () {
 
 UserSchema.static('_createJWT', function _createJWT(jwtUserDto: {name: string, _id: string, role: string}): string {
 	return createJWT(jwtUserDto);
-})
+});
 
-UserSchema.methods.createRefreshJWT = function (user: ITokenUser, refreshToken: string): string {
+UserSchema.methods.createRefreshJWT = (user: ITokenUser, refreshToken: string): string => {
 	const userPayload = {name: `${user.firstname} ${user.lastname}`, id: user._id, role: user.role}
 	return createJWT({user: userPayload, refreshToken});
-
 }
 
 UserSchema.methods.comparePassword = async function (enteredPassword: string): Promise<boolean> {

@@ -1,7 +1,7 @@
 import {Application} from '../../types/index';
 
-const appRoutes = (app: Application): Array<string> => {
-	let routes: string[] = [];
+const appRoutes = (app: Application): string[] => {
+	const routes: string[] = [];
 
 	app._router.stack.forEach((routerSTack: any) => {
 		if (routerSTack.route) { // app routes
