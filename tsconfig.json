@@ -27,6 +27,6 @@
     "skipLibCheck": true,                                /* Skip type checking all .d.ts files. */
     "resolveJsonModule": true,
   },
-  "exclude": ["node_modules", "logs", "tmp", "coverage"],
+  "exclude": ["node_modules", "logs", "tmp", "coverage", "dist"],
   "include": ["./app/**/*.ts", "*.ts", "tests/**/*.ts"],
 }
