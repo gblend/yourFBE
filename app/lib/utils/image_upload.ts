@@ -57,8 +57,6 @@ const unlinkFile = async (tempFilePath: string) => {
     });
 }
 
-export {
-    uploadImage
-}
+export default uploadImage;
 
 
