@@ -11,6 +11,7 @@ const config = {
         baseUrlProd: process.env.BASE_URL_PROD as string,
         frontendBaseUrlProd: process.env.FRONTEND_BASE_URL_PROD as string,
         env: process.env.NODE_ENV as string,
+        prodEnv: process.env.NODE_ENV === 'production',
         baseUrl: (process.env.NODE_ENV === 'production') ? process.env.BASE_URL_PROD : process.env.BASE_URL_DEV as string,
         secret: process.env.APP_SECRET || 'yourFeeds:_xx_default_xx' as string
     },
@@ -37,6 +38,14 @@ const config = {
         authUser: process.env.MAIL_AUTH_USER as string,
         authPassword: process.env.MAIL_AUTH_PASSWORD as string,
         from: process.env.MAIL_FROM as string,
+    },
+    mailTest: {
+        host: process.env.TEST_MAIL_HOST as string,
+        port: process.env.TEST_MAIL_PORT as numberUnknown,
+        smtpSecure: process.env.NODE_ENV === 'production',
+        authUser: process.env.TEST_MAIL_AUTH_USER as string,
+        authPassword: process.env.TEST_MAIL_AUTH_PASSWORD as string,
+        from: process.env.TEST_MAIL_FROM as string,
     },
     amqp: {
         host: process.env.AMQP_SERVER_HOST as string,
