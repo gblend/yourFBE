@@ -101,5 +101,7 @@ export {
 	io,
 	express,
 	app,
+	pubClient,
+	subClient,
 	userNamespaceIo
 }
