@@ -43,7 +43,7 @@ describe('Auth', () => {
        await tearDownTestConnection();
    });
 
-   it.only('should successfully register a user', (done) => {
+   it('should successfully register a user', (done) => {
       expect(Object.keys((connection.models)).length).toBeGreaterThan(0);
 
       request.post('/api/v1/auth/signup')
@@ -435,7 +435,7 @@ describe('Auth', () => {
             token: verificationToken
         }
 
-        const res = await request.post('/api/v1/auth/verify-email')
+        const res = await request.post('/api/v1/auth/verify-account')
             .set('Content-Type', 'application/json')
             .send(data)
             .expect(200)
@@ -456,7 +456,7 @@ describe('Auth', () => {
             token: verificationToken
         }
 
-        const response = await request.post('/api/v1/auth/verify-email')
+        const response = await request.post('/api/v1/auth/verify-account')
             .set('Content-Type', 'application/json')
             .send(data)
             .expect(401)
@@ -479,7 +479,7 @@ describe('Auth', () => {
             token: verificationToken
         }
 
-        const res = await request.post('/api/v1/auth/verify-email')
+        const res = await request.post('/api/v1/auth/verify-account')
             .set('Content-Type', 'application/json')
             .send(data)
             .expect('Content-Type', 'application/json; charset=utf-8')
