@@ -10,7 +10,7 @@ if (config.app.env === 'production') {
 }
 type emailDto = {name: string, email: string, passwordToken?: string, verificationToken?: string}
 
-const sendResetPasswordEmail = async ({name, email, passwordToken}: emailDto) => {
+const sendResetPasswordEmail: any = async ({name, email, passwordToken}: emailDto) => {
     const resetUrl = `${origin}/user/reset-password?token=${passwordToken}&email=${email}`;
     const message = `
     <p>Hello&nbsp;<strong>${name}</strong></p>
@@ -26,7 +26,7 @@ const sendResetPasswordEmail = async ({name, email, passwordToken}: emailDto) =>
     }
 }
 
-const sendVerificationEmail = async ({name, email, verificationToken}: emailDto) => {
+const sendVerificationEmail: any = async ({name, email, verificationToken}: emailDto) => {
     const verifyUrl = `${origin}/user/verify-email?token=${verificationToken}&email=${email}`;
     const message = `
     <p>Hello&nbsp;<strong>${name}</strong></p>
