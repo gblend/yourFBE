@@ -1,7 +1,7 @@
 import {Model, HydratedDocument} from 'mongoose';
 
 interface ITokenUser {
-    name: string,
+    name?: string,
     role: string,
     id?: string,
     _id?: string,
