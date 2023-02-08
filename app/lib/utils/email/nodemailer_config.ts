@@ -2,18 +2,19 @@ import {createTransport} from 'nodemailer';
 import {config} from '../../../config/config';
 import {config as dotenvConfig} from 'dotenv';
 dotenvConfig({path: '../.env'});
+const mail = (config.app.prodEnv)? config.mail : config.mailTest;
 
 const transporterInit = () => {
     return createTransport({
-        host: config.mail.host,
-        port: Number(config.mail.port),
-        secure: config.mail.smtpSecure,
+        host: mail.host,
+        port: Number(mail.port),
+        secure: mail.smtpSecure,
         tls: {
             rejectUnauthorized: false,
         },
         auth: {
-            user: config.mail.authUser,
-            pass: config.mail.authPassword
+            user: mail.authUser,
+            pass: mail.authPassword
         }
     })
 }
