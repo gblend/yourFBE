@@ -1,10 +1,10 @@
-const capitalizeFirstCharacter = (...args: string[]): string[] => {
+const capitalizeFirstCharacter = (...args: any[]): string[] => {
     return args.map(arg => {
-        if (arg) {
-            return `${arg[0].toUpperCase()}${arg.substr(1)}`;
+        if (!arg || typeof arg === 'number') {
+            return  arg
         }
 
-        return arg;
+        return `${arg[0].toUpperCase()}${arg.substr(1)}`;
     });
 }
 
