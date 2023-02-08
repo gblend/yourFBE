@@ -12,8 +12,8 @@ const tearDownTestConnection = async (): Promise<void> => {
 
 	await connection.close(true);
 	await disconnect();
-	pubClient.disconnect();
-	subClient.disconnect();
+	if (pubClient) pubClient.disconnect();
+	if (subClient) subClient.disconnect();
 }
 
 export {
