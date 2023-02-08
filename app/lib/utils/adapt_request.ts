@@ -1,6 +1,6 @@
 import {Request} from '../../types/index';
 
-const adaptRequest = (req: Request) => {
+const adaptRequest = (req: Request | any) => {
     return Object.freeze({
         path: req.path as string,
         method: req.method as string,

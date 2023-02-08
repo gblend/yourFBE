@@ -3,14 +3,14 @@ const securityKey = crypto.randomBytes(32);
 const algorithm: string = 'aes-256-cbc';
 const initVector = crypto.randomBytes(16);
 
-const createHash = (value: string): string => {
+const createHash = (value: any): string => {
 	if (value) {
 		return crypto.createHash('sha256').update(value).digest('hex');
 	}
 	return value;
 };
 
-const encrypt = (value: string): string => {
+const encrypt = (value: any): string => {
 	const cipher = crypto.createCipheriv(algorithm, securityKey, initVector);
 	return  cipher.update(value, 'utf-8', 'hex') + cipher.final('hex');
 }

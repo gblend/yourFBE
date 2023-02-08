@@ -11,7 +11,7 @@ const createJWT = (payload: ITokenUser | IRefreshTokenUser) => {
 const isTokenValid = (token: string): any => jwt.verify(token, config.jwt.secret);
 
 const attachCookiesToResponse = ({accessTokenJWT, refreshTokenJWT, res}:
-                                     {accessTokenJWT: string, refreshTokenJWT: string, res: Response}): void => {
+                                     {accessTokenJWT: string, refreshTokenJWT: string | null, res: Response}): void => {
     res.cookie('accessToken', accessTokenJWT,
         {
             httpOnly: true,

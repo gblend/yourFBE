@@ -1,4 +1,4 @@
-import {ITokenUser} from '../../interface/user';
+import {ITokenUser} from '../../interface';
 
 const createTokenUser = (user: ITokenUser): ITokenUser => {
     if (user) {

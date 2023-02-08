@@ -1,9 +1,9 @@
 const constants = {
     auth: {
-        INVALID_CREDENTIALS: (name: string = 'credentials provided') => `Invalid ${name}.`,
-        ALREADY_IN_USE: (name: string) => `${name} is already in use.`,
+        INVALID_CREDENTIALS: (fault: string = 'credentials provided') => `Invalid ${fault}.`,
+        ALREADY_IN_USE: (property: string) => `${property} is already in use.`,
         AUTHENTICATION_INVALID: 'Authentication invalid.',
-        SUCCESSFUL: (name: string) => `${name} successful.`
+        SUCCESSFUL: (action: string) => `${action} successful.`
     },
     STATUS_ENABLED: 'enabled',
     STATUS_DISABLED: 'disabled',
