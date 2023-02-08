@@ -1,15 +1,33 @@
-const {tearDownTestConnection} = require('../helpers/connection_teardown');
-const {connection} = require('mongoose');
-const app = require('../../server');
-const Joi = require('joi');
-const {decrypt} = require('../../app/lib/utils');
-const {User} = require('../../app/models/User');
-const request = require('supertest')(app);
+import {tearDownTestConnection} from '../helpers/connection_teardown';
+import {connection} from 'mongoose';
+import app from '../../server';
+import Joi from 'joi';
+import {decrypt} from '../../app/lib/utils';
+import {User} from '../../app/models/User';
+import supertest from 'supertest';
+const request = supertest(app);
+import {IUser} from '../../app/interface';
 
 describe('Auth', () => {
-   let testUser, data, socialProfile = {};
-   let loginTokens = [];
-   let verificationToken = '';
+    interface ITestData {
+        firstname?: string,
+        lastname?: string,
+        email?: string,
+        password?: string,
+        passwordConfirmation?: string,
+        token?: string
+    }
+
+    interface ITestUser extends IUser {
+       user?: any,
+        data?: any;
+    }
+
+   let testUser: ITestUser = {};
+   let data: ITestData = {};
+   let socialProfile: any = {};
+   let loginTokens: string[] = [];
+   let verificationToken: string = '';
 
    beforeEach(() => {
        data = {
@@ -25,7 +43,7 @@ describe('Auth', () => {
        await tearDownTestConnection();
    });
 
-   it('should successfully register a user', (done) => {
+   it.only('should successfully register a user', (done) => {
       expect(Object.keys((connection.models)).length).toBeGreaterThan(0);
 
       request.post('/api/v1/auth/signup')
@@ -33,7 +51,7 @@ describe('Auth', () => {
           .send(data)
           .expect(200)
           .expect('Content-Type', 'application/json; charset=utf-8')
-          .expect((response) => {
+          .expect((response: any) => {
              testUser = response.body;
 
              const registeredUser = Joi.object({
@@ -58,7 +76,7 @@ describe('Auth', () => {
                 })
              });
 
-             Joi.assert(response.body, registeredUser);
+             Joi.assert(testUser, registeredUser);
 
           }).end(done);
    });
@@ -70,7 +88,7 @@ describe('Auth', () => {
           .send(data)
           .expect(500)
           .expect('Content-Type', 'application/json; charset=utf-8')
-          .expect((res) => {
+          .expect((res: any) => {
 
              const registrationError = Joi.object({
                 status: Joi.string().required(),
@@ -92,7 +110,7 @@ describe('Auth', () => {
           .send({})
           .expect(400)
           .expect('Content-Type', 'application/json; charset=utf-8')
-          .expect((res) => {
+          .expect((res: any) => {
 
              const registrationError = Joi.object({
                 status: Joi.string().required(),
@@ -119,7 +137,7 @@ describe('Auth', () => {
           .send(data)
           .expect(200)
           .expect('Content-Type', 'application/json; charset=utf-8')
-          .expect((response) => {
+          .expect((response: any) => {
               loginTokens = response.headers['set-cookie'];
 
              const loggedInUser = Joi.object({
@@ -147,7 +165,7 @@ describe('Auth', () => {
             .send({})
             .expect(400)
             .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect((response) => {
+            .expect((response: any) => {
 
                 const loginError = Joi.object({
                     status: Joi.string().required(),
@@ -174,7 +192,7 @@ describe('Auth', () => {
             .send(data)
             .expect(400)
             .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect((response) => {
+            .expect((response: any) => {
 
                 const loginError = Joi.object({
                     status: Joi.string().required(),
@@ -199,7 +217,7 @@ describe('Auth', () => {
             .send(data)
             .expect('Content-Type', 'application/json; charset=utf-8')
             .expect(400)
-            .expect((response) => {
+            .expect((response: any) => {
 
                 const loginError = Joi.object({
                     status: Joi.string().required(),
@@ -218,7 +236,7 @@ describe('Auth', () => {
         request.delete('/api/v1/auth/logout')
             .set('Cookie', loginTokens)
             .expect(204)
-            .expect((response) => {
+            .expect((response: any) => {
                 expect(response.body).toEqual({});
             }).end(done);
     });
@@ -227,7 +245,7 @@ describe('Auth', () => {
         request.delete('/api/v1/auth/logout')
             .set('Cookie', [])
             .expect(401)
-            .expect((response) => {
+            .expect((response: any) => {
 
                 const loginError = Joi.object({
                     status: Joi.string().required(),
@@ -248,7 +266,7 @@ describe('Auth', () => {
             .send({email:'test@example.com'})
             .expect(200)
             .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect((response) => {
+            .expect((response: any) => {
 
                 const forgotPasswordSchema = Joi.object({
                     status: Joi.string().required(),
@@ -266,7 +284,7 @@ describe('Auth', () => {
             .send({email:''})
             .expect(400)
             .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect((response) => {
+            .expect((response: any) => {
 
                 const forgotPasswordSchema = Joi.object({
                     status: Joi.string().required(),
@@ -410,7 +428,7 @@ describe('Auth', () => {
 
     it('should successfully verify user with valid email and token', async () => {
         const user = await User.findOne({_id: testUser.data.user._id});
-        verificationToken = user?.verificationToken;
+        verificationToken = user?.verificationToken ?? '';
 
         data = {
             email: user?.email,

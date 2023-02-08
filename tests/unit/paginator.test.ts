@@ -1,11 +1,9 @@
-'use strict';
-
-const {paginate} = require('../../app/lib/utils');
+import {paginate} from '../../app/lib/utils';
 
 describe('Paginator', () => {
-    let data = ['cat', 'rat', 'dog', 'car', 'cab', 'data'];
-    let expected = {pagination: {offset: 0, total: 0, pageNumber: 1, current: 1, previous: 1}, result: []};
-    let params = {};
+    const data = ['cat', 'rat', 'dog', 'car', 'cab', 'data'];
+    const expected: any = {pagination: {offset: 0, total: 0, pageNumber: 1, current: 1, previous: 1}, result: []};
+    let params: any = {};
 
     afterEach(() => {
         params = {};
@@ -60,7 +58,6 @@ describe('Paginator', () => {
                 expected.pagination.pages = 1;
                 expected.pagination.next = 1;
                 expected.result = data.slice(0, 10)
-
 
                 expect(await paginate(data, params)).toEqual(expected);
             });

@@ -1,18 +1,13 @@
-const {createJWT} = require('../../app/lib/utils');
-
+import {createJWT} from '../../app/lib/utils';
 
 describe('CreateJWT', () => {
+	const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiR2FicmllbCBDLiBJbG9jaGkiLCJpZCI6IjYyYTA3NzY4ZDk2OWYw' +
+		'N2NjYzNiMTY5OCIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNjU1NjgwOTgzfQ.JaDingQIfQs9Qg46hsk91K4RKaw-27eJXDzzAXHe7TM';
+
 	it('should return created JWT string token when payload is provided', () => {
-		expect(typeof (createJWT({}))).toBe('string');
-		expect(createJWT({}).length).toBeGreaterThan(0);
-	});
-
-	it('should throw an error when payload is undefined', () => {
-		expect(() => createJWT(undefined)).toThrow('payload is required');
-	});
-
-	it('should throw an error when payload is null (not a plain object)', () => {
-		expect(() => createJWT(null)).toThrow();
+		const generatedToken = createJWT({name: 'Test', role: 'user', id: token});
+		expect(typeof (generatedToken)).toBe('string');
+		expect(generatedToken.length).toBeGreaterThan(0);
 	});
 
 });

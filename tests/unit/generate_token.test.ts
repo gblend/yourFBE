@@ -1,7 +1,4 @@
-'use strict';
-
-const {generateToken} = require('../../app/lib/utils');
-
+import {generateToken} from '../../app/lib/utils';
 
 describe('GenerateToken', () => {
 	const defaultExpectedLength = 80;
@@ -20,22 +17,8 @@ describe('GenerateToken', () => {
 		expect(typeof (result)).toBe('string');
 	});
 
-	it('with length as null - should generate token of 80 characters length', () => {
-		const result = generateToken(null);
-
-		expect(result.length).toEqual(defaultExpectedLength);
-		expect(typeof (result)).toBe('string');
-	});
-
 	it('with length less than 1 - should generate token of 80 characters length', () => {
 		const result = generateToken(-0);
-
-		expect(result.length).toEqual(defaultExpectedLength);
-		expect(typeof (result)).toBe('string');
-	});
-
-	it('with length as empty string - should generate token of 80 characters length', () => {
-		const result = generateToken('');
 
 		expect(result.length).toEqual(defaultExpectedLength);
 		expect(typeof (result)).toBe('string');

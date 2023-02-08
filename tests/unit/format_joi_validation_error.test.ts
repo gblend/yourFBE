@@ -1,4 +1,4 @@
-const { formatValidationError } = require('../../app/lib/utils');
+import {formatValidationError} from '../../app/lib/utils';
 
 describe('FormatJoiValidationError', () => {
     it('should return empty array, when details contain 1 empty message', () => {

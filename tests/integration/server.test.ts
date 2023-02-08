@@ -1,8 +1,9 @@
-const {tearDownTestConnection} = require('../helpers/connection_teardown');
-const {connection} = require('mongoose');
-const app = require('../../server');
-const request = require('supertest')(app);
-const Joi = require('joi');
+import {tearDownTestConnection} from '../helpers/connection_teardown';
+import {connection} from 'mongoose';
+import app from '../../server';
+import supertest from 'supertest';
+const request = supertest(app);
+import Joi from 'joi';
 
 describe('App', () => {
 	afterAll( async () => {
@@ -19,7 +20,7 @@ describe('App', () => {
 		request.get('/api/v1/status')
 			.set('Content-Type', 'application/json')
 			.expect('Content-Type', 'application/json; charset=utf-8')
-			.expect((response) => {
+			.expect((response: any) => {
 
 				const appStatusSchema = Joi.object({
 					status: Joi.string().required(),

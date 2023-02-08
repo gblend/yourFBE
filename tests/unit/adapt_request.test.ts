@@ -1,4 +1,4 @@
-const {adaptRequest} = require('../../app/lib/utils');
+import {adaptRequest} from '../../app/lib/utils';
 
 describe('AdaptRequest', () => {
 	it('should return extracted request object with value as undefined', () => {
@@ -14,6 +14,7 @@ describe('AdaptRequest', () => {
 			user: undefined,
 			cookies: undefined,
 			files: undefined,
+			fields: undefined
 		};
 
 		expect(adaptRequest({})).toMatchObject(req);
@@ -32,6 +33,7 @@ describe('AdaptRequest', () => {
 			user: {},
 			cookies: {},
 			files: {},
+			fields: {}
 		};
 
 		expect(adaptRequest(req)).toMatchObject(req);

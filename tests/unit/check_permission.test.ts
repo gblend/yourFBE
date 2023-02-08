@@ -1,8 +1,8 @@
-const {checkPermissions} = require('../../app/lib/utils');
-const mongoose = require('mongoose');
+import {checkPermissions} from '../../app/lib/utils';
+import mongoose from 'mongoose';
 
 describe('CheckPermission', () => {
-	let resourceUserId = new mongoose.Types.ObjectId();
+	const resourceUserId = new mongoose.Types.ObjectId();
 	const reqUser = { name: 'Test User', id: resourceUserId.toHexString(), role: 'user' };
 
 	it('should  return unauthorized access with invalid resource user id', () => {

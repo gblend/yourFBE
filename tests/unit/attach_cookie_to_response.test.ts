@@ -1,12 +1,11 @@
-const {generateToken, attachCookiesToResponse, createJWT} = require('../../app/lib/utils');
+import {generateToken, attachCookiesToResponse, createJWT} from '../../app/lib/utils';
 
 describe('AttachCookiesToResponse', () => {
 	const mockResponse = () => {
-		const res = {};
+		const res: any = {};
 		res.cookie = jest.fn().mockRejectedValue(res);
 		return res;
 	};
-
 
 	const token = generateToken();
 	const user = {user: 'testUser', role: 'user', id: 'testId'};

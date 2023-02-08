@@ -1,4 +1,4 @@
-const {constants} = require('../../app/lib/utils');
+import {constants} from '../../app/lib/utils';
 
 describe('Constants', () => {
 	it('should return INVALID_CREDENTIALS', () => {
@@ -6,7 +6,7 @@ describe('Constants', () => {
 	});
 
 	it('should return ALREADY_IN_USE', () => {
-		expect(constants.auth.ALREADY_IN_USE()).toContain('is already in use.');
+		expect(constants.auth.ALREADY_IN_USE('constant' )).toContain('is already in use.');
 	});
 
 	it('should return AUTHENTICATION_INVALID', () => {
@@ -14,6 +14,6 @@ describe('Constants', () => {
 	});
 
 	it('should return SUCCESSFUL', () => {
-		expect(constants.auth.SUCCESSFUL()).toContain('successful.');
+		expect(constants.auth.SUCCESSFUL('test')).toContain('successful.');
 	});
 });

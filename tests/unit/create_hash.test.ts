@@ -1,4 +1,4 @@
-const {createHash} = require('../../app/lib/utils');
+import {createHash} from '../../app/lib/utils';
 
 describe('CreateHash', () => {
 	it('should return null when input is null', () => {

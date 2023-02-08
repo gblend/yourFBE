@@ -1,27 +1,28 @@
-const {createJWT, decodeCookies} = require('../../app/lib/utils');
+import {createJWT, decodeCookies} from '../../app/lib/utils';
+import {Response} from '../../app/types';
 
 describe('DecodeJWT', () => {
-	const mockResponse = () => {
-		return {};
+	const mockResponse = (): any => {
+		return Response;
 	};
 
-	const mockRequest = (data) => {
+	const mockRequest = (data: any) => {
 		return data
 	};
 
-	const mockNext = (request) => {
+	const mockNext = (request: any) => {
 		return () => request;
 	};
 
 	it('should return user object if token is decoded', async () => {
-		const token = createJWT({user: 'testUser', role: 'user'});
+		const token = createJWT({name: 'testUser', role: 'user'});
 
 		const req = mockRequest({signedCookies: {token}, cookies: {token}});
 		const res = mockResponse();
 		const next = mockNext(req);
 
 		const result = await decodeCookies(req, res, next);
-		expect(result).toMatchObject({signedCookies: {}, cookies: {}, user: {user: 'testUser', role: 'user'}});
+		expect(result).toMatchObject({signedCookies: {}, cookies: {}, user: {name: 'testUser', role: 'user'}});
 	});
 
 	it('should null for user when provided token is invalid', async () => {

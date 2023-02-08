@@ -1,4 +1,4 @@
-const {appStatus} = require('../../app/lib/utils');
+import {appStatus} from '../../app/lib/utils';
 
 describe('AppStatus', () => {
 	it('should  return general backend service status data', () => {

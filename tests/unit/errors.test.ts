@@ -1,5 +1,11 @@
-const {NotFoundError, UnauthenticatedError, UnauthorizedError, CustomAPIError, BadRequestError} = require('../../app/lib/errors');
-const {StatusCodes} = require('../../app/lib/utils');
+import {
+	NotFoundError,
+	UnauthenticatedError,
+	UnauthorizedError,
+	CustomAPIError,
+	BadRequestError
+} from '../../app/lib/errors';
+import {StatusCodes} from '../../app/lib/utils';
 
 describe('NotFoundError', () => {
 	it('should return not found error', () => {

@@ -1,9 +1,8 @@
-const {createJWT, isTokenValid} = require('../../app/lib/utils');
-
+import {createJWT, isTokenValid} from '../../app/lib/utils';
 
 describe('VerifyJWT', () => {
 	it('should return true if token is valid', () => {
-		const token = createJWT({user: 'testUser'});
+		const token = createJWT({name: 'testUser', role: 'user'});
 		expect(isTokenValid(token)).toBeTruthy();
 	});
 
