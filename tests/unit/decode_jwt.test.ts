@@ -1,9 +1,8 @@
 import {createJWT, decodeCookies} from '../../app/lib/utils';
-import {Response} from '../../app/types';
 
 describe('DecodeJWT', () => {
 	const mockResponse = (): any => {
-		return Response;
+		return {};
 	};
 
 	const mockRequest = (data: any) => {
