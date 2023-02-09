@@ -7,7 +7,7 @@ import {logger} from './index';
 const defaultFolder: string = 'avatar/yourFeeds';
 type imageUrl = { url: string };
 
-const uploadImage = async (files: any, uploadType: string = 'cloudinary', folder: string = ''): Promise<any> => {
+const uploadImage = async (files: any, uploadType: string = 'cloudinary', folder: string = ''): Promise<{url: string}> => {
     if (!files) {
         throw new BadRequestError('No file uploaded');
     }
@@ -57,6 +57,10 @@ const unlinkFile = async (tempFilePath: string) => {
     });
 }
 
-export default uploadImage;
+export {
+    uploadImage,
+    uploadToLocal,
+    uploadToCloudinary
+};
 
 
