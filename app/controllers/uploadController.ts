@@ -8,7 +8,7 @@ import {
     createObjectId,
     logger,
 } from '../lib/utils';
-import uploadImage from '../lib/utils/image_upload';
+import {uploadImage} from '../lib/utils/image_upload';
 
 
 const uploadProfileImage = async (req: Request, res: Response): Promise<any> => {
