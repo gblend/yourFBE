@@ -19,6 +19,7 @@ import {
 	redisSet,
 	redisGet,
 	redisDelete,
+	initRedisCache,
 	redisFlushAll
 } from './redis';
 import {appRoutes} from './registered_routes';
@@ -63,5 +64,6 @@ export {
 	redisSet,
 	redisGet,
 	redisDelete,
+	initRedisCache,
 	redisFlushAll
 }
