@@ -75,7 +75,7 @@ const redisRefreshCache = async (key: string): Promise<void> => {
  */
 const redisFlushAll = async () => {
     redis = await initRedisCache();
-    redis.flush();
+    redis.flushall();
 }
 
 /**
