@@ -1,16 +1,13 @@
 import amqp from 'amqplib';
 import {BadRequestError} from '../errors';
-import mailer from './email/sendEmail';
-const sendVerificationEmail: (...args: any) => void = mailer.sendVerificationEmail;
-const sendResetPasswordEmail: (...args: any) => void = mailer.sendResetPasswordEmail;
-import {config} from '../../config/config';
 
 let channel: any = ''; let connection : any = '';
 
 const initAmqpServer = async (): Promise<amqp.Connection> => {
     const amqpServer = 'amqp://127.0.0.1:5672';
+    //@TODO: move amqp server to config
     if (!connection) {
-        return amqp.connect(amqpServer);
+        return amqp.connect(amqpServer, {prefetch: 1});
     }
     return connection;
 }
@@ -35,10 +32,9 @@ const pushToQueue = async (queue: string, queueErrorMsg: string, data: any) => {
     if (!queueData) {
         throw new BadRequestError(queueErrorMsg);
     }
-    await execConsumeQueues();
 }
 
-const initConsumeQueue = async (fn: (payload: any) => void, queue: string): Promise<void> => {
+const initConsumer = async (fn: (payload: any) => void, queue: string): Promise<void> => {
     const {channel: ch} = await createAmqpChannel(queue);
     await ch.assertExchange(queue, 'direct', {durable: true});
     // the parameters -- queue, exchange, bindingKey
@@ -50,11 +46,7 @@ const initConsumeQueue = async (fn: (payload: any) => void, queue: string): Prom
     })
 }
 
-const execConsumeQueues = async () => {
-    await initConsumeQueue(sendVerificationEmail, config.amqp.verifyEmailQueue);
-    await initConsumeQueue(sendResetPasswordEmail, config.amqp.resetEmailQueue);
-}
-
 export {
     pushToQueue,
+    initConsumer,
 }
