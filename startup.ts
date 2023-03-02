@@ -25,11 +25,13 @@ import searchRouter from './app/routes/search';
 import feedRouter from './app/routes/feed';
 import statRouter from './app/routes/stat';
 import logRouter from './app/routes/log';
+import apiDocRouter from './app/routes/api_doc';
 import configRouter from './app/routes/config';
 import notificationRouter from './app/routes/notification';
 import {config} from './app/config/config';
 import connectDB from './app/config/db/connect';
 import cloudinary from 'cloudinary';
+import {initCron} from './app/scheduler';
 
 cloudinary.v2.config({
 	cloud_name: config.cloudinary.cloudName,
@@ -81,5 +83,7 @@ export {
 	httpServer,
 	passport,
 	handle,
+	initCron,
+	apiDocRouter,
 	session
 }
