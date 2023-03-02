@@ -36,6 +36,8 @@ import {
 	passport,
 	handle,
 	httpServer,
+	initCron,
+	apiDocRouter,
 	session
 } from './startup';
 const appEnv = config.app.env;
@@ -72,9 +74,7 @@ app.get('/api/v1/status', (_: Request, res: Response) => {
 		},
 	});
 });
-app.get('/api/v1/doc', (_: Request, res: Response) => {
-	return res.sendFile(path.join(__dirname, 'app/public/index.html'));
-});
+app.use('/', apiDocRouter);
 
 app.use(resInterceptor);
 app.use('/api/v1/logs', logRouter);
@@ -96,7 +96,7 @@ process
 	.on('unhandledRejection', handle('unhandledRejection'))
 	.on('uncaughtException', handle('uncaughtException'));
 
-const start = (): void => {
+const start =  async (): Promise<void> => {
 	connectDB(config.database.uri).then(() => {
 		if (appEnv === 'test') return;
 		httpServer.listen(config.app.port, () => {
@@ -105,6 +105,6 @@ const start = (): void => {
 	});
 }
 
-start();
+start().then(() => initCron());
 
 export default app;
