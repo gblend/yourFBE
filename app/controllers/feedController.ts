@@ -200,7 +200,7 @@ const getPostsByFeedId = async (req: Request, res: Response) => {
 			throw new NotFoundError(`No post found for this feed`);
 		}
 
-		await redisSet(rssFeedCacheKey, feed, 86400);
+		await redisSet(rssFeedCacheKey, feed, config.minutes.ten);
 	}
 
 	feed = (typeof feed === 'string') ? JSON.parse(feed) : feed;
