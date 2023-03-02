@@ -11,17 +11,19 @@ const appRoutes = (app: Application): string[] => {
 			routes.push(`${method} ${path}`);
 		} else if (routerSTack.name === 'router') { // router middleware
 			routerSTack.handle.stack.forEach((handler: any) => {
-				const path = handler.route.path;
+				const path = (handler.route && handler.route.path)? handler.route.path : '';
 				const routeMiddlewares = ['authenticateUser', '<anonymous>'];
 
-				handler.route.stack.forEach((stack: any) => {
-					if (!routeMiddlewares.includes((stack.name))) {
-						const method = stack.method.toUpperCase().padEnd(7);
-						const name = stack.name;
+				if (handler.route && handler.route.stack) {
+					handler.route.stack.forEach((stack: any) => {
+						if (!routeMiddlewares.includes((stack.name))) {
+							const method = stack.method.toUpperCase().padEnd(7);
+							const name = stack.name;
 
-						routes.push(`${name.padEnd(28)} ${method} ${path}`);
-					}
-				});
+							routes.push(`${name.padEnd(28)} ${method} ${path}`);
+						}
+					});
+				}
 			});
 		}
 	});
