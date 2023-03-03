@@ -16,11 +16,11 @@ export default {
     servers: [
         {
             url: `${config.app.baseUrlDev}:${config.app.port}/api/v1`,
-            description: "Local Environment",
+            description: 'Local Environment',
         },
         {
             url: `${config.app.baseUrlProd}:${config.app.port}/api/v1`,
-            description: "Production Environment",
+            description: 'Production Environment',
         }
     ],
 }

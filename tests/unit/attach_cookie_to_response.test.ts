@@ -1,7 +1,7 @@
 import {generateToken, attachCookiesToResponse, createJWT} from '../../app/lib/utils';
 
 describe('AttachCookiesToResponse', () => {
-	const cookie = (name: string, val: any, options: any): any => { return {name: val, options: options}};
+	const cookie = (name: string, val: any, options: any): any => { return {name: val, options}};
 	const mockResponse = () => {
 		const res: any = {};
 		res.cookie = jest.fn().mockImplementation(cookie);

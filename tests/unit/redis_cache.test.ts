@@ -18,7 +18,7 @@ describe('Redis', () => {
 
     it('should return redis connection', () => {
         const initCacheSpy = jest.spyOn(cache, 'initRedisCache');
-        initCacheSpy.mockImplementation(() => Promise.resolve(() => {}));
+        initCacheSpy.mockImplementation(() => Promise.resolve(() => []));
         const mockIoredis = cache.initRedisCache();
 
         expect(mockIoredis).toBeDefined();

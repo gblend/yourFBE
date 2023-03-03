@@ -5,7 +5,7 @@ let channel: any = ''; let connection : any = '';
 
 const initAmqpServer = async (): Promise<amqp.Connection> => {
     const amqpServer = 'amqp://127.0.0.1:5672';
-    //@TODO: move amqp server to config
+    // @TODO: move amqp server to config
     if (!connection) {
         return amqp.connect(amqpServer, {prefetch: 1});
     }
