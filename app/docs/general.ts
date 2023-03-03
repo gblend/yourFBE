@@ -1,4 +1,4 @@
-import {config} from '../app/config/config';
+import {config} from '../config/config';
 
 export default {
     openapi: '3.0.*',
