@@ -1,0 +1,32 @@
+export default {
+    '/auth/logout': {
+        delete: {
+            tags: ['Authentication'],
+            description: 'Logout user',
+            operationId: 'logout',
+            parameters:[],
+            responses: {
+                '204': {
+                    description: 'User logout successful response',
+                    content: {
+                        'application/json': {}
+                    }
+                },
+                '401': {
+                    description: 'User logout error response',
+                    content:{
+                        'application/json':{
+                            example: {
+                                status: 'error',
+                                message: 'Request failed',
+                                data: {
+                                    errors: ['Authentication invalid.']
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

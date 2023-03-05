@@ -1,7 +1,7 @@
 export default {
     '/auth/signup': {
         post: {
-            tags: ['Authentication Operations'],
+            tags: ['Authentication'],
             description: 'New user sign up',
             operationId: 'signUp',
             parameters:[],
@@ -14,27 +14,23 @@ export default {
                     }
                 }
             },
-            responses:{
-                '200':{
-                    description:"Todo is obtained",
-                    content:{
+            responses: {
+                '200': {
+                    description: 'New user signup successful response',
+                    content: {
                         'application/json':{
-                            schema:{
-                                $ref:"#/components/schemas/Todo"
-                            }
+                            schema: {
+                                $ref: '#/components/schemas/SignupSuccess'
+                            },
                         }
                     }
                 },
-                '404':{
-                    description: "Todo is not found",
+                '400':{
+                    description: 'New user signup error response',
                     content:{
                         'application/json':{
                             schema:{
-                                $ref:'#/components/schemas/Error',
-                                example:{
-                                    message:"We can't find the todo",
-                                    internal_code:"Invalid id"
-                                }
+                                $ref:'#/components/schemas/SignupError'
                             }
                         }
                     }
