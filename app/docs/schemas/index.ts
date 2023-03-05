@@ -1,11 +1,18 @@
 import healthStatus from './health_status';
-import user from './user';
+import auth from './auth';
 
 export default {
     schemas: {
         HealthStatus: healthStatus,
-        User: user.model,
-        SignupInput: user.signupInput
+        User: auth.model,
+        SignupInput: auth.signupInput,
+        SignupSuccess: auth.signupSuccess,
+        SignupError: auth.signupError,
+        VerifyAccountInput: auth.VerifyAccountInput,
+        LoginInput: auth.LoginInput,
+        SocialLoginInput: auth.SocialLoginInput,
+        ForgotPasswordInput: auth.ForgotPasswordInput,
+        ResetPasswordInput: auth.ResetPasswordInput
         // other models
     },
 }
