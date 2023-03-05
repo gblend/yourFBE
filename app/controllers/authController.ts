@@ -91,6 +91,10 @@ const login = async (req: Request, res: Response) => {
 		throw new BadRequestError(constants.auth.INVALID_CREDENTIALS());
 	}
 
+	if (user.socialChannelId && !user.password) {
+		throw new BadRequestError('This account can only be accessed via social login');
+	}
+
 	const isMatch = await user.comparePassword(password);
 	if (!isMatch) {
 		throw new BadRequestError('Invalid email or password.');
