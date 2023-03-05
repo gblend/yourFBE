@@ -11,6 +11,11 @@ const errorHandlerMiddleware = (err: any, req: Request, res: Response, _next: Ne
         message: err.message || 'Something went wrong. Please try again later.',
     };
 
+    if (err.message.indexOf('already in use')) {
+        customError.message = err.message;
+        customError.statusCode = 400;
+    }
+
     if (err.name === 'ValidationError') {
         customError.message = Object.values(err.errors)
             .map((item: any) => item.message)
