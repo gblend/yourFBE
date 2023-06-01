@@ -4,34 +4,36 @@ import path from 'path';
 import xss from 'xss-clean';
 import helmet from 'helmet';
 import passport from 'passport';
+import cloudinary from 'cloudinary';
 import session from 'express-session';
-import {app, express, httpServer} from './app/socket';
-import { Request, Response } from './app/types';
 import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
 import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
-import {decodeCookies, logger, appStatus, StatusCodes, appRoutes} from './app/lib/utils';
-import {errorHandlerMiddleware} from './app/middleware/error_handler';
-import feedCategoryRouter from './app/routes/feed_category';
-import followedFeedRouter from './app/routes/followed_feed';
-import savedForLaterRouter from './app/routes/saved_for_later';
-import notFoundMiddleware from './app/middleware/not_found';
-import {handle} from './app/middleware/handle_event';
-import resInterceptor from './app/middleware/res_interceptor';
-import authRouter from './app/routes/auth';
-import userRouter from './app/routes/user';
-import searchRouter from './app/routes/search';
-import feedRouter from './app/routes/feed';
-import statRouter from './app/routes/stat';
-import logRouter from './app/routes/log';
-import apiDocRouter from './app/routes/api_doc';
-import configRouter from './app/routes/config';
-import notificationRouter from './app/routes/notification';
+export {initCron} from './app/scheduler';
 import {config} from './app/config/config';
-import connectDB from './app/config/db/connect';
-import cloudinary from 'cloudinary';
-import {initCron} from './app/scheduler';
+export {connectDB} from './app/config/db/connect';
+import {app, express, httpServer} from './app/socket';
+import {decodeCookies, logger, serverStatus} from './app/lib/utils';
+import sentryErrorHandler, {sentryRequestHandler, sentryTracingHandler} from './sentry';
+import {errorHandler, routeNotFound, eventHandler, responseInterceptor} from './app/middleware';
+import {
+	apiDocRouter,
+	feedCategoryRouter,
+	followedFeedRouter,
+	savedForLaterRouter,
+	authRouter,
+	userRouter,
+	searchRouter,
+	feedRouter,
+	statRouter,
+	logRouter,
+	postRouter,
+	configRouter,
+	notificationRouter,
+} from './app/routes';
+const appEnv = config.app.env;
+const prefix = config.app.prefix;
 
 cloudinary.v2.config({
 	cloud_name: config.cloudinary.cloudName,
@@ -45,45 +47,58 @@ const apiRateLimiter = rateLimit({
 	standardHeaders: true,
 });
 
+app.use(helmet());
+app.use(xss());
+app.use(mongoSanitize());
+app.set('trust proxy', 1);
+app.use('/api', apiRateLimiter);
+app.use(express.json({limit: '300kb'}));
+app.use(express.urlencoded({extended: false}));
+app.use(cookieParser(config.jwt.secret));
+app.use(decodeCookies);
+app.use(cors());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(fileUpload({useTempFiles: true}));
+if (appEnv === 'development') app.use(morgan('dev'));
+
+app.use(session({
+	secret: config.session.secret,
+	resave: false,
+	saveUninitialized: true
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(sentryRequestHandler);
+app.use(sentryTracingHandler);
+app.get(`${prefix}/status`, serverStatus);
+app.use(responseInterceptor);
+app.use('/', apiDocRouter);
+app.use(`${prefix}/logs`, logRouter);
+app.use(`${prefix}/posts`, postRouter);
+app.use(`${prefix}/stats`, statRouter);
+app.use(`${prefix}/feeds`, feedRouter);
+app.use(`${prefix}/auth`, authRouter);
+app.use(`${prefix}/users`, userRouter);
+app.use(`${prefix}/search`, searchRouter);
+app.use(`${prefix}/config`, configRouter);
+app.use(`${prefix}/feed-category`, feedCategoryRouter);
+app.use(`${prefix}/followed-feeds`, followedFeedRouter);
+app.use(`${prefix}/notifications`, notificationRouter);
+app.use(`${prefix}/saved-for-later`, savedForLaterRouter);
+app.use(routeNotFound);
+app.use(errorHandler);
+app.use(sentryErrorHandler);
+
+process
+	.on('SIGTERM', eventHandler('SIGTERM'))
+	.on('unhandledRejection', eventHandler('unhandledRejection'))
+	.on('uncaughtException', eventHandler('uncaughtException'));
+
 export {
-	morgan,
-	errorHandlerMiddleware,
-	notFoundMiddleware,
-	cookieParser,
-	connectDB,
-	authRouter,
-	mongoSanitize,
-	apiRateLimiter,
-	helmet,
-	xss,
-	path,
-	cors,
-	decodeCookies,
 	logger,
-	fileUpload,
-	configRouter,
-	savedForLaterRouter,
-	userRouter,
-	feedCategoryRouter,
-	feedRouter,
-	followedFeedRouter,
-	logRouter,
-	statRouter,
-	notificationRouter,
 	config,
-	express,
-	Request,
-	Response,
-	app,
-	appStatus,
-	StatusCodes,
-	resInterceptor,
-	appRoutes,
-	searchRouter,
 	httpServer,
-	passport,
-	handle,
-	initCron,
-	apiDocRouter,
-	session
+	appEnv,
+	app,
 }
