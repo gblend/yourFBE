@@ -1,8 +1,9 @@
 import {config as dotenvConfig} from 'dotenv';
-dotenvConfig();
-type numberUnknown =  number | unknown;
 
-const config = {
+dotenvConfig();
+type numberUnknown = number | unknown;
+
+export const config = {
     app: {
         port: process.env.PORT || process.env.APP_PORT as numberUnknown,
         name: process.env.APP_NAME || 'yourFeeds',
@@ -13,7 +14,8 @@ const config = {
         env: process.env.NODE_ENV as string,
         prodEnv: process.env.NODE_ENV === 'production',
         baseUrl: (process.env.NODE_ENV === 'production') ? process.env.BASE_URL_PROD : process.env.BASE_URL_DEV as string,
-        secret: process.env.APP_SECRET || 'yourFeeds:_xx_default_xx' as string
+        secret: process.env.APP_SECRET || 'yourFeeds:_xx_default_xx' as string,
+        prefix: '/api/v1',
     },
     rateLimiter: {
         windowMs: process.env.RATE_LIMIT_WINDOW_MS as numberUnknown,
@@ -49,7 +51,7 @@ const config = {
     },
     amqp: {
         host: process.env.AMQP_SERVER_HOST as string,
-        port: process.env.AMQP_SERVER_PORT as numberUnknown,
+        port: process.env.AMQP_SERVER_PORT as unknown as number,
         verifyEmailQueue: process.env.VERIFY_EMAIL_QUEUE_NAME as string,
         resetEmailQueue: process.env.RESET_EMAIL_QUEUE_NAME as string,
         defaultUser: process.env.RABBITMQ_DEFAULT_USER as string,
@@ -58,17 +60,20 @@ const config = {
     redis: {
         allOrdersKey: process.env.GET_ALL_ORDERS_CACHE_KEY as string,
         allProductsKey: process.env.GET_ALL_PRODUCTS_CACHE_KEY as string,
-        host: process.env.REDIS_HOST || '127.0.0.1',
+        host: process.env.REDIS_HOST || 'localhost',
         port: process.env.REDIS_PORT || 6379 as number,
         db: process.env.REDIS_DB || 0 as number,
         family: process.env.REDIS_FAMILY || 4 as number,
     },
     cache: {
-      allUsersCacheKey: process.env.ALL_USERS_REDIS_CACHE_KEY as string,
-      allAdminCacheKey: process.env.ALL_ADMINS_REDIS_CACHE_KEY as string,
-      savePostForLaterCacheKey: process.env.SAVED_FOR_LATER_CACHE_KEY as string,
-      rssFeedCacheKey: process.env.RSS_FEED_CACHE_KEY as string,
-      notificationsSentCacheKey: process.env.NOTIFICATIONS_SENT_CACHE_KEY as string
+        usersKey: process.env.ALL_USERS_CACHE_KEY as string,
+        adminsKey: process.env.ALL_ADMINS_CACHE_KEY as string,
+        feedCategoriesKey: 'feed_categories',
+        feedCategoryKey: 'feed_category',
+        savePostForLaterCacheKey: process.env.SAVED_FOR_LATER_CACHE_KEY as string,
+        feedPostsKey: process.env.RSS_FEED_POSTS_CACHE_KEY as string,
+        notificationsSentKey: process.env.NOTIFICATIONS_SENT_CACHE_KEY as string,
+        feedsPollingCronKey: 'feeds_polling_cron',
     },
     database: {
         uri: process.env.MONGO_URI as string,
@@ -79,37 +84,42 @@ const config = {
     },
     minutes: {
         ten: 1000 * 10 * 60,
+        five: 1000 * 5 * 60,
+        fiftyFive: 1000 * 55 * 60,
+    },
+    hours: {
+        one: 1000 * 60 * 60,
     },
     imageUpload: {
         maxSize: 2 * 1024 * 1024,
     },
-   auth: {
-       socketIoUI: {
-           username: process.env.SOCKET_IO_ADMIN_UI_USERNAME as string,
-           password: process.env.SOCKET_IO_ADMIN_UI_PASSWORD as string,
-           type: process.env.SOCKET_IO_ADMIN_UI_TYPE as string,
-           adminUrl: process.env.SOCKET_IO_ADMIN_UI_URL as string,
-       },
-       socketIo: {
-           prodUrl: process.env.SOCKET_IO_URL_PROD as string,
-           localUrl: process.env.SOCKET_IO_URL_LOCAL as string
-       },
-       google: {
-           clientID: process.env.SOCIAL_OAUTH_GOOGLE_CLIENT_ID as string,
-           clientSecret: process.env.SOCIAL_OAUTH_GOOGLE_CLIENT_SECRET as string,
-           callbackURL: process.env.SOCIAL_OAUTH_GOOGLE_CALLBACK_URL as string
-       },
-       facebook: {
-           clientID: process.env.SOCIAL_OAUTH_FACEBOOK_CLIENT_ID as string,
-           clientSecret: process.env.SOCIAL_OAUTH_FACEBOOK_CLIENT_SECRET as string,
-           callbackURL: process.env.SOCIAL_OAUTH_FACEBOOK_CALLBACK_URL as string,
-       },
-       twitter: {
-           consumerKey: process.env.SOCIAL_OAUTH_TWITTER_CLIENT_KEY as string,
-           consumerSecret: process.env.SOCIAL_OAUTH_TWITTER_CLIENT_SECRET as string,
-           callbackURL: process.env.SOCIAL_OAUTH_TWITTER_CALLBACK_URL as string
-       }
-   },
+    auth: {
+        socketIoUI: {
+            username: process.env.SOCKET_IO_ADMIN_UI_USERNAME as string,
+            password: process.env.SOCKET_IO_ADMIN_UI_PASSWORD as string,
+            type: process.env.SOCKET_IO_ADMIN_UI_TYPE as string,
+            adminUrl: process.env.SOCKET_IO_ADMIN_UI_URL as string,
+        },
+        socketIo: {
+            prodUrl: process.env.SOCKET_IO_URL_PROD as string,
+            localUrl: process.env.SOCKET_IO_URL_LOCAL as string
+        },
+        google: {
+            clientID: process.env.SOCIAL_OAUTH_GOOGLE_CLIENT_ID as string,
+            clientSecret: process.env.SOCIAL_OAUTH_GOOGLE_CLIENT_SECRET as string,
+            callbackURL: process.env.SOCIAL_OAUTH_GOOGLE_CALLBACK_URL as string
+        },
+        facebook: {
+            clientID: process.env.SOCIAL_OAUTH_FACEBOOK_CLIENT_ID as string,
+            clientSecret: process.env.SOCIAL_OAUTH_FACEBOOK_CLIENT_SECRET as string,
+            callbackURL: process.env.SOCIAL_OAUTH_FACEBOOK_CALLBACK_URL as string,
+        },
+        twitter: {
+            consumerKey: process.env.SOCIAL_OAUTH_TWITTER_CLIENT_KEY as string,
+            consumerSecret: process.env.SOCIAL_OAUTH_TWITTER_CLIENT_SECRET as string,
+            callbackURL: process.env.SOCIAL_OAUTH_TWITTER_CALLBACK_URL as string
+        }
+    },
     socket: {
         group: {
             feeds: process.env.SOCKET_GROUP_FEEDS as string,
@@ -148,6 +158,3 @@ const config = {
     }
 }
 
-export {
-    config
-}
