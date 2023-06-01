@@ -1,7 +1,8 @@
-import {logger} from '../lib/utils/logger';
+import {logger} from '../lib/utils';
 import mongoose from 'mongoose';
+import {CustomAPIError} from '../lib/errors';
 
-const handle = (event: string) => {
+export const handle = (event: string) => {
 	return (err: any) => {
 		switch (event) {
 			case 'SIGTERM':
@@ -17,11 +18,7 @@ const handle = (event: string) => {
 				process.exit(1);
 				break;
 			default:
-				logger.warn(`${event} - ${err.message}`);
+				throw new CustomAPIError(err.message);
 		}
 	}
-}
-
-export {
-	handle
 }
