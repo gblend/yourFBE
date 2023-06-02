@@ -1,7 +1,7 @@
 import {StatusCodes} from 'http-status-codes';
-import {ConfigData, validateConfigDataDto} from '../models/Config';
-import {NotFoundError, BadRequestError} from '../lib/errors';
-import {adaptRequest, formatValidationError, logger, createObjectId, paginate, constants} from '../lib/utils';
+import {ConfigData, validateConfigDataDto} from '../models';
+import {BadRequestError, NotFoundError} from '../lib/errors';
+import {adaptRequest, constants, createObjectId, formatValidationError, logger, paginate} from '../lib/utils';
 import {saveActivityLog} from '../lib/dbActivityLog';
 import {Request, Response} from '../types/index';
 import {ConfigModel, IResponse} from '../interface';
