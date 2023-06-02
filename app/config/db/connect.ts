@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import {logger} from '../../lib/utils';
-import {StatusCodes} from 'http-status-codes';
 import {CustomAPIError} from '../../lib/errors';
 import {config} from '../config';
 import {MongoMemoryServer} from 'mongodb-memory-server';
@@ -11,14 +10,13 @@ const connectionStates = {
     2: 'connecting'
 }
 
-export default async (uri: string): Promise<void> => {
+export const connectDB = async (uri: string): Promise<void> => {
     if (appEnv !== 'test') {
         const message = {
             success: 'Database connection established.',
             error: 'Database connection error'
         }
-        mongoose.set('strictQuery', true);
-        return connect(uri, message);
+        return await connect(uri, message);
     }
 
     return MongoMemoryServer.create().then((mongoDBServer: MongoMemoryServer) => {
@@ -30,14 +28,14 @@ export default async (uri: string): Promise<void> => {
             return connect(mongoDBServer.getUri(), msg);
         }
     });
-};
+}
 
-function connect(uri: string, message: {success: string, error: string}): Promise<void> {
-    return mongoose.connect(uri)
-        .then(() => {
-            logger.info(message.success);
-        }).catch(err => {
-            logger.error(`${StatusCodes.INTERNAL_SERVER_ERROR} - ${err.message}`);
-            throw new CustomAPIError(`${message.error}: ${err.message}`);
-        });
+const connect = async (uri: string, message: { success: string, error: string }): Promise<void> => {
+    try {
+        mongoose.set('strictQuery', true);
+        await mongoose.connect(uri);
+        logger.info(message.success);
+    } catch (err: any) {
+        throw new CustomAPIError(`${message.error}: ${err.message}`);
+    }
 }
