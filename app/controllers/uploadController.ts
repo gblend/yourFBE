@@ -1,13 +1,9 @@
-import {User} from '../models/User';
+import {User} from '../models';
 import {StatusCodes} from 'http-status-codes';
 import NotFoundError from '../lib/errors/not_found';
 import {Request, Response} from '../types';
 import {BadRequestError} from '../lib/errors';
-import {
-    adaptRequest,
-    createObjectId,
-    logger,
-} from '../lib/utils';
+import {adaptRequest, createObjectId, logger,} from '../lib/utils';
 import {uploadImage} from '../lib/utils/image_upload';
 
 
@@ -30,7 +26,7 @@ const uploadProfileImage = async (req: Request, res: Response): Promise<any> => 
     logger.info(`${StatusCodes.OK} - Profile image upload successful - ${method} ${path}`);
     return res.status(StatusCodes.OK).json({
         message: 'Profile image uploaded successfully',
-        data: {imageUrl: avatar, }
+        data: {imageUrl: avatar,}
     });
 }
 
