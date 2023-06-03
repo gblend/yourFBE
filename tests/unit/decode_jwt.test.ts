@@ -16,7 +16,7 @@ describe('DecodeJWT', () => {
 	it('should return user object if token is decoded', async () => {
 		const token = createJWT({name: 'testUser', role: 'user'});
 
-		const req = mockRequest({signedCookies: {token}, cookies: {token}});
+		const req = mockRequest({signedCookies: {token}, cookies: {token}, url: ''});
 		const res = mockResponse();
 		const next = mockNext(req);
 
@@ -26,7 +26,7 @@ describe('DecodeJWT', () => {
 
 	it('should null for user when provided token is invalid', async () => {
 		const token = 'fake token';
-		const req = mockRequest({signedCookies: {token}, cookies: {token}});
+		const req = mockRequest({signedCookies: {token}, cookies: {token}, url: ''});
 		const res = mockResponse();
 		const next = mockNext(req);
 
