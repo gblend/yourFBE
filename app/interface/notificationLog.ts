@@ -6,7 +6,8 @@ interface INotificationLog {
     notification: objectId
 }
 
-interface NotificationLogModel extends Model<INotificationLog> {}
+interface NotificationLogModel extends Model<INotificationLog> {
+}
 
 export {
     NotificationLogModel,

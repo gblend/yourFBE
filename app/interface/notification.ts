@@ -6,7 +6,8 @@ interface INotification {
     status?: string
 }
 
-interface NotificationModel extends Model<INotification> {}
+interface NotificationModel extends Model<INotification> {
+}
 
 interface INotificationDto {
     text?: string,

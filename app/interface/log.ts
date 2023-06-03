@@ -1,13 +1,15 @@
 import {Model} from 'mongoose';
 
-interface IActivityDto extends IActivityLog, IRequestInfo {}
+interface IActivityDto extends IActivityLog, IRequestInfo {
+}
 
 interface IPollingDto extends IRequestInfo {
     url: string,
     status?: string
 }
 
-interface PollingDtoModel extends Model<IPollingDto> {}
+interface PollingDtoModel extends Model<IPollingDto> {
+}
 
 interface IRequestInfo {
     method?: string,
@@ -20,7 +22,8 @@ interface IActivityLog {
     user: any,
 }
 
-interface ActivityLogModel extends Model<IActivityLog> {}
+interface ActivityLogModel extends Model<IActivityLog> {
+}
 
 export {
     IActivityDto,

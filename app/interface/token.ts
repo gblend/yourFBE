@@ -9,4 +9,5 @@ export interface IToken {
     user: objectId
 }
 
-export interface TokenModel extends Model<IToken> {}
+export interface TokenModel extends Model<IToken> {
+}

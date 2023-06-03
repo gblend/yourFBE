@@ -1,4 +1,4 @@
-import {Model, HydratedDocument} from 'mongoose';
+import {HydratedDocument, Model} from 'mongoose';
 
 interface ITokenUser {
     name?: string,
@@ -47,7 +47,7 @@ interface IUserMethods {
 
 // user static methods
 interface UserModel extends Model<IUser, {}, IUserMethods> {
-    _createJWT(payload: {name: string, _id: string, role: string}):
+    _createJWT(payload: { name: string, _id: string, role: string }):
         Promise<HydratedDocument<IUser, IUserMethods>>;
 }
 

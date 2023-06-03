@@ -66,7 +66,8 @@ interface IFeed {
     user?: objectId,
 }
 
-interface FeedModel extends Model<IFeed> {}
+interface FeedModel extends Model<IFeed> {
+}
 
 interface IFeedCategory {
     name: string,
@@ -74,7 +75,8 @@ interface IFeedCategory {
     status?: string,
 }
 
-interface FeedCategoryModel extends Model<IFeedCategory> {}
+interface FeedCategoryModel extends Model<IFeedCategory> {
+}
 
 interface IFollowedFeed {
     feed: objectId,
@@ -86,7 +88,8 @@ interface IFollowCategoryFeed {
     user: objectId,
 }
 
-interface FollowedFeedModel extends Model<IFollowedFeed, Document> {}
+interface FollowedFeedModel extends Model<IFollowedFeed, Document> {
+}
 
 interface ISavedForLater {
     post: any,
@@ -95,7 +98,8 @@ interface ISavedForLater {
     feed: objectId,
 }
 
-interface SavedForLaterModel extends Model<ISavedForLater> {}
+interface SavedForLaterModel extends Model<ISavedForLater> {
+}
 
 export {
     IFeed,
