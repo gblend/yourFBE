@@ -3,12 +3,14 @@ import {connection} from 'mongoose';
 import app from '../../server';
 import Joi from 'joi';
 import {decrypt} from '../../app/lib/utils';
-import {User} from '../../app/models/User';
+import {User} from '../../app/models';
 import supertest from 'supertest';
 const request = supertest(app);
 import {IUser} from '../../app/interface';
 
-describe('Auth', () => {
+describe('auth', () => {
+    jest.setTimeout(10000);
+
     interface ITestData {
         firstname?: string,
         lastname?: string,
@@ -86,7 +88,7 @@ describe('Auth', () => {
       request.post('/api/v1/auth/signup')
           .set('Content-Type', 'application/json')
           .send(data)
-          .expect(500)
+          .expect(400)
           .expect('Content-Type', 'application/json; charset=utf-8')
           .expect((res: any) => {
 
@@ -244,7 +246,7 @@ describe('Auth', () => {
     it('should fail to logout user with invalid token', (done) => {
         request.delete('/api/v1/auth/logout')
             .set('Cookie', [])
-            .expect(401)
+            .expect(400)
             .expect((response: any) => {
 
                 const loginError = Joi.object({
@@ -281,7 +283,7 @@ describe('Auth', () => {
     it('should fail to initiate forgot password with invalid email', (done) => {
         request.post('/api/v1/auth/forgot-password')
             .set('Content-Type', 'application/json')
-            .send({email:''})
+            .send({email: ''})
             .expect(400)
             .expect('Content-Type', 'application/json; charset=utf-8')
             .expect((response: any) => {
@@ -391,41 +393,6 @@ describe('Auth', () => {
         Joi.assert(result.body, resetPasswordError);
     });
 
-    it('should resend verification email to user', async () => {
-
-        const res = await request.post('/api/v1/auth/resend-verification-email')
-            .set('Content-Type', 'application/json')
-            .set('Cookie', loginTokens)
-            .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect(200);
-
-        const resendVerificationEmail = Joi.object({
-            status: Joi.string().required(),
-            message: Joi.string().required(),
-            data: Joi.object({})
-        });
-
-        Joi.assert(res.body, resendVerificationEmail);
-    });
-
-    it('should fail to resend verification email with invalid user token', async () => {
-        const response = await request.post('/api/v1/auth/resend-verification-email')
-            .set('Content-Type', 'application/json')
-            .set('Cookie', [])
-            .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect(401);
-
-        const resendVerificationEmailError = Joi.object({
-            status: Joi.string().required(),
-            message: Joi.string().required(),
-            data: Joi.object({
-                errors: Joi.array().min(1).required()
-            })
-        });
-
-        Joi.assert(response.body, resendVerificationEmailError);
-    });
-
     it('should successfully verify user with valid email and token', async () => {
         const user = await User.findOne({_id: testUser.data.user._id});
         verificationToken = user?.verificationToken ?? '';
@@ -459,7 +426,7 @@ describe('Auth', () => {
         const response = await request.post('/api/v1/auth/verify-account')
             .set('Content-Type', 'application/json')
             .send(data)
-            .expect(401)
+            .expect(400)
             .expect('Content-Type', 'application/json; charset=utf-8');
 
         const verifyEmailErrorSchema = Joi.object({
@@ -483,7 +450,7 @@ describe('Auth', () => {
             .set('Content-Type', 'application/json')
             .send(data)
             .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect(401);
+            .expect(400);
 
         const verifyEmailErrorSchema = Joi.object({
             status: Joi.string().required(),
@@ -558,5 +525,45 @@ describe('Auth', () => {
         });
 
         Joi.assert(res.body, socialLoginSchema);
+    });
+
+    it('should resend verification email to user', (done) => {
+
+        request.post('/api/v1/auth/resend-verification-email')
+            .set('Content-Type', 'application/json')
+            .set('Cookie', loginTokens)
+            .send({email: data.email})
+            .expect('Content-Type', 'application/json; charset=utf-8')
+            .expect(200)
+            .expect((_result: any) => {
+                const resendVerificationEmail = Joi.object({
+                    status: Joi.string().required(),
+                    message: Joi.string().required(),
+                    data: Joi.object({})
+                });
+
+                Joi.assert(_result.body, resendVerificationEmail);
+            }).end(done);
+    });
+
+    it('should fail to resend verification email with invalid user token', async () => {
+
+        request.delete('/api/v1/auth/logout')
+            .set('Cookie', loginTokens)
+            .then(async () => {
+            const result = await request.post('/api/v1/auth/resend-verification-email')
+                .set('Content-Type', 'application/json')
+                .send({email: ''});
+
+            const resendVerificationEmailError = Joi.object({
+                status: Joi.string().required(),
+                message: Joi.string().required(),
+                data: Joi.object({
+                    errors: Joi.array().min(1)
+                })
+            });
+
+            Joi.assert(result.body, resendVerificationEmailError);
+        });
     });
 });

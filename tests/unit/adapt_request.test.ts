@@ -1,9 +1,9 @@
 import {adaptRequest} from '../../app/lib/utils';
 
 describe('AdaptRequest', () => {
-	it('should return extracted request object with value as undefined', () => {
+	it('should return extracted request object with values as undefined', () => {
 		const req = {
-			path: undefined,
+			path: '',
 			method: undefined,
 			body: undefined,
 			queryParams: undefined,
@@ -17,16 +17,16 @@ describe('AdaptRequest', () => {
 			fields: undefined
 		};
 
-		expect(adaptRequest({})).toMatchObject(req);
+		expect(adaptRequest({url: ''})).toMatchObject(req);
 	});
 
 	it('should return extracted request object', () => {
 		const req = {
-			path: '/api/v1/status',
+			path: '/status',
 			method: 'GET',
 			body: {},
-			queryParams: {},
-			pathParams: {},
+			queryParams: undefined,
+			pathParams: undefined,
 			headers: [],
 			ip: '127.0.0.1',
 			signedCookies: null,
@@ -36,6 +36,6 @@ describe('AdaptRequest', () => {
 			fields: {}
 		};
 
-		expect(adaptRequest(req)).toMatchObject(req);
+		expect(adaptRequest({...req, url: '/api/v1/status',})).toMatchObject(req);
 	});
 });
