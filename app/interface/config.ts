@@ -7,7 +7,8 @@ interface IConfig {
     status?: string
 }
 
-interface ConfigModel extends Model<IConfig> {}
+interface ConfigModel extends Model<IConfig> {
+}
 
 interface IConfigDto {
     name: string,
@@ -20,7 +21,6 @@ interface IEcosystemConfig {
     name: string,
     script: string,
     min_uptime: number,
-    watch: string | string[],
     ignore_watch: string[],
     watch_options: {
         followSymlinks: boolean
@@ -28,6 +28,7 @@ interface IEcosystemConfig {
     error_file: string,
     combine_logs: boolean,
     max_restarts: number,
+    exec_mode: string,
     instances: number,
     env_production: {
         NODE_ENV: string
