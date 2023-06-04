@@ -1,24 +1,27 @@
 import {Router} from 'express';
-const router = Router();
-import {authenticateUser, authorizePermissions} from '../middleware/authentication';
-
+import {authenticateUser, authorizeRoles} from '../middleware';
 import {
-	getAllConfig,
-	createConfig,
-	getSingleConfig,
-	updateConfig,
-	disableConfig,
-	deleteConfig,
-	getConfigByPath
-} from '../controllers/configController';
+    createConfig,
+    deleteConfig,
+    disableConfig,
+    getAllConfig,
+    getConfigByPath,
+    getSingleConfig,
+    updateConfig
+} from '../controllers';
+import {constants} from '../lib/utils'
+
+const router = Router();
+
+const {ADMIN: admin} = constants.role;
 
 
-router.route('/').post(authenticateUser, authorizePermissions('admin'), createConfig)
-	.get(authenticateUser, authorizePermissions('admin'), getAllConfig);
-router.route('/:id').get(authenticateUser, authorizePermissions('admin'), getSingleConfig)
-	.patch(authenticateUser, authorizePermissions('admin'), updateConfig)
-	.delete(authenticateUser, authorizePermissions('admin'), deleteConfig);
-router.route('/meta/path').get(authenticateUser, authorizePermissions('admin'), getConfigByPath);
-router.route('/disable/:id').patch(authenticateUser, authorizePermissions('admin'), disableConfig);
+router.route('/').post(authenticateUser, authorizeRoles(admin), createConfig)
+    .get(authenticateUser, authorizeRoles(admin), getAllConfig);
+router.route('/:id').get(authenticateUser, authorizeRoles(admin), getSingleConfig)
+    .patch(authenticateUser, authorizeRoles(admin), updateConfig)
+    .delete(authenticateUser, authorizeRoles(admin), deleteConfig);
+router.route('/meta/path').get(authenticateUser, authorizeRoles(admin), getConfigByPath);
+router.route('/disable/:id').patch(authenticateUser, authorizeRoles(admin), disableConfig);
 
 export default router;

@@ -1,27 +1,30 @@
 import {Router} from 'express';
-const router = Router();
-import {authenticateUser, authorizePermissions} from '../middleware/authentication';
+import {authenticateUser, authorizeRoles} from '../middleware';
 import {
-	getFeedsByCategory,
-	createFeed,
-	deleteFeed,
-	disableFeedById,
-	toggleFeedsStatusByCategoryId,
-	getFeedById,
-	getFeeds,
-	getFeedsByCategoryId,
-	updateFeed,
-	getPostsByFeedId
-} from '../controllers/feedController';
+    createFeed,
+    deleteFeed,
+    disableFeedById,
+    getFeedById,
+    getFeeds,
+    getFeedsByCategory,
+    getFeedsByCategoryId,
+    getPostsByFeedId,
+    toggleFeedsStatusByCategoryId,
+    updateFeed
+} from '../controllers';
+import {constants} from '../lib/utils'
 
-router.route('/').get(getFeeds).post(authenticateUser, authorizePermissions('admin'), createFeed);
+const router = Router();
+const {ADMIN: admin} = constants.role;
+
+router.route('/').get(getFeeds).post(authenticateUser, authorizeRoles(admin), createFeed);
 router.route('/by_category').get(authenticateUser, getFeedsByCategory);
 router.route('/:id').get(authenticateUser, getFeedById)
-	.delete(authenticateUser, authorizePermissions('admin'), deleteFeed)
-	.patch(authenticateUser, authorizePermissions('admin'), updateFeed);
+    .delete(authenticateUser, authorizeRoles(admin), deleteFeed)
+    .patch(authenticateUser, authorizeRoles(admin), updateFeed);
 router.route('/by_category/:id').get(authenticateUser, getFeedsByCategoryId);
 router.route('/:id/posts').get(getPostsByFeedId);
-router.route('/manage/:id').delete(authenticateUser, authorizePermissions('admin'), disableFeedById)
-	.patch(authenticateUser, authorizePermissions('admin'), toggleFeedsStatusByCategoryId);
+router.route('/manage/:id').delete(authenticateUser, authorizeRoles(admin), disableFeedById)
+    .patch(authenticateUser, authorizeRoles(admin), toggleFeedsStatusByCategoryId);
 
 export default router;

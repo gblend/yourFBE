@@ -1,18 +1,17 @@
 import {Router} from 'express';
+import {authenticateUser, authorizeRoles} from '../middleware';
+import {createNotification, deleteNotification, getNotifications, updateNotification} from '../controllers';
+import {constants} from '../lib/utils'
+
 const router = Router();
-import {authenticateUser, authorizePermissions} from '../middleware/authentication';
-import {
-	createNotification,
-	deleteNotification,
-	updateNotification,
-	getNotifications
-} from '../controllers/notificationController';
+
+const {ADMIN: admin} = constants.role;
 
 router.route('/')
-	.get(authenticateUser, authorizePermissions('admin'), getNotifications)
-	.post(authenticateUser, authorizePermissions('admin'), createNotification);
+    .get(authenticateUser, authorizeRoles(admin), getNotifications)
+    .post(authenticateUser, authorizeRoles(admin), createNotification);
 router.route('/:id')
-	.delete(authenticateUser, authorizePermissions('admin'), deleteNotification)
-	.patch(authenticateUser, authorizePermissions('admin'), updateNotification);
+    .delete(authenticateUser, authorizeRoles(admin), deleteNotification)
+    .patch(authenticateUser, authorizeRoles(admin), updateNotification);
 
 export default router;

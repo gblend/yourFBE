@@ -1,6 +1,7 @@
 import {Router} from 'express';
+import {search} from '../controllers';
+
 const router = Router();
-import {search} from '../controllers/searchController';
 
 router.route('/').post(search);
 

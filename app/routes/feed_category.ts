@@ -1,19 +1,22 @@
 import {Router} from 'express';
-const router = Router();
-import {authenticateUser, authorizePermissions} from '../middleware/authentication';
-
+import {authenticateUser, authorizeRoles} from '../middleware';
+import {constants} from '../lib/utils'
 import {
-	getCategories,
-	createCategory,
-	updateCategory,
-	deleteCategory,
-	disableCategory,
-	getCategoryById
-} from '../controllers/feedCategoryController';
+    createCategory,
+    deleteCategory,
+    disableCategory,
+    getCategories,
+    getCategoryById,
+    updateCategory
+} from '../controllers';
 
-router.route('/').get(getCategories).post(authenticateUser, authorizePermissions('admin'), createCategory);
-router.route('/:id').get(getCategoryById).delete(authenticateUser, authorizePermissions('admin'), deleteCategory)
-	.patch(authenticateUser, authorizePermissions('admin'), updateCategory);
-router.route('/disable/:id').delete(authenticateUser, authorizePermissions('admin'), disableCategory);
+const router = Router();
+
+const {ADMIN: admin} = constants.role;
+
+router.route('/').get(getCategories).post(authenticateUser, authorizeRoles(admin), createCategory);
+router.route('/:id').get(getCategoryById).delete(authenticateUser, authorizeRoles(admin), deleteCategory)
+    .patch(authenticateUser, authorizeRoles(admin), updateCategory);
+router.route('/disable/:id').delete(authenticateUser, authorizeRoles(admin), disableCategory);
 
 export default router;
