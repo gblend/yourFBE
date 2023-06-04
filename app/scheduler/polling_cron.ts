@@ -1,12 +1,8 @@
 import cron from 'node-cron';
-import {logger} from '../lib/utils';
+import {pollFeeds} from '../controllers/pollingController';
 
-const polling = (): void => {
-    return cron.schedule('*/15 * * * *', () => {
-        logger.info('Starting polling for feed posts...');
+export const polling = (): void => {
+    return cron.schedule('*/15 * * * *', (): void => {
+        pollFeeds().then((v: void) => v);
     });
-};
-
-export {
-    polling
 }

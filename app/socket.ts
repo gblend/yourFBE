@@ -1,6 +1,6 @@
 import {Server, Socket} from 'socket.io';
 import {createAdapter} from '@socket.io/redis-adapter';
-import {initRedisCache, redisSet} from './lib/utils/redis';
+import {initRedisCache, redisSet} from './lib/utils';
 import {config} from './config/config';
 import {logger, redisGetBatchRecords} from './lib/utils';
 import {socketErrorText} from './lib/utils/socketio_errors';
@@ -8,100 +8,102 @@ import {BadRequestError} from './lib/errors';
 import {IServerOptions} from './interface';
 import jwt from 'jsonwebtoken';
 import express, {Application} from 'express';
-const app: Application = express();
-import http from 'http';
+import {createServer} from 'http';
 import {prepareMissedNotification} from './controllers/notificationController';
-const httpServer = http.createServer(app);
+
+const app: Application = express();
+
+const httpServer = createServer(app);
 const socketGroup = config.socket.group;
 
 const appEnv = config.app.env;
 const localUrl: string = (appEnv === 'production') ? config.auth.socketIo.localUrl as string
-	: config.auth.socketIo.prodUrl as string;
+    : config.auth.socketIo.prodUrl as string;
 
 const serverOptions: IServerOptions = {
-	cors: {
-		origin: [localUrl],
-		methods: ['GET', 'POST'],
-		credentials: true,
-		cookie: {
-			name: 'io-cookie',
-			secure: appEnv === 'production',
-			httpOnly: true,
-			sameSite: 'strict',
-			maxAge: new Date(Date.now() + config.days.one)
-		}
-	}
+    cors: {
+        origin: [localUrl],
+        methods: ['GET', 'POST'],
+        credentials: true,
+        cookie: {
+            name: 'io-cookie',
+            secure: appEnv === 'production',
+            httpOnly: true,
+            sameSite: 'strict',
+            maxAge: new Date(Date.now() + config.days.one)
+        }
+    }
 }
 
-const io = new Server (httpServer, serverOptions);
+const io = new Server(httpServer, serverOptions);
 const pubClient = initRedisCache();
 const subClient = pubClient.duplicate();
 io.adapter(createAdapter(pubClient, subClient, {key: 'socket'}));
 
 io.on('connection', (client: Socket | any): void => {
-	logger.info(`New client: ${client.id} connected.`);
-	client.emit('connected', {status: true, message: 'You are now connected.'});
+    logger.info(`New client: ${client.id} connected.`);
+    client.emit('connected', {status: true, message: 'You are now connected.'});
 
-	client.join([socketGroup.feeds, socketGroup.categories]);
+    client.join([socketGroup.feeds, socketGroup.categories]);
 
-	client.on('disconnect', () => {
-		logger.info(`Unauthenticated client disconnected.`);
-	});
+    client.on('disconnect', () => {
+        logger.info(`Unauthenticated client disconnected.`);
+    });
 });
 
-io.on('connection_error', (error) => {
-	logger.error(`Connection error: ${socketErrorText(error.code)} - ${error.message}`);
+io.on('connection_error', (error: any): void => {
+    logger.error(`Connection error: ${socketErrorText(error.code)} - ${error.message}`);
 });
 
 const userNamespaceIo = io.of(`/${config.socket.nameSpace.authUser}`);
 // middleware
-userNamespaceIo.use(async (client: Socket | any, next): Promise<string | void> => {
-	const token = client.handshake.auth.token;
-	if (!token) {
-		return next(new BadRequestError('Invalid token. Please pass a valid token.'));
-	}
-	// decode the request token and inject user to socket connection
-	const user = await jwt.decode(token);
-	if (user === null) {
-		return next(new BadRequestError('Invalid token provided. Please pass a valid token.'));
-	}
-	client.user = user;
+userNamespaceIo.use(async (client: Socket | any, next: any): Promise<string | void> => {
+    const token = client.handshake.auth.token;
+    if (!token) {
+        return next(new BadRequestError('Invalid token. Please pass a valid token.'));
+    }
+    // decode the request token and inject user to socket connection
+    const user = await jwt.decode(token);
+    if (user === null) {
+        return next(new BadRequestError('Invalid token provided. Please pass a valid token.'));
+    }
+    client.user = user;
 
-	next();
+    next();
 });
 
 userNamespaceIo.on('connection', async (authClient: Socket | any): Promise<void> => {
-	const userId = authClient.user.id;
-	logger.info(`Authenticated client: ${userId} connected.`);
+    const userId = authClient.user.id;
+    logger.info(`Authenticated client: ${userId} connected.`);
 
-	const notifications: any = await redisGetBatchRecords(config.cache.notificationsSentCacheKey);
-	if (notifications.length) {
-		notifications.forEach((data: any) => {
-			if (data.users.indexOf(userId) === -1) {
-				prepareMissedNotification(data.notification, userId).then(notification => {
-					if (notification) authClient.emit(config.socket.events.notification.generated, notification);
-				});
+    const notifications: any = await redisGetBatchRecords(config.cache.notificationsSentKey);
+    if (notifications.length) {
+        notifications.forEach((data: any) => {
+            if (data.users.indexOf(userId) === -1) {
+                prepareMissedNotification(data.notification, userId).then(notification => {
+                    if (notification) authClient.emit(config.socket.events.notification.generated, notification);
+                });
 
-				data.users = data.users.concat(`,${userId}`);
-				redisSet(data.cacheKey, data);
-			}
-		})
-	}
+                data.users = data.users.concat(`,${userId}`);
+                redisSet(data.cacheKey, data);
+            }
+        })
+    }
 
-	authClient.join([socketGroup.feeds, socketGroup.categories,
-		socketGroup.users, socketGroup.notifications]);
+    authClient.join([socketGroup.feeds, socketGroup.categories,
+        socketGroup.users, socketGroup.notifications]);
 
-	authClient.on('disconnect', (): void => {
-		logger.info(`Authenticated client: ${userId} disconnected.`);
-	});
+    authClient.on('disconnect', (): void => {
+        logger.info(`Authenticated client: ${userId} disconnected.`);
+    });
 });
 
 export {
-	httpServer,
-	io,
-	express,
-	app,
-	pubClient,
-	subClient,
-	userNamespaceIo
+    httpServer,
+    io,
+    express,
+    app,
+    pubClient,
+    subClient,
+    userNamespaceIo
 }
