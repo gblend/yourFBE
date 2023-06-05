@@ -1,7 +1,6 @@
-import mongoose, {Schema, model} from 'mongoose';
+import mongoose, {model, Schema} from 'mongoose';
 import joi, {ValidationResult} from 'joi';
-import {FollowedFeedModel, IFollowedFeed} from '../interface';
-import {IFollowCategoryFeed} from '../interface';
+import {FollowedFeedModel, IFollowCategoryFeed, IFollowedFeed} from '../interface';
 
 const FollowedFeedSchema = new Schema<IFollowedFeed, FollowedFeedModel>({
     feed: {

@@ -1,4 +1,4 @@
-import mongoose, {ObjectId, Schema, model} from 'mongoose';
+import mongoose, {model, ObjectId, Schema} from 'mongoose';
 import joi, {ValidationResult} from 'joi';
 import {ISavedForLater, SavedForLaterModel} from '../interface';
 
@@ -29,7 +29,7 @@ const SavedForLaterSchema = new Schema<ISavedForLater, SavedForLaterModel>({
 
 const SavedForLater = model<ISavedForLater, SavedForLaterModel>('SavedForLater', SavedForLaterSchema, 'savedForLater');
 
-const validateSavedForLaterDto = (saveForLaterDto: {post: any, feed: ObjectId, user: ObjectId}): ValidationResult => {
+const validateSavedForLaterDto = (saveForLaterDto: { post: any, feed: ObjectId, user: ObjectId }): ValidationResult => {
     const saveForLater = joi.object({
         post: joi.object().required(),
         feed: joi.object().required(),

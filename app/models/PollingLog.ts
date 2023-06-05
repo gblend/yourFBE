@@ -1,4 +1,4 @@
-import {Schema, model} from 'mongoose';
+import {model, Schema} from 'mongoose';
 import joi, {ValidationResult} from 'joi';
 import {IPollingDto, PollingDtoModel} from '../interface';
 

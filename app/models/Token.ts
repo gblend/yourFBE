@@ -1,4 +1,4 @@
-import mongoose, {Schema, model} from 'mongoose';
+import mongoose, {model, Schema} from 'mongoose';
 import {IToken, TokenModel} from '../interface';
 
 const TokenSchema = new Schema<IToken, TokenModel>({
@@ -25,8 +25,5 @@ const TokenSchema = new Schema<IToken, TokenModel>({
     }
 }, {timestamps: true});
 
-const Token = model<IToken, TokenModel>('Token', TokenSchema);
+export const Token = model<IToken, TokenModel>('Token', TokenSchema);
 
-export {
-    Token
-}

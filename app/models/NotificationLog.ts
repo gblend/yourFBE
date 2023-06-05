@@ -1,6 +1,6 @@
-import mongoose, {Schema, model} from 'mongoose';
+import mongoose, {model, Schema} from 'mongoose';
 import joi, {ValidationResult} from 'joi';
-import {NotificationLogModel, INotificationLog} from '../interface';
+import {INotificationLog, NotificationLogModel} from '../interface';
 
 const NotificationLogSchema = new Schema<INotificationLog, NotificationLogModel>({
     users: {
@@ -26,7 +26,6 @@ const validateNotificationLogDto = (notificationLogDto: INotificationLog): Valid
     });
     return notificationLog.validate(notificationLogDto);
 }
-
 
 export {
     NotificationLog,

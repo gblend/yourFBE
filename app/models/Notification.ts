@@ -1,6 +1,6 @@
-import {Schema, model} from 'mongoose';
+import {model, Schema} from 'mongoose';
 import joi, {ValidationResult} from 'joi';
-import {NotificationModel, INotificationDto, INotification} from '../interface';
+import {INotification, INotificationDto, NotificationModel} from '../interface';
 
 const NotificationSchema = new Schema<INotification, NotificationModel>({
     text: {

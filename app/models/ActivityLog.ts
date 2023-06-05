@@ -1,6 +1,6 @@
-import mongoose, {Model, model, Schema} from 'mongoose';
+import mongoose, {model, Schema} from 'mongoose';
 import joi, {ValidationResult} from 'joi';
-import {IActivityDto, IActivityLog, ActivityLogModel} from '../interface';
+import {ActivityLogModel, IActivityDto, IActivityLog} from '../interface';
 
 const ActivityLogSchema = new Schema<IActivityLog, ActivityLogModel>({
     action: {
