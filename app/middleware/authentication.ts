@@ -1,51 +1,62 @@
-import {UnauthorizedError, UnauthenticatedError} from '../lib/errors';
+import {UnauthenticatedError, UnauthorizedError} from '../lib/errors';
 import {
-    isTokenValid,
-    attachCookiesToResponse,
     adaptRequest,
-    logger,
+    attachCookiesToResponse,
     constants,
-    StatusCodes,
-    createJWT
+    createJWT,
+    isTokenValid,
+    logger,
+    StatusCodes
 } from '../lib/utils';
-import {Token} from '../models/Token';
-import {Request, Response, NextFunction} from '../types/index';
+import {Token} from '../models';
+import {NextFunction, Request, Response} from '../types/index';
 import {ITokenUser} from '../interface';
 
-const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
-    const {signedCookies, path, method} = adaptRequest(req);
-    const {accessToken, refreshToken} = signedCookies;
+const authenticateUser = async (req: Request | any, res: Response, next: NextFunction) => {
+    const {signedCookies, headers: {authorization, authorization_refresh}, path, method} = adaptRequest(req);
+    let {accessToken, refreshToken} = signedCookies;
 
     try {
+        if (!accessToken && authorization && authorization.startsWith('Bearer')) {// check request header for bearer token
+            accessToken = authorization.split(' ')[1];
+        }
+
+        if (!refreshToken && authorization_refresh && authorization_refresh.startsWith('BearerRefresh')) {
+            refreshToken = authorization_refresh.split(' ')[1];
+        }
+
         if (accessToken) {
             const {name, id, role}: ITokenUser = isTokenValid(accessToken);
             req.user = {name, id, role};
             return next();
+        } else if (refreshToken) {
+            const payload: {user: ITokenUser, refreshToken: string} = isTokenValid(refreshToken);
+            const isTokenExist = await Token.findOne({
+                user: payload.user.id,
+                refreshToken: payload.refreshToken
+            });
+
+            if (!isTokenExist || !isTokenExist?.isValid) {
+                logger.info(`${StatusCodes.UNAUTHORIZED} - Refresh token invalid - ${method} ${path}`)
+                res.status(StatusCodes.UNAUTHORIZED).json({message: constants.auth.AUTHENTICATION_INVALID})
+            }
+
+            const accessTokenJWT = createJWT(payload.user);
+            attachCookiesToResponse({accessTokenJWT, refreshTokenJWT: isTokenExist!.refreshToken, res});
+            req.user = payload.user;
+            return next();
         }
 
-        const payload = isTokenValid(refreshToken);
-        const isTokenExist = await Token.findOne({
-            user: payload.user.id,
-            refreshToken: payload.refreshToken
-        });
-        if (!isTokenExist || !isTokenExist?.isValid) {
-            logger.info(`${StatusCodes.BAD_REQUEST} - Access token invalid - ${method} ${path}`)
-            res.status(StatusCodes.BAD_REQUEST).json({ message: constants.auth.AUTHENTICATION_INVALID})
-        }
-
-        const accessTokenJWT = createJWT(payload.user);
-        attachCookiesToResponse({accessTokenJWT, refreshTokenJWT: isTokenExist!.refreshToken, res});
-        req.user = payload.user;
-        next();
+        return next(new UnauthenticatedError(constants.auth.AUTHENTICATION_INVALID))
     } catch (err: any) {
-        logger.info(`${err.statusCode} - Authentication error: ${err.message} - ${method} ${path}`)
-        throw new UnauthenticatedError(constants.auth.AUTHENTICATION_INVALID);
+        logger.info(`Authentication error: ${err.message} - ${method} ${path}`)
+        throw new UnauthenticatedError('Authentication failed, please try again');
     }
 }
 
-const authorizePermissions = (...roles: string[]) => {
+const authorizeRoles = (...roles: string[]) => {
     return (req: Request, _: Response, next: NextFunction) => {
-        const {user, method, path}: {user: any, method: string, path: string} = adaptRequest(req);
+        const {user, method, path}: { user: any, method: string, path: string } = adaptRequest(req);
         if (!roles.includes(user!.role)) {
             logger.info(`${StatusCodes.UNAUTHORIZED} - Unauthorized access error - ${method} ${path}`)
             throw new UnauthorizedError('You are not authorized to access this resource');
@@ -56,5 +67,5 @@ const authorizePermissions = (...roles: string[]) => {
 
 export {
     authenticateUser,
-    authorizePermissions
+    authorizeRoles
 }

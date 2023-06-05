@@ -1,8 +1,8 @@
 import {StatusCodes} from 'http-status-codes';
-import {logger, adaptRequest} from '../lib/utils';
-import {Request, Response, NextFunction} from '../types/index';
+import {adaptRequest, logger} from '../lib/utils';
+import {NextFunction, Request, Response} from '../types/index';
 
-const errorHandlerMiddleware = (err: any, req: Request, res: Response, _next: NextFunction) => {
+export const errorHandler = (err: any, req: Request, res: Response, _next: NextFunction) => {
     const {path, method} = adaptRequest(req);
 
     const customError = {
@@ -42,7 +42,3 @@ const errorHandlerMiddleware = (err: any, req: Request, res: Response, _next: Ne
         }
     });
 };
-
-export {
-    errorHandlerMiddleware
-}
