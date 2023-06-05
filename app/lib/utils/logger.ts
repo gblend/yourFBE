@@ -12,7 +12,8 @@ const createLogger = (): Logger => {
                     winston.format.timestamp({format: 'MMM-DD-YYYY HH:mm:ss'}),
                     winston.format.align(),
                     winston.format.colorize({colors: {warn: 'yellow'}}),
-                    winston.format.printf(info => `${info.level}: ${[info.timestamp]}: ${info.message}`),
+                    winston.format.printf((info: { level: string, timestamp?: string, message: string }): string =>
+                        `${info.level}: ${[info.timestamp]}: ${info.message}`),
                 )
             }),
             new winston.transports.File({
@@ -22,7 +23,8 @@ const createLogger = (): Logger => {
                     winston.format.timestamp({format: 'MMM-DD-YYYY HH:mm:ss'}),
                     winston.format.align(),
                     winston.format.colorize({colors: {error: 'red'}}),
-                    winston.format.printf(info => `${info.level}: ${[info.timestamp]}: ${info.message}`),
+                    winston.format.printf((info: { level: string, timestamp?: string, message: string }): string =>
+                        `${info.level}: ${[info.timestamp]}: ${info.message}`),
                 )
             })
         ]
@@ -34,7 +36,8 @@ const createLogger = (): Logger => {
                 winston.format.timestamp({format: 'MMM-DD-YYYY HH:mm:ss'}),
                 winston.format.align(),
                 winston.format.colorize({colors: {info: 'blue'}}),
-                winston.format.printf(info => `${info.level}: ${[info.timestamp]}: ${info.message}`),
+                winston.format.printf((info: { level: string, timestamp?: string, message: string }): string =>
+                    `${info.level}: ${[info.timestamp]}: ${info.message}`),
             )
         }));
     }
@@ -42,8 +45,4 @@ const createLogger = (): Logger => {
     return _logger;
 }
 
-const logger = createLogger()
-
-export {
-    logger
-}
+export const logger = createLogger()

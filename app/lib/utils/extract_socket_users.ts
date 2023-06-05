@@ -1,4 +1,4 @@
-const extractSocketUsers = async (allActiveSockets: any[]) => {
+export const extractSocketUsers = async (allActiveSockets: any[]) => {
     const activeSocketIds: string[] = [];
 
     if (allActiveSockets.length) {
@@ -7,9 +7,6 @@ const extractSocketUsers = async (allActiveSockets: any[]) => {
         });
     }
 
-   return activeSocketIds.join(',');
+    return activeSocketIds.join(',');
 }
 
-export {
-    extractSocketUsers
-}

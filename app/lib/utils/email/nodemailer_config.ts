@@ -1,8 +1,9 @@
 import {createTransport} from 'nodemailer';
 import {config} from '../../../config/config';
 import {config as dotenvConfig} from 'dotenv';
+
 dotenvConfig({path: '../.env'});
-const mail = (config.app.prodEnv)? config.mail : config.mailTest;
+const mail = (config.app.prodEnv) ? config.mail : config.mailTest;
 
 const transporterInit = () => {
     return createTransport({
@@ -19,7 +20,7 @@ const transporterInit = () => {
     })
 }
 
-const sendEmail = ({to, subject, html}: {to: string, subject: string, html: any}) => {
+export const sendEmail = ({to, subject, html}: { to: string, subject: string, html: any }) => {
     const from = config.mail.from
     return transporterInit().sendMail({
         from,
@@ -29,6 +30,3 @@ const sendEmail = ({to, subject, html}: {to: string, subject: string, html: any}
     })
 }
 
-export {
-    sendEmail
-}

@@ -1,15 +1,16 @@
-import {existsSync, mkdirSync, unlink} from 'fs';
+import {existsSync, mkdirSync, unlink, readFile, writeFile} from 'fs';
 import path from 'path';
 import {BadRequestError} from '../errors';
 import {config} from '../../config/config';
 import cloudinary from 'cloudinary';
 import {logger} from './index';
+
 const defaultFolder: string = 'avatar/yourFeeds';
 type imageUrl = { url: string };
 
-const uploadImage = async (files: any, uploadType: string = 'cloudinary', folder: string = ''): Promise<{url: string}> => {
+const uploadImage = async (files: any, uploadType: string = 'cloudinary', folder: string = ''): Promise<{ url: string }> => {
     if (!files) {
-        throw new BadRequestError('No file uploaded');
+        throw new BadRequestError('No file to be uploaded');
     }
 
     const uploadImageData = files.uploadImage;
@@ -29,13 +30,25 @@ const uploadImage = async (files: any, uploadType: string = 'cloudinary', folder
 }
 
 const uploadToLocal = async (imageFile: any): Promise<imageUrl> => {
-    const uploadDir = path.join(__dirname, '../../public/uploads');
+    const uploadDir = path.join(__dirname, '../../../public/uploads');
     const imgPath = `${uploadDir}/${imageFile.name}`;
     if (!existsSync(uploadDir)) {
         mkdirSync(uploadDir, {recursive: true});
     }
 
-    await imageFile.mv(imgPath)
+    // move image to dist/public/uploads
+    await imageFile.mv(imgPath).then(() => {
+        readFile(imgPath, ((err: Error | null, data: any) => { // copy image to public/uploads
+            if (err) logger.warn(`Error occurred while copying local upload image: ${imageFile.name}`);
+            else {
+                const _uploadDir: string = path.join(__dirname, '../../../../public/uploads');
+                const _path: string = `${_uploadDir}/${imageFile.name}`;
+                writeFile(_path, data, ((error: Error | null) => {
+                    if (!error) logger.info('Local upload image copied successfully');
+                }));
+            }
+        }))
+    });
     return {url: `/uploads/${imageFile.name}`};
 }
 

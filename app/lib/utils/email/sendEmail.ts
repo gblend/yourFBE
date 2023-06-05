@@ -2,13 +2,14 @@ import {sendEmail} from './nodemailer_config';
 import {logger} from '../logger';
 import {config} from '../../../config/config';
 import {config as dotenvConfig} from 'dotenv';
+
 dotenvConfig();
 
 let origin = config.app.baseUrlDev;
 if (config.app.env === 'production') {
     origin = config.app.baseUrlProd;
 }
-type emailDto = {name: string, email: string, passwordToken?: string, verificationToken?: string}
+type emailDto = { name: string, email: string, passwordToken?: string, verificationToken?: string }
 
 const sendResetPasswordEmail: any = async ({name, email, passwordToken}: emailDto) => {
     const resetUrl = `${origin}/user/reset-password?token=${passwordToken}&email=${email}`;
@@ -20,7 +21,7 @@ const sendResetPasswordEmail: any = async ({name, email, passwordToken}: emailDt
 
     try {
         await sendEmail({to: email, subject: 'Password Reset', html: message});
-        logger.info('Password reset email sent successfully.');
+        logger.info(`Password reset email sent to ${email}`);
     } catch (err: any) {
         logger.error(`Password reset email failed:  ${err.message}`);
     }

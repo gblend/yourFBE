@@ -1,19 +1,27 @@
 import amqp from 'amqplib';
 import {BadRequestError} from '../errors';
+import {config} from '../../config/config';
+import {logger} from './logger';
 
-let channel: any = ''; let connection : any = '';
+let channel: any = '';
+let connection: any = '';
 
 const initAmqpServer = async (): Promise<amqp.Connection> => {
-    const amqpServer = 'amqp://127.0.0.1:5672';
-    // @TODO: move amqp server to config
     if (!connection) {
-        return amqp.connect(amqpServer, {prefetch: 1});
+        return amqp.connect({
+                hostname: config.amqp.host,
+                port: config.amqp.port,
+                heartbeat: 60,
+            },
+            {prefetch: 1});
     }
     return connection;
 }
 
-const createAmqpChannel = async (queue: string): Promise<{channel: amqp.Channel}> => {
-    connection = await initAmqpServer();
+const createAmqpChannel = async (queue: string): Promise<{ channel: amqp.Channel }> => {
+    connection = await initAmqpServer()
+        .then<amqp.Connection, never>((conn: amqp.Connection) => conn)
+        .catch((error: any) => logger.error(`AMQP connection error: ${error}`));
     channel = await connection.createChannel();
     await channel.assertExchange(queue, 'direct', {durable: true});
     await channel.assertQueue(queue);

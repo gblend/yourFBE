@@ -1,4 +1,4 @@
-const formatValidationError = ({ details }: {details: any[]}): string[] => {
+export const formatValidationError = ({details}: { details: any[] }): string[] => {
     return details.map(detail => {
         if (detail.message) {
             return detail.message.split('\"').join('')
@@ -7,6 +7,3 @@ const formatValidationError = ({ details }: {details: any[]}): string[] => {
     });
 }
 
-export {
-    formatValidationError
-}

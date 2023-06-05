@@ -1,8 +1,12 @@
 import {Request} from '../../types/index';
 
-const adaptRequest = (req: Request | any) => {
+let path = '';
+export const adaptRequest = (req: Request | any) => {
+    const reqPath = req.url.split('v1')[1];
+    path = (reqPath === undefined) ? path : reqPath;
+
     return Object.freeze({
-        path: req.path as string,
+        path: path as string,
         method: req.method as string,
         body: req.body,
         queryParams: req.query as any,
@@ -18,6 +22,3 @@ const adaptRequest = (req: Request | any) => {
     })
 }
 
-export {
-    adaptRequest
-}
