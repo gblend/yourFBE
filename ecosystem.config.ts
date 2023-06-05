@@ -5,7 +5,6 @@ const configOption: IEcosystemConfig = {
   name: config.app.name,
   script: 'dist/server.js',
   min_uptime: 36000,
-  watch: '.',
   ignore_watch: ['logs', 'coverage', '.git', '.gitignore'],
   watch_options: {
     followSymlinks: false
@@ -13,7 +12,8 @@ const configOption: IEcosystemConfig = {
   error_file: './logs/pm2.log',
   combine_logs: true,
   max_restarts: 3,
-  instances: 1,
+  exec_mode: 'cluster',
+  instances: 0,
   env_production: {
     NODE_ENV: 'production'
   },
@@ -22,6 +22,8 @@ const configOption: IEcosystemConfig = {
   }
 }
 
-export default {
-  apps: [configOption]
+module.exports = {
+  apps: [
+      configOption,
+  ]
 }
