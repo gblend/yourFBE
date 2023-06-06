@@ -351,6 +351,7 @@ export default {
         properties: {
             email: {
                 type: 'string',
+                required: true,
                 description: 'Account email address',
                 example: 'johndoe@example.com'
             }
@@ -361,16 +362,19 @@ export default {
         properties: {
             email: {
                 type: 'string',
+                required: true,
                 description: 'Account email address',
                 example: 'johndoe@example.com'
             },
             token: {
                 type: 'string',
+                required: true,
                 description: 'The signup token',
                 example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiR2FicmllbCBJbG9jaGkiLCJpZCI6IjYyYWZhZGRiNzFhZTA2NTMzMDc5OGVkMCIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNjU1NjgwNDc2fQ.RcORvSx7NWFKIcs4bD6tt21r0v0J3movo3b2XUAEgno',
             },
             password: {
                 type: 'string',
+                required: true,
                 description: 'Account password',
                 example: '**********'
             }

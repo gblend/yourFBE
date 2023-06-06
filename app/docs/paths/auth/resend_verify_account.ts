@@ -3,10 +3,10 @@ export default {
         post: {
             tags: ['Authentication'],
             description: 'Resend account verification email',
+            summary: 'resends account verification email',
             operationId: 'resendAccountVerificationEmail',
-            parameters:[],
             requestBody: {
-                content:{
+                content: {
                     'application/json': {}
                 }
             },
@@ -14,7 +14,7 @@ export default {
                 '200': {
                     description: 'Successful resend account verification email response',
                     content: {
-                        'application/json':{
+                        'application/json': {
                             example: {
                                 status: 'success',
                                 message: 'Please check your email for a link to verify your account',
@@ -23,10 +23,10 @@ export default {
                         }
                     }
                 },
-                '404':{
+                '404': {
                     description: 'Unauthorized resend account verification email error response',
-                    content:{
-                        'application/json':{
+                    content: {
+                        'application/json': {
                             example: {
                                 status: 'success',
                                 message: 'Request failed',

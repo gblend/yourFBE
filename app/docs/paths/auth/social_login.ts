@@ -3,13 +3,13 @@ export default {
         post: {
             tags: ['Authentication'],
             description: 'User social login',
+            summary: 'social auth login',
             operationId: 'socialLogin',
-            parameters:[],
             requestBody: {
-                content:{
+                content: {
                     'application/json': {
-                        schema:{
-                            $ref:'#/components/schemas/SocialLoginInput'
+                        schema: {
+                            $ref: '#/components/schemas/SocialLoginInput'
                         }
                     }
                 }
@@ -47,8 +47,8 @@ export default {
                 },
                 '401': {
                     description: 'User account disabled error response',
-                    content:{
-                        'application/json':{
+                    content: {
+                        'application/json': {
                             example: {
                                 status: 'error',
                                 message: 'Request failed',

@@ -3,13 +3,13 @@ export default {
         post: {
             tags: ['Authentication'],
             description: 'Verify account',
+            summary: 'verify user\'s account',
             operationId: 'verifyAccount',
-            parameters:[],
             requestBody: {
-                content:{
+                content: {
                     'application/json': {
-                        schema:{
-                            $ref:'#/components/schemas/VerifyAccountInput'
+                        schema: {
+                            $ref: '#/components/schemas/VerifyAccountInput'
                         }
                     }
                 }
@@ -18,7 +18,7 @@ export default {
                 '200': {
                     description: 'Successful account verification response',
                     content: {
-                        'application/json':{
+                        'application/json': {
                             example: {
                                 status: 'success',
                                 message: 'Account successfully verified',
@@ -27,16 +27,16 @@ export default {
                         }
                     }
                 },
-                '401':{
+                '401': {
                     description: 'Unauthorized verify account error response',
-                    content:{
-                        'application/json':{
+                    content: {
+                        'application/json': {
                             example: {
                                 status: 'success',
                                 message: 'Request failed',
                                 data: {
                                     errors: [
-                                    'Verification failed, invalid token'
+                                        'Verification failed, invalid token'
                                     ]
                                 }
                             }

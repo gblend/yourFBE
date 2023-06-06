@@ -3,13 +3,13 @@ export default {
         post: {
             tags: ['Authentication'],
             description: 'Reset password',
+            summary: 'resets user\'s account password',
             operationId: 'resetPassword',
-            parameters:[],
             requestBody: {
-                content:{
+                content: {
                     'application/json': {
-                        schema:{
-                            $ref:'#/components/schemas/ResetPasswordInput'
+                        schema: {
+                            $ref: '#/components/schemas/ResetPasswordInput'
                         }
                     }
                 }
@@ -29,8 +29,8 @@ export default {
                 },
                 '400': {
                     description: 'User reset password error response',
-                    content:{
-                        'application/json':{
+                    content: {
+                        'application/json': {
                             example: {
                                 status: 'error',
                                 message: 'Request failed',

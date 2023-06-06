@@ -1,10 +1,10 @@
 export default {
     '/status': {
         get: {
-            tags: ['Backend Health'],
+            tags: ['Backend health'],
             description: 'Get backend service status',
+            summary: 'returns service status',
             operationId: 'getHealthStatus',
-            parameters:[],
             responses: {
                 200: {
                     description: 'Backend service status returned successfully',

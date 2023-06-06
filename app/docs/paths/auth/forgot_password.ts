@@ -3,13 +3,13 @@ export default {
         post: {
             tags: ['Authentication'],
             description: 'Forgot password',
+            summary: 'initiates password reset',
             operationId: 'forgotPassword',
-            parameters:[],
             requestBody: {
-                content:{
+                content: {
                     'application/json': {
-                        schema:{
-                            $ref:'#/components/schemas/ForgotPasswordInput'
+                        schema: {
+                            $ref: '#/components/schemas/ForgotPasswordInput'
                         }
                     }
                 }

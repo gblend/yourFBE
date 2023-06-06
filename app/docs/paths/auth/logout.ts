@@ -3,8 +3,11 @@ export default {
         delete: {
             tags: ['Authentication'],
             description: 'Logout user',
+            summary: 'logs out user',
             operationId: 'logout',
-            parameters:[],
+            security: [{
+                bearerAuth: []
+            }],
             responses: {
                 '204': {
                     description: 'User logout successful response',
@@ -14,8 +17,8 @@ export default {
                 },
                 '401': {
                     description: 'User logout error response',
-                    content:{
-                        'application/json':{
+                    content: {
+                        'application/json': {
                             example: {
                                 status: 'error',
                                 message: 'Request failed',
