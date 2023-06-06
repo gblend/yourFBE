@@ -1,10 +1,11 @@
 import {config} from '../config/config';
+const {baseUrlDev, prefix, baseUrlProd} = config.app;
 
 export default {
-    openapi: '3.0.*',
+    openapi: '3.0.0',
     info: {
-        title: 'yourFeeds API Documentation',
-        description: 'Documentation for yourFeeds backend APIs',
+        title: 'FeedKit API Documentation',
+        description: 'Documentation for FeedKit backend APIs',
         version: '1.0.0',
         contact: {
             email: 'gabrielilo190@gmail.com',
@@ -12,14 +13,15 @@ export default {
             url: 'https://gblend.tech'
         }
     },
+    schemes: ['http','https'],
 
     servers: [
         {
-            url: `${config.app.baseUrlDev}:${config.app.port}/api/v1`,
+            url: `${baseUrlDev}${prefix}`,
             description: 'Local Environment',
         },
         {
-            url: `${config.app.baseUrlProd}:${config.app.port}/api/v1`,
+            url: `${baseUrlProd}/${prefix}`,
             description: 'Production Environment',
         }
     ],
