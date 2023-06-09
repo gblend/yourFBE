@@ -13,7 +13,11 @@ interface IConnectionOptions {
 }
 
 const connectionOptions: IConnectionOptions = {
-    host: config.redis.host,
+    port: 17402,
+    host: 'redis-17402.c10.us-east-1-2.ec2.cloud.redislabs.com',
+    password: 'Ix6av7JtrburyRgqxti81flgUA3v6m03',
+    family: config.redis.family as number,
+    db: config.redis.db as number,
 }
 
 const getRedisConnection = () => {
