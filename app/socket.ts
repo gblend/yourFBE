@@ -1,6 +1,6 @@
 import {Server, Socket} from 'socket.io';
 import {createAdapter} from '@socket.io/redis-adapter';
-import {initRedisCache, redisSet} from './lib/utils';
+import {getRedisConnection, redisSet} from './lib/utils';
 import {config} from './config/config';
 import {logger, redisGetBatchRecords} from './lib/utils';
 import {socketErrorText} from './lib/utils/socketio_errors';
@@ -36,7 +36,7 @@ const serverOptions: IServerOptions = {
 }
 
 const io = new Server(httpServer, serverOptions);
-const pubClient = initRedisCache();
+const pubClient = getRedisConnection();
 const subClient = pubClient.duplicate();
 io.adapter(createAdapter(pubClient, subClient, {key: 'socket'}));
 

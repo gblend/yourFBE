@@ -22,6 +22,7 @@ export {
     redisMGet,
     redisDelete,
     initRedisCache,
+    getRedisConnection,
     redisFlushAll
 } from './redis';
 export {appRoutes} from './registered_routes';
