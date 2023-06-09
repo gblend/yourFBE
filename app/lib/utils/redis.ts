@@ -164,6 +164,7 @@ export {
     redisRefreshCache,
     redisFlushAll,
     initRedisCache,
+    getRedisConnection,
     redisSetBatchRecords,
     redisGetBatchRecords
 }
