@@ -13,7 +13,6 @@ interface IConnectionOptions {
 }
 
 const connectionOptions: IConnectionOptions = {
-    port: config.redis.port as number,
     host: config.redis.host,
     family: config.redis.family as number,
     db: config.redis.db as number,
