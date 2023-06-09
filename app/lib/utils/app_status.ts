@@ -1,10 +1,9 @@
 import packJson from '../../../package.json';
-import {logger,appRoutes} from './';
+import {logger} from './';
 import {config} from '../../config/config';
 import {IAppStatus} from '../../interface';
 import {Request, Response} from '../../types';
 import {StatusCodes} from 'http-status-codes';
-import {app} from '../../socket';
 
 export const appStatus = {
     getGeneralInfo(): IAppStatus {
@@ -33,7 +32,7 @@ export const serverStatus = (_: Request, res: Response) => {
         message: `${config.app.name} backend service is running.`,
         data: {
             info: appStatus.compile(),
-            routes: appRoutes(app),
+            routes: [],
         }
     });
 }
