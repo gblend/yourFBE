@@ -14,8 +14,6 @@ interface IConnectionOptions {
 
 const connectionOptions: IConnectionOptions = {
     host: config.redis.host,
-    family: config.redis.family as number,
-    db: config.redis.db as number,
 }
 
 const getRedisConnection = () => {
