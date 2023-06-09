@@ -1,0 +1,10 @@
+.swagger-ui .topbar img {
+    content: url("../uploads/custom_swagger_logo.png");
+    display: block;
+    width: 140px;
+    height: 40px;
+}
+
+.swagger-ui .info .title small.version-stamp {
+    display: none!important;
+}
