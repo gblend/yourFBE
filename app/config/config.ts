@@ -62,6 +62,7 @@ export const config = {
         allProductsKey: process.env.GET_ALL_PRODUCTS_CACHE_KEY as string,
         host: process.env.REDIS_HOST || 'localhost',
         port: process.env.REDIS_PORT || 6379 as number,
+        password: process.env.REDIS_PASSWORD || '' as string,
         db: process.env.REDIS_DB || 0 as number,
         family: process.env.REDIS_FAMILY || 4 as number,
     },
