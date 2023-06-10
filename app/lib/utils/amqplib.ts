@@ -5,7 +5,7 @@ import {logger} from './logger';
 
 let channel: any = '';
 let connection: any = '';
-const {host, port, password, protocol, username} = config.amqp;
+const {host, password, protocol, username, vhost} = config.amqp;
 
 const initAmqpServer = async (): Promise<any> => {
     if (!connection) {
@@ -14,8 +14,8 @@ const initAmqpServer = async (): Promise<any> => {
                 username,
                 password,
                 hostname: host,
-                port: port as number,
                 heartbeat: 60,
+                vhost
             },
             {prefetch: 1})
             .then((connection: Connection) => connection)
