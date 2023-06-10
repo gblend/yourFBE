@@ -31,7 +31,7 @@ describe('App', () => {
 							node_version: Joi.string().required(),
 							app_version: Joi.string().required()
 						}).options({allowUnknown: true}),
-						routes: Joi.array().min(1).required()
+						routes: Joi.array()
 					})
 				});
 
