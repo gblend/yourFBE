@@ -5,6 +5,7 @@ import xss from 'xss-clean';
 import helmet from 'helmet';
 import passport from 'passport';
 import cloudinary from 'cloudinary';
+import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
 import rateLimit from 'express-rate-limit';
@@ -60,7 +61,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload({useTempFiles: true}));
 if (appEnv === 'development') app.use(morgan('dev'));
 
+app.use(session({
+	secret: config.session.secret,
+	resave: false,
+	saveUninitialized: true
+}));
 app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(sentryRequestHandler);
 app.use(sentryTracingHandler);
