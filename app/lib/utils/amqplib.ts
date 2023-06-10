@@ -1,26 +1,35 @@
-import amqp from 'amqplib';
+import {Connection, Channel, connect} from 'amqplib';
 import {BadRequestError} from '../errors';
 import {config} from '../../config/config';
 import {logger} from './logger';
 
 let channel: any = '';
 let connection: any = '';
+const {host, port} = config.amqp;
 
-const initAmqpServer = async (): Promise<amqp.Connection> => {
+const initAmqpServer = async (): Promise<any> => {
     if (!connection) {
-        return amqp.connect({
-                hostname: config.amqp.host,
-                port: config.amqp.port,
+        return connect({
+                hostname: host,
+                port: port,
                 heartbeat: 60,
             },
-            {prefetch: 1});
+            {prefetch: 1})
+            .then((connection: Connection) => connection)
+            .catch((error: any) =>  {
+                logger.error('RabbitMQ connection error: ', error.message);
+
+                setTimeout(() => {
+                    return initAmqpServer();
+                }, 3000)
+            });
     }
     return connection;
 }
 
-const createAmqpChannel = async (queue: string): Promise<{ channel: amqp.Channel }> => {
+const createAmqpChannel = async (queue: string): Promise<{ channel: Channel }> => {
     connection = await initAmqpServer()
-        .then<amqp.Connection, never>((conn: amqp.Connection) => conn)
+        .then<Connection, never>((conn: Connection) => conn)
         .catch((error: any) => logger.error(`AMQP connection error: ${error}`));
     channel = await connection.createChannel();
     await channel.assertExchange(queue, 'direct', {durable: true});
