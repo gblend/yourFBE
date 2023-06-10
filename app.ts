@@ -14,7 +14,8 @@ export {initCron} from './app/scheduler';
 import {config} from './app/config/config';
 export {connectDB} from './app/config/db/connect';
 import {app, express, httpServer} from './app/socket';
-import {decodeCookies, logger, serverStatus} from './app/lib/utils';
+import RedisStore from 'connect-redis';
+import {decodeCookies, logger, serverStatus, getRedisConnection} from './app/lib/utils';
 import sentryErrorHandler, {sentryRequestHandler, sentryTracingHandler} from './sentry';
 import {errorHandler, routeNotFound, eventHandler, responseInterceptor} from './app/middleware';
 import {
@@ -62,6 +63,10 @@ app.use(fileUpload({useTempFiles: true}));
 if (appEnv === 'development') app.use(morgan('dev'));
 
 app.use(session({
+	store: new RedisStore({
+		prefix: config.app.name,
+		client: getRedisConnection()
+	}),
 	secret: config.session.secret,
 	resave: false,
 	saveUninitialized: true
