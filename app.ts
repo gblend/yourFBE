@@ -14,8 +14,7 @@ export {initCron} from './app/scheduler';
 import {config} from './app/config/config';
 export {connectDB} from './app/config/db/connect';
 import {app, express, httpServer} from './app/socket';
-import RedisStore from 'connect-redis';
-import {decodeCookies, logger, serverStatus, getRedisConnection} from './app/lib/utils';
+import {decodeCookies, logger, serverStatus, getRedisConnection, constants} from './app/lib/utils';
 import sentryErrorHandler, {sentryRequestHandler, sentryTracingHandler} from './sentry';
 import {errorHandler, routeNotFound, eventHandler, responseInterceptor} from './app/middleware';
 import {
@@ -33,8 +32,7 @@ import {
 	configRouter,
 	notificationRouter,
 } from './app/routes';
-const appEnv = config.app.env;
-const prefix = config.app.prefix;
+const {env: appEnv, prefix} = config.app;
 
 cloudinary.v2.config({
 	cloud_name: config.cloudinary.cloudName,
@@ -47,6 +45,18 @@ const apiRateLimiter = rateLimit({
 	max: config.rateLimiter.max,
 	standardHeaders: true,
 });
+
+let sessionRedisStore: any = {}
+if (constants.envList.includes(appEnv)) {
+	import('connect-redis').then((RedisStore) => {
+		sessionRedisStore = {
+			store: new RedisStore.default({
+				prefix: config.app.name,
+				client: getRedisConnection()
+			})
+		}
+	});
+}
 
 app.use(helmet());
 app.use(xss());
@@ -63,11 +73,8 @@ app.use(fileUpload({useTempFiles: true}));
 if (appEnv === 'development') app.use(morgan('dev'));
 
 app.use(session({
-	store: new RedisStore({
-		prefix: config.app.name,
-		client: getRedisConnection()
-	}),
-	secret: config.session.secret,
+	...sessionRedisStore,
+	secret:config.session.secret,
 	resave: false,
 	saveUninitialized: true
 }));
