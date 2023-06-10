@@ -1,5 +1,5 @@
 import passport from 'passport';
-import {User} from '../models/User';
+import {User} from '../models';
 import {ITokenUser, IUser} from '../interface';
 import {ErrorRequestHandler} from '../types/index';
 
