@@ -3,6 +3,7 @@ import {config} from '../../config/config';
 import {logger} from './logger';
 
 let redis: any = '';
+const {port, password, db, family, host} = config.redis;
 
 interface IConnectionOptions {
     port?: number,
@@ -13,11 +14,11 @@ interface IConnectionOptions {
 }
 
 const connectionOptions: IConnectionOptions = {
-    port: 17402,
-    host: 'redis-17402.c10.us-east-1-2.ec2.cloud.redislabs.com',
-    password: 'Ix6av7JtrburyRgqxti81flgUA3v6m03',
-    family: config.redis.family as number,
-    db: config.redis.db as number,
+    port: port as number,
+    host,
+    password,
+    family: family as number,
+    db: db as number,
 }
 
 const getRedisConnection = () => {
@@ -25,10 +26,14 @@ const getRedisConnection = () => {
 }
 
 const initRedisCache = (connectionOption: IConnectionOptions = {}): any => {
-    if (!redis) {
-        redis = new Redis(connectionOption)
+    try {
+        if (!redis) {
+            redis = new Redis(connectionOption);
+        }
+        return redis;
+    } catch (error: any) {
+        logger.error('Redis connection error: ', error.message);
     }
-    return redis;
 }
 
 /**
