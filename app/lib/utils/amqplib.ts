@@ -5,23 +5,22 @@ import {logger} from './logger';
 
 let channel: any = '';
 let connection: any = '';
-const {host, port} = config.amqp;
+const {host, port, password, protocol, username} = config.amqp;
 
 const initAmqpServer = async (): Promise<any> => {
     if (!connection) {
         return connect({
+                protocol,
+                username,
+                password,
                 hostname: host,
-                port: port,
+                port: port as number,
                 heartbeat: 60,
             },
             {prefetch: 1})
             .then((connection: Connection) => connection)
             .catch((error: any) =>  {
-                logger.error('RabbitMQ connection error: ', error.message);
-
-                setTimeout(() => {
-                    return initAmqpServer();
-                }, 3000)
+                logger.error('RabbitMQ connection error: ', error);
             });
     }
     return connection;
