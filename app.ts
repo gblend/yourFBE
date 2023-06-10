@@ -5,7 +5,6 @@ import xss from 'xss-clean';
 import helmet from 'helmet';
 import passport from 'passport';
 import cloudinary from 'cloudinary';
-import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
 import rateLimit from 'express-rate-limit';
@@ -14,7 +13,7 @@ export {initCron} from './app/scheduler';
 import {config} from './app/config/config';
 export {connectDB} from './app/config/db/connect';
 import {app, express, httpServer} from './app/socket';
-import {decodeCookies, logger, serverStatus, getRedisConnection} from './app/lib/utils';
+import {decodeCookies, logger, serverStatus} from './app/lib/utils';
 import sentryErrorHandler, {sentryRequestHandler, sentryTracingHandler} from './sentry';
 import {errorHandler, routeNotFound, eventHandler, responseInterceptor} from './app/middleware';
 import {
@@ -61,14 +60,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload({useTempFiles: true}));
 if (appEnv === 'development') app.use(morgan('dev'));
 
-app.use(session({
-	store: getRedisConnection(),
-	secret: config.session.secret,
-	resave: false,
-	saveUninitialized: true
-}));
 app.use(passport.initialize());
-// app.use(passport.session());
 
 app.use(sentryRequestHandler);
 app.use(sentryTracingHandler);
