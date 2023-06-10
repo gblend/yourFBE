@@ -1,1 +1,1 @@
-web: pm2 start dist/ecosystem.config.js --no-daemon
+web: pm2 start dist/ecosystem.config.js -i 4 --no-daemon
