@@ -51,8 +51,9 @@ export const config = {
     },
     amqp: {
         host: process.env.AMQP_SERVER_HOST || 'localhost',
+        vhost: process.env.AMQP_SERVER_VHOST || '/',
         port: process.env.AMQP_SERVER_PORT || 5672,
-        password: process.env.AMQP_SEVER_PASSWORD || 'guest',
+        password: process.env.AMQP_SERVER_PASSWORD || 'guest',
         protocol: process.env.AMQP_SERVER_PROTOCOL || 'amqp',
         username: process.env.AMQP_SERVER_USERNAME || 'guest',
         verifyEmailQueue: process.env.VERIFY_EMAIL_QUEUE_NAME as string,
