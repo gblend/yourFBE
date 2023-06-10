@@ -11,5 +11,6 @@ export const constants = {
         ADMIN: 'admin',
         USER: 'user',
     },
+    envList: ['production', 'development']
 }
 
