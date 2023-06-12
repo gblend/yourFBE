@@ -21,7 +21,7 @@ export default {
             description: 'Local Environment',
         },
         {
-            url: `${baseUrlProd}/${prefix}`,
+            url: `${baseUrlProd}${prefix}`,
             description: 'Production Environment',
         }
     ],
