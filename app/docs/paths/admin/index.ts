@@ -3,6 +3,7 @@ import starredFeedsPostsStat from './starred_feeds_posts_stat';
 import adminUpdateAccount from './update_account';
 import userDetails from './user_detail';
 import followedFeedStat from './followed_feeds_stat';
+import moderateUserAccount from './moderate_account';
 import users from './users';
 
 export default {
@@ -12,4 +13,5 @@ export default {
     ...userDetails,
     ...users,
     ...followedFeedStat,
+    ...moderateUserAccount,
 }
