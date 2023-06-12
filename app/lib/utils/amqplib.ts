@@ -18,7 +18,7 @@ const initAmqpServer = async (): Promise<any> => {
                 vhost
             },
             {prefetch: 1})
-            .then((connection: Connection) => connection)
+            .then((_connection: Connection) => _connection)
             .catch((error: any) =>  {
                 logger.error('RabbitMQ connection error: ', error);
             });

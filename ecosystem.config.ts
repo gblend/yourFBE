@@ -13,7 +13,7 @@ const configOption: IEcosystemConfig = {
   combine_logs: true,
   max_restarts: 3,
   exec_mode: 'cluster',
-  instances: 2, //@TODO set to 0 on actual sever, this was specified due to heroku memory quota limit
+  instances: 2, // @TODO set to 0 on actual sever, this was specified due to heroku memory quota limit
   env_production: {
     NODE_ENV: 'production'
   },
