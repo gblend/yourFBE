@@ -206,6 +206,11 @@ const enableUserAccount = async (req: Request, res: Response): Promise<Response<
     const account: any = await User.findOneAndUpdate({_id: userId}, {status: constants.STATUS_ENABLED},
         {new: true, runValidators: true}).select(['-password', '-verificationToken']);
 
+    if (!account) {
+        logger.info(`${StatusCodes.NOT_FOUND} - No account found with id ${userId} - ${method} ${path}`);
+        throw new NotFoundError('Account not found');
+    }
+
     const logData = {
         action: `enableUserAccount: ${userId} - by ${user.role}`,
         resourceName: 'users',
