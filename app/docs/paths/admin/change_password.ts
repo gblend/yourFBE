@@ -12,13 +12,16 @@ export default {
                 content: {
                     'application/json': {
                         schema: {
-                            newPassword: {
-                                type: 'string',
-                                required: true
-                            },
-                            oldPassword: {
-                                type: 'string',
-                                required: true
+                            type: 'object',
+                            properties: {
+                                newPassword: {
+                                    type: 'string',
+                                    required: true
+                                },
+                                oldPassword: {
+                                    type: 'string',
+                                    required: true
+                                }
                             }
                         }
                     }
