@@ -4,6 +4,7 @@ import adminUpdateAccount from './update_account';
 import userDetails from './user_detail';
 import followedFeedStat from './followed_feeds_stat';
 import moderateUserAccount from './moderate_account';
+import disabledAccounts from './disabled_accounts';
 import users from './users';
 
 export default {
@@ -14,4 +15,5 @@ export default {
     ...users,
     ...followedFeedStat,
     ...moderateUserAccount,
+    ...disabledAccounts,
 }
