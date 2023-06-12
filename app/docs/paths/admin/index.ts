@@ -7,6 +7,7 @@ import moderateUserAccount from './moderate_account';
 import disabledAccounts from './disabled_accounts';
 import changePassword from './change_password';
 import users from './users';
+import notifications from './notifications';
 
 export default {
     ...adminDashboard,
@@ -18,4 +19,5 @@ export default {
     ...moderateUserAccount,
     ...disabledAccounts,
     ...changePassword,
+    ...notifications,
 }
