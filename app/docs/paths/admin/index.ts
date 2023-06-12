@@ -5,6 +5,7 @@ import userDetails from './user_detail';
 import followedFeedStat from './followed_feeds_stat';
 import moderateUserAccount from './moderate_account';
 import disabledAccounts from './disabled_accounts';
+import changePassword from './change_password';
 import users from './users';
 
 export default {
@@ -16,4 +17,5 @@ export default {
     ...followedFeedStat,
     ...moderateUserAccount,
     ...disabledAccounts,
+    ...changePassword,
 }
