@@ -1,8 +1,7 @@
 import {Server, Socket} from 'socket.io';
 import {createAdapter} from '@socket.io/redis-adapter';
-import {getRedisConnection, redisSet} from './lib/utils';
+import {getRedisConnection, redisSet, redisGetBatchRecords, logger} from './lib/utils';
 import {config} from './config/config';
-import {logger, redisGetBatchRecords} from './lib/utils';
 import {socketErrorText} from './lib/utils/socketio_errors';
 import {BadRequestError} from './lib/errors';
 import {IServerOptions} from './interface';
@@ -17,12 +16,12 @@ const httpServer = createServer(app);
 const socketGroup = config.socket.group;
 
 const appEnv = config.app.env;
-const localUrl: string = (appEnv === 'production') ? config.auth.socketIo.localUrl as string
-    : config.auth.socketIo.prodUrl as string;
+const originUrl: string = (appEnv === 'production') ? config.auth.socketIo.prodUrl as string
+    : config.auth.socketIo.localUrl as string;
 
 const serverOptions: IServerOptions = {
     cors: {
-        origin: [localUrl],
+        origin: [originUrl],
         methods: ['GET', 'POST'],
         credentials: true,
         cookie: {
@@ -46,9 +45,18 @@ io.on('connection', (client: Socket | any): void => {
 
     client.join([socketGroup.feeds, socketGroup.categories]);
 
-    client.on('disconnect', () => {
-        logger.info(`Unauthenticated client disconnected.`);
+    client.on('close', () => {
+        logger.error(`Socket client closed connection: ${client.id}`);
+    })
+    client.on('error', (error: any) => {
+        logger.error(`Socket client error: ${error}`);
     });
+
+    client.on('disconnect', () => {
+        logger.info(`Unauthenticated client disconnected: ${client.id}`);
+    });
+}).on('error', (err) => {
+    logger.error(`Socket server error: ${err}`);
 });
 
 io.on('connection_error', (error: any): void => {
