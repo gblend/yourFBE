@@ -6,32 +6,33 @@ import helmet from 'helmet';
 import passport from 'passport';
 import cloudinary from 'cloudinary';
 import session from 'express-session';
-import cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';z
 import fileUpload from 'express-fileupload';
 import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
-export {initCron} from './app/scheduler';
 import {config} from './app/config/config';
-export {connectDB} from './app/config/db/connect';
 import {app, express, httpServer} from './app/socket';
-import {decodeCookies, logger, serverStatus, getRedisConnection, constants} from './app/lib/utils';
+import {constants, decodeCookies, getRedisConnection, logger, serverStatus} from './app/lib/utils';
 import sentryErrorHandler, {sentryRequestHandler, sentryTracingHandler} from './sentry';
-import {errorHandler, routeNotFound, eventHandler, responseInterceptor} from './app/middleware';
+import {errorHandler, eventHandler, responseInterceptor, routeNotFound} from './app/middleware';
 import {
 	apiDocRouter,
-	feedCategoryRouter,
-	followedFeedRouter,
-	savedForLaterRouter,
 	authRouter,
-	userRouter,
-	searchRouter,
-	feedRouter,
-	statRouter,
-	logRouter,
-	postRouter,
 	configRouter,
+	feedCategoryRouter,
+	feedRouter,
+	followedFeedRouter,
+	logRouter,
 	notificationRouter,
+	postRouter,
+	savedForLaterRouter,
+	searchRouter,
+	statRouter,
+	userRouter,
 } from './app/routes';
+
+export {initCron} from './app/scheduler';
+export {connectDB} from './app/config/db/connect';
 const {env: appEnv, prefix} = config.app;
 
 cloudinary.v2.config({
