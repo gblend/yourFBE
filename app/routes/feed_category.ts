@@ -1,14 +1,7 @@
 import {Router} from 'express';
 import {authenticateUser, authorizeRoles} from '../middleware';
 import {constants} from '../lib/utils'
-import {
-    createCategory,
-    deleteCategory,
-    disableCategory,
-    getCategories,
-    getCategoryById,
-    updateCategory
-} from '../controllers';
+import {createCategory, deleteCategory, disableCategory, getCategories, getCategoryById, updateCategory} from '../controllers';
 
 const router = Router();
 

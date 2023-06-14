@@ -1,13 +1,5 @@
 import {UnauthenticatedError, UnauthorizedError} from '../lib/errors';
-import {
-    adaptRequest,
-    attachCookiesToResponse,
-    constants,
-    createJWT,
-    isTokenValid,
-    logger,
-    StatusCodes
-} from '../lib/utils';
+import {adaptRequest, attachCookiesToResponse, constants, createJWT, isTokenValid, logger, StatusCodes} from '../lib/utils';
 import {Token} from '../models';
 import {NextFunction, Request, Response} from '../types/index';
 import {ITokenUser} from '../interface';

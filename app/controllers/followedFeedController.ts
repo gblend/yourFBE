@@ -1,14 +1,5 @@
 import {StatusCodes} from 'http-status-codes';
-import {
-    adaptPaginateParams,
-    adaptRequest,
-    createObjectId,
-    formatValidationError,
-    logger,
-    mapPaginatedData,
-    paginate,
-    redisMGet,
-} from '../lib/utils';
+import {adaptPaginateParams, adaptRequest, createObjectId, formatValidationError, logger, mapPaginatedData, paginate, redisMGet,} from '../lib/utils';
 import {Feed, FollowedFeed, validateFollowedFeedDto, validateFollowFeedsInCategoryDto} from '../models';
 import {BadRequestError, CustomAPIError, NotFoundError} from '../lib/errors';
 import mongoose from 'mongoose';

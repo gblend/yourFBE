@@ -1,14 +1,6 @@
 import {Router} from 'express';
 import {authenticateUser, authorizeRoles} from '../middleware';
-import {
-    createConfig,
-    deleteConfig,
-    disableConfig,
-    getAllConfig,
-    getConfigByPath,
-    getSingleConfig,
-    updateConfig
-} from '../controllers';
+import {createConfig, deleteConfig, disableConfig, getAllConfig, getConfigByPath, getSingleConfig, updateConfig} from '../controllers';
 import {constants} from '../lib/utils'
 
 const router = Router();

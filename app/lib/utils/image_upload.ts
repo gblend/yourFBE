@@ -1,4 +1,4 @@
-import {existsSync, mkdirSync, unlink, readFile, writeFile} from 'fs';
+import {existsSync, mkdirSync, readFile, unlink, writeFile} from 'fs';
 import path from 'path';
 import {BadRequestError} from '../errors';
 import {config} from '../../config/config';

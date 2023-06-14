@@ -1,14 +1,7 @@
 import 'express-async-errors';
-import {
-	connectDB,
-	logger,
-	config,
-	httpServer,
-	initCron,
-	appEnv,
-	app,
-} from './app';
+import {app, appEnv, config, connectDB, httpServer, initCron, logger,} from './app';
 import {constants} from './app/lib/utils';
+
 const {port, baseUrl, name} = config.app;
 
 const start =  async (): Promise<void> => {

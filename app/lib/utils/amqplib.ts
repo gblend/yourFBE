@@ -1,4 +1,4 @@
-import {Connection, Channel, connect} from 'amqplib';
+import {Channel, connect, Connection} from 'amqplib';
 import {BadRequestError} from '../errors';
 import {config} from '../../config/config';
 import {logger} from './logger';

@@ -10,13 +10,7 @@ import {
     redisRefreshCache,
     redisSetBatchRecords
 } from '../lib/utils';
-import {
-    Notification,
-    NotificationLog,
-    validateNotificationDto,
-    validateNotificationLogDto,
-    validateUpdateNotificationDto
-} from '../models';
+import {Notification, NotificationLog, validateNotificationDto, validateNotificationLogDto, validateUpdateNotificationDto} from '../models';
 import {saveActivityLog} from '../lib/dbActivityLog';
 import {BadRequestError, NotFoundError} from '../lib/errors';
 import mongoose from 'mongoose';

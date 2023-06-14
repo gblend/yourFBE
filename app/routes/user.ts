@@ -14,6 +14,7 @@ import {
     uploadProfileImage
 } from '../controllers';
 import {constants} from '../lib/utils'
+
 const router = Router();
 const {ADMIN: admin, USER: user} = constants.role;
 
