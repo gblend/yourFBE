@@ -7,4 +7,5 @@ logs/*.log
 coverage
 tmp
 dist
-.package-lock.json
+package-lock.json
+_unused
