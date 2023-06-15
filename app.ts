@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import passport from 'passport';
 import cloudinary from 'cloudinary';
 import session from 'express-session';
-import cookieParser from 'cookie-parser';z
+import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
 import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
