@@ -36,7 +36,7 @@ describe('Redis', () => {
 
     it('should set value for a provided key', async () => {
         const redisSetSpy = jest.spyOn(cache, 'redisSet');
-        redisSetSpy.mockImplementation((key: string) => Promise.resolve('testValue'));
+        redisSetSpy.mockImplementation((key: string, value: string): any => {});
         await cache.redisSet('test', 'testValue');
 
         expect(redisSetSpy).toHaveBeenCalledTimes(1);
