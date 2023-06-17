@@ -6,11 +6,12 @@ const {port, baseUrl, name} = config.app;
 
 const start =  async (): Promise<void> => {
 	connectDB(config.database.uri).then(() => {
-		if (!constants.envList.includes(appEnv)) return;
-		httpServer.listen(port, () => {
-			logger.info(`${name} server running: ${baseUrl}\n ${baseUrl}/api-docs`);
-		});
-		initCron();
+		if (constants.envList.includes(appEnv)) {
+			httpServer.listen(port, () => {
+				logger.info(`${name} server running: ${baseUrl}\n ${baseUrl}/api-docs`);
+			});
+			initCron();
+		}
 	});
 }
 
