@@ -1,5 +1,6 @@
-import {uploadImage, uploadToCloudinary, uploadToLocal} from '../../app/lib/utils/image_upload';
+import {uploadImage, uploadToCloudinary, uploadToLocal} from '../../app/lib/utils/cloud_assets';
 const cloudHelpers: any = {uploadImage, uploadToCloudinary, uploadToLocal};
+const defaultAvatarUrl = 'http://localhost/upload/avatar.jpg';
 
 describe('UploadImage', () => {
 	it('should return error without file to upload', async() => {
@@ -37,7 +38,7 @@ describe('UploadImage', () => {
 		const cloudinaryImageUploadSpy = jest.spyOn(cloudHelpers, 'uploadToCloudinary');
 
 		cloudinaryImageUploadSpy.mockImplementation((imageFile: any, uploadType) =>
-			Promise.resolve({url: 'http://localhost/upload/avatar.jpg'}));
+			Promise.resolve({url: defaultAvatarUrl}));
 		await cloudHelpers.uploadToCloudinary(req.files.uploadImage, req.uploadType);
 
 		expect(cloudinaryImageUploadSpy).toHaveBeenCalledTimes(1);
@@ -49,7 +50,7 @@ describe('UploadImage', () => {
 		const imageUploadSpy = jest.spyOn(cloudHelpers, 'uploadImage');
 
 		imageUploadSpy.mockImplementation(async (file: any, type: any) =>
-			Promise.resolve({url: 'http://localhost/upload/avatar.jpg'}));
+			Promise.resolve({url: defaultAvatarUrl}));
 		await cloudHelpers.uploadImage(req.files, req.uploadType);
 
 		expect(imageUploadSpy).toHaveBeenCalledTimes(1);
@@ -61,7 +62,7 @@ describe('UploadImage', () => {
 		const localImageUploadSpy = jest.spyOn(cloudHelpers, 'uploadToLocal');
 
 		localImageUploadSpy.mockImplementation((imageFile: any) =>
-			Promise.resolve({url: 'http://localhost/upload/avatar.jpg'}));
+			Promise.resolve({url: defaultAvatarUrl}));
 		await cloudHelpers.uploadToLocal(req.files.uploadImage);
 
 		expect(localImageUploadSpy).toHaveBeenCalledTimes(1);
