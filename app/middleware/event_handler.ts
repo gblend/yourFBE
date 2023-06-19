@@ -8,9 +8,8 @@ export const eventHandler = (event: string) => {
 			case 'uncaughtException':
 				logger.error(`${event} - closing http server: ${err?.message}`);
 				if (mongoose.connection.readyState === 1) {
-					mongoose.connection.close(false).then(r => r);
-				}
-				process.exit(err ? 1 : 0);
+					mongoose.connection.close(false).then(process.exit(err ? 1 : 0));
+				} else process.exit(err ? 1 : 0);
 				break;
 			case 'unhandledRejection':
 			default:
