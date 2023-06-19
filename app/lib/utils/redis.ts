@@ -26,14 +26,9 @@ const getRedisConnection = () => {
 }
 
 const initRedisCache = (connectionOption: IConnectionOptions = {}): any => {
-    try {
-        if (!redis) {
-            redis = new Redis(connectionOption);
-        }
-        return redis;
-    } catch (error: any) {
-        logger.error('Redis connection error: ', error.message);
-    }
+    if (redis) return redis;
+    redis = new Redis(connectionOption);
+    return redis;
 }
 
 /**
