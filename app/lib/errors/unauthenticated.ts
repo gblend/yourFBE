@@ -2,11 +2,9 @@ import {StatusCodes} from 'http-status-codes';
 import CustomAPIError from './custom_api';
 
 class UnauthenticatedError extends CustomAPIError {
-    readonly statusCode: number;
 
     constructor(message: string) {
-        super(message);
-        this.statusCode = StatusCodes.UNAUTHORIZED;
+        super(message, StatusCodes.UNAUTHORIZED);
     }
 }
 
