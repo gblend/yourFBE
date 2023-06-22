@@ -29,7 +29,7 @@ const search = async (req: Request, res: Response) => {
 
     if (!searchResult.length) {
         logger.info(`${StatusCodes.NOT_FOUND} No result found for: ${searchTerm} - ${method} - ${path}`);
-        throw new NotFoundError(`No result found for: ${searchTerm}`)
+        throw new NotFoundError(`No result found`);
     }
 
     const {result, pagination} = await paginate(searchResult, {pageSize, pageNumber});
