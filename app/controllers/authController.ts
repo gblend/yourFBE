@@ -10,8 +10,7 @@ import {
     encrypt,
     formatValidationError,
     generateToken,
-    logger,
-    redisRefreshCache
+    redisRefreshCache, sendResetPasswordEmail, sendVerificationEmail, useCallback
 } from '../lib/utils';
 import {Token, User, validateLogin, validateUserDto} from '../models';
 import {userNamespaceIo} from '../socket';
@@ -39,22 +38,22 @@ const register = async (req: Request, res: Response): Promise<Response> => {
         throw new CustomAPIError(constants.auth.ALREADY_IN_USE('This email address'));
     }
 
-    const isAdminExists: boolean = (await User.countDocuments({role: 'admin'})) === 0;
-    const role: string = isAdminExists ? 'admin' : 'user';
+    const {USER, ADMIN} = constants.role;
+    const isAdminExists: boolean = (await User.countDocuments({role: ADMIN})) === 0;
+    const role: string = isAdminExists ? ADMIN : USER;
     const isVerified: boolean = isAdminExists;
 
     const verificationToken: string = generateToken();
     const user: any = await User.create({email, firstname, lastname, password, role, verificationToken, isVerified});
-    (role === 'admin') ? await redisRefreshCache(config.cache.adminsKey) : await redisRefreshCache(config.cache.usersKey);
+    (role === ADMIN) ? await redisRefreshCache(config.cache.adminsKey) : await redisRefreshCache(config.cache.usersKey);
     const accessTokenJWT = await user.createJWT();
+
     // send account verification email via queue
     queueErrorMsg = 'Unable to queue verify email, please try again';
     queueName = config.amqp.verifyEmailQueue;
-    await pushToQueue(queueName, queueErrorMsg, {
-        name: user.firstname,
-        email: user.email,
-        verificationToken: user.verificationToken
-    }).catch(err => logger.error(`Queue error: ${err.message}`));
+    const verificationEmailPayload = {name: user.firstname, email: user.email, verificationToken: user.verificationToken}
+    await pushToQueue(queueName, queueErrorMsg, verificationEmailPayload)
+        .catch((_: Error) => useCallback(sendVerificationEmail, verificationEmailPayload));
     user.password = undefined;
 
     const tokenInfo = await saveTokenInfo(user, {ip, headers});
@@ -191,7 +190,9 @@ const forgotPassword = async (req: Request, res: Response): Promise<void> => {
         // queue reset password email
         queueErrorMsg = 'Unable to queue reset password email, please try again';
         queueName = config.amqp.resetEmailQueue;
-        await pushToQueue(queueName, queueErrorMsg, {name: user.firstname, email: user.email, passwordToken});
+        const resetPasswordPayload = {name: user.firstname, email: user.email, passwordToken};
+        await pushToQueue(queueName, queueErrorMsg, resetPasswordPayload)
+            .catch((_: Error) => useCallback(sendResetPasswordEmail, resetPasswordPayload));
 
         const passwordTokenExpirationDate: Date = new Date(Date.now() + config.minutes.ten);
         user.passwordToken = encrypt(passwordToken);
@@ -287,14 +288,13 @@ const resendVerificationEmail = async (req: Request, res: Response) => {
 
     userAccount.verificationToken = generateToken();
     await userAccount.save();
+
     // resend account verification email via queue
     queueErrorMsg = 'Unable to queue verify email, please try again';
     queueName = config.amqp.verifyEmailQueue;
-    await pushToQueue(queueName, queueErrorMsg, {
-        name: userAccount.firstname,
-        email: userAccount.email,
-        verificationToken: userAccount.verificationToken
-    }).catch(err => logger.error(`Queue error: ${err.message}`));
+    const verificationEmailPayload = {name: userAccount.firstname, email: userAccount.email, verificationToken: userAccount.verificationToken}
+    await pushToQueue(queueName, queueErrorMsg, verificationEmailPayload)
+        .catch((_: Error) => useCallback(sendVerificationEmail, verificationEmailPayload));
 
     return res.status(StatusCodes.OK).json({
         message: 'Please check your email for a link to verify your account',
