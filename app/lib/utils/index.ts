@@ -32,6 +32,7 @@ export {adaptPaginateParams} from './stats/adapt_paginate_params';
 export {fetchFeed} from './fetch_feed_posts';
 export {StatusCodes} from 'http-status-codes';
 export {request, formatUrlProtocol} from './retry';
+export {useCallback} from './use_callback';
 export const sendVerificationEmail: (...args: any) => void = mailer.sendVerificationEmail;
 export const sendResetPasswordEmail: (...args: any) => void = mailer.sendResetPasswordEmail;
 
