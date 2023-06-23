@@ -11,7 +11,7 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
         message: err.message || 'Something went wrong. Please try again later.',
     };
 
-    if (err.message.indexOf('already in use') != -1) {
+    if (err.message.indexOf('already in use') !== -1) {
         customError.message = err.message;
         customError.statusCode = StatusCodes.BAD_REQUEST;
     }

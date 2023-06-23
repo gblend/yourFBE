@@ -16,7 +16,10 @@ const initAmqpServer = async (): Promise<any> => {
                 vhost
             },
             {prefetch: 1})
-            .then((_connection: Connection) => _connection)
+            .then((_connection: Connection) => {
+                connection = _connection;
+                return _connection;
+            })
             .catch((error: any) =>  {
                 throw new Error(error?.message);
             });
@@ -26,8 +29,8 @@ const initAmqpServer = async (): Promise<any> => {
 
 const createAmqpChannel = async (queue: string): Promise<{ channel: Channel }> => {
     return await initAmqpServer()
-        .then<{channel: Channel}, never>(async (connection: Connection) => {
-            const channel = await connection.createChannel();
+        .then<{channel: Channel}, never>(async (_connection: Connection) => {
+            const channel = await _connection.createChannel();
             await channel.assertExchange(queue, 'direct', {durable: true});
             await channel.assertQueue(queue);
             return {channel}
@@ -42,7 +45,8 @@ const pushToQueue = async (queue: string, queueErrorMsg: string, data: any) => {
         const {channel: amqpChannel} = await createAmqpChannel(queue);
         /* The empty string as third parameter means that we don't want to send the message to any specific queue (routingKey).
         We want only to publish it to our exchange
-        The parameters -- exchange, routingKey, content amqpChannel.publish(queue, queue.toLowerCase(), Buffer.from(JSON.stringify({ [queue]: data })));
+        The parameters -- exchange, routingKey, content amqpChannel.publish(queue, queue.toLowerCase(),
+        Buffer.from(JSON.stringify({ [queue]: data })));
         */
         const queueData: boolean = amqpChannel.sendToQueue(queue, Buffer.from(JSON.stringify({[queue]: data})));
         if (!queueData) {
