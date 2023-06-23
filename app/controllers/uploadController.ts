@@ -4,7 +4,7 @@ import NotFoundError from '../lib/errors/not_found';
 import {Request, Response} from '../types';
 import {BadRequestError} from '../lib/errors';
 import {adaptRequest, createObjectId, logger,} from '../lib/utils';
-import {uploadImage} from '../lib/utils/image_upload';
+import {uploadImage} from '../lib/utils/cloud_assets';
 
 
 const uploadProfileImage = async (req: Request, res: Response): Promise<any> => {
