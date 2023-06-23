@@ -31,7 +31,7 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
     }
 
     if (err.name === 'CastError') {
-        customError.message = `No resource found with id: ${err.value}`;
+        customError.message = `No resource found with value: ${err.value}`;
         customError.statusCode = StatusCodes.NOT_FOUND;
     }
 
