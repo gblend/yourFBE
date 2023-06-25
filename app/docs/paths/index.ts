@@ -3,6 +3,7 @@ import authEndpoints from './auth';
 import adminDashboardEndpoints from './admin';
 import profileEndpoints from './profile';
 import postsEndpoints from './post';
+import statsEndpoints from './stat';
 import logsEndpoints from './logs';
 
 export default {
@@ -12,6 +13,7 @@ export default {
         ...profileEndpoints,
         ...adminDashboardEndpoints,
         ...postsEndpoints,
+        ...statsEndpoints,
         ...logsEndpoints,
     }
 }
