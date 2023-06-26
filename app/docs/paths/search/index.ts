@@ -116,5 +116,103 @@ export default {
                 }
             }
         }
+    },
+    '/logs/search': {
+        get: {
+            tags: ['Search'],
+            description: 'Search activity, polling logs',
+            summary: 'search activity, polling logs',
+            operationId: 'searchLogs',
+            security: [{
+                bearerAuth: []
+            }],
+            parameters: [
+                {
+                    name: 'type',
+                    in: 'query',
+                    description: 'The log type to query - polling/activity',
+                    type: 'string',
+                    example: 'polling'
+                },
+                {
+                    name: 'searchTerm',
+                    in: 'query',
+                    description: 'The term to be searched for',
+                    type: 'string',
+                    example: 'enabled'
+                },
+                {
+                    name: 'pageNumber',
+                    in: 'query',
+                    description: 'Page number of users list',
+                    type: 'number',
+                    example: 1
+                },
+                {
+                    name: 'pageSize',
+                    in: 'query',
+                    description: 'The number of records to be retrieved',
+                    type: 'number',
+                    example: 10
+                }
+            ],
+            responses: {
+                '200': {
+                    description: 'Search activity, polling successful response',
+                    content: {
+                        'application/json': {
+                            example: {
+                                status: 'success',
+                                message: 'Logs search result fetched successfully.',
+                                data: {
+                                    logs: [
+                                        {
+                                            _id: '62b45ee260cf7fdeb02100f6',
+                                            action: 'createFeed - by admin',
+                                            resourceName: 'Feed',
+                                            user: '629fc2e6e4c459df61f2b1ad',
+                                            createdAt: '2022-06-23T12:38:58.391Z',
+                                            updatedAt: '2022-06-23T12:38:58.391Z',
+                                            __v: 0
+                                        },
+                                        {
+                                            _id: '62b46f1e929dee4f5488c830',
+                                            action: 'createCategory - by admin',
+                                            resourceName: 'FeedCategory',
+                                            user: '629fc2e6e4c459df61f2b1ad',
+                                            createdAt: '2022-06-23T13:48:14.844Z',
+                                            updatedAt: '2022-06-23T13:48:14.844Z',
+                                            __v: 0
+                                        },
+                                        {
+                                            _id: '62b46fa7929dee4f5488c834',
+                                            action: 'createCategory - by admin',
+                                            resourceName: 'FeedCategory',
+                                            user: '629fc2e6e4c459df61f2b1ad',
+                                            createdAt: '2022-06-23T13:50:31.303Z',
+                                            updatedAt: '2022-06-23T13:50:31.303Z',
+                                            __v: 0
+                                        }
+                                    ],
+                                    pagination: partials.pagination
+                                }
+                            }
+                        }
+                    }
+                },
+                '404': {
+                    description: 'No search result found',
+                    content: {
+                        'application/json': {
+                            example: {
+                                status: 'error',
+                                message: 'No result found for logs search.',
+                                data: {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
