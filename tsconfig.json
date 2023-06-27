@@ -28,5 +28,5 @@
     "resolveJsonModule": true
   },
   "exclude": ["logs", "tmp", "coverage", "dist", "node_modules"],
-  "include": ["./app/**/*.ts", "*.ts", "tests/**/*.ts"]
+  "include": ["./app/**/*.ts", "*.ts", "tests/**/*.ts", "./bulk_delete/**/*.ts"]
 }

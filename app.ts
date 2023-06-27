@@ -1,7 +1,6 @@
 import morgan from 'morgan';
 import cors from 'cors';
 import path from 'path';
-import xss from 'xss-clean';
 import helmet from 'helmet';
 import passport from 'passport';
 import cloudinary from 'cloudinary';
@@ -12,7 +11,7 @@ import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import {config} from './app/config/config';
 import {app, express, httpServer} from './app/socket';
-import {constants, decodeCookies, getRedisConnection, logger, serverStatus} from './app/lib/utils';
+import {constants, decodeCookies, getRedisConnection, logger, serverStatus, xss} from './app/lib/utils';
 import sentryErrorHandler, {sentryRequestHandler, sentryTracingHandler} from './sentry';
 import {errorHandler, eventHandler, responseInterceptor, routeNotFound} from './app/middleware';
 import {
