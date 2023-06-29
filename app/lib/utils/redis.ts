@@ -41,7 +41,7 @@ const initRedisCache = (connectionOption: IConnectionOptions = {}): any => {
 const redisSet = async (key: string, value: any, ttl: number = 0) => {
     redis = getRedisConnection();
     if (ttl) {
-        return redis.set(key, JSON.stringify(value), 'EX', ttl);
+        redis.set(key, JSON.stringify(value), 'EX', ttl);
     } else redis.set(key, JSON.stringify(value));
 }
 
