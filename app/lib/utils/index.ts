@@ -13,6 +13,7 @@ export {logger} from './logger';
 export {appStatus, serverStatus} from './app_status';
 export {paginate} from './pagination';
 export {generateToken} from './verification_token';
+export {xss} from './xss_clean';
 export {
     redisRefreshCache,
     redisSetBatchRecords,
