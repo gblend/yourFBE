@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import {logger} from '../../lib/utils';
+import {constants, logger} from '../../lib/utils';
 import {CustomAPIError} from '../../lib/errors';
 import {config} from '../config';
 import {MongoMemoryServer} from 'mongodb-memory-server';
@@ -10,22 +10,20 @@ const connectionStates = {
     2: 'connecting'
 }
 
-export const connectDB = async (uri: string): Promise<void> => {
-    if (appEnv !== 'test') {
-        const message = {
-            success: 'Database connection established.',
-            error: 'Database connection error'
-        }
+export const connectDB = async (): Promise<void> => {
+    const uri = config.database.uri;
+    const message = {
+        success: 'Database connection established.',
+        error: 'Database connection error'
+    }
+
+    if (constants.envList.includes(appEnv)) {
         return await connect(uri, message);
     }
 
     return MongoMemoryServer.create().then((mongoDBServer: MongoMemoryServer) => {
         if (!Object.keys(connectionStates).includes(mongoose.connection.readyState.toString())) {
-            const msg = {
-                success: 'Test database connection established',
-                error: 'Test database connection error'
-            }
-            return connect(mongoDBServer.getUri(), msg);
+            return connect(mongoDBServer.getUri(), message);
         }
     });
 }
