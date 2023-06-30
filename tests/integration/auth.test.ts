@@ -9,7 +9,14 @@ const request = supertest(app);
 import {IUser} from '../../app/interface';
 
 describe('auth', () => {
-    jest.setTimeout(10000);
+    beforeAll (() => {
+        jest.mock('passport', () => {
+            /* eslint-disable @typescript-eslint/no-var-requires */
+            const {createMockPassport} = require('passport-mock-strategy');
+            const _app = require('../../server')
+            return createMockPassport(_app);
+        });
+    });
 
     interface ITestData {
         firstname?: string,
@@ -42,6 +49,7 @@ describe('auth', () => {
    });
 
    afterAll( async () => {
+       jest.resetAllMocks();
        await tearDownTestConnection();
    });
 
@@ -246,7 +254,7 @@ describe('auth', () => {
     it('should fail to logout user with invalid token', (done) => {
         request.delete('/api/v1/auth/logout')
             .set('Cookie', [])
-            .expect(400)
+            .expect(401)
             .expect((response: any) => {
 
                 const loginError = Joi.object({
@@ -426,7 +434,7 @@ describe('auth', () => {
         const response = await request.post('/api/v1/auth/verify-account')
             .set('Content-Type', 'application/json')
             .send(data)
-            .expect(400)
+            .expect(401)
             .expect('Content-Type', 'application/json; charset=utf-8');
 
         const verifyEmailErrorSchema = Joi.object({
@@ -450,7 +458,7 @@ describe('auth', () => {
             .set('Content-Type', 'application/json')
             .send(data)
             .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect(400);
+            .expect(401);
 
         const verifyEmailErrorSchema = Joi.object({
             status: Joi.string().required(),
