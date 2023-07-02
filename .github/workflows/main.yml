@@ -64,6 +64,23 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
 
+  security:
+    needs: [lint, analyze]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: true # To make sure that SARIF upload gets called
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --sarif-file-output=snyk.sarif
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk.sarif
+
   # Run tests
   test:
     needs: [lint, analyze]
@@ -121,7 +138,7 @@ jobs:
 
   # Run build Production
   build-production:
-    needs: [ lint, analyze, test ]
+    needs: [ lint, analyze, test, securities ]
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
