@@ -1,11 +1,30 @@
-.idea
+# IDE
+.idea/
 .vscode
-node_modules
+# Node
+node_modules/
 .env
-.DS_store
-logs/*.log
+logs
+*.log
 coverage
 tmp
 dist
 package-lock.json
 _unused
+.npm
+.eslintcache
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+.apdisk
