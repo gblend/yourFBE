@@ -13,6 +13,7 @@ package-lock.json
 _unused
 .npm
 .eslintcache
+newrelic_agent.log
 # macOS
 .DS_Store
 .AppleDouble
