@@ -6,10 +6,10 @@ import updateAccount from './update_account';
 import uploadProfileImage from './upload_image';
 
 export default {
-    ...changePassword,
-    ...profileDetails,
-    ...disableAccount,
-    ...updateAccount,
-    ...userData,
-    ...uploadProfileImage,
-}
+  ...changePassword,
+  ...profileDetails,
+  ...disableAccount,
+  ...updateAccount,
+  ...userData,
+  ...uploadProfileImage,
+};

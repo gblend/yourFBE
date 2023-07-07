@@ -1,31 +1,31 @@
 export default {
-    type: 'object',
-    properties: {
-        status: {
-            type: 'string',
-            description: 'The request status',
-            example: 'success'
+  type: 'object',
+  properties: {
+    status: {
+      type: 'string',
+      description: 'The request status',
+      example: 'success',
+    },
+    message: {
+      type: 'string',
+      description: 'The response message',
+      example: 'yourFeeds backend service is running.',
+    },
+    data: {
+      type: 'object',
+      properties: {
+        info: {
+          type: 'object',
+          example: {
+            app_version: '1.0.0',
+          },
         },
-        message: {
-            type: 'string',
-            description: 'The response message',
-            example: 'yourFeeds backend service is running.'
+        routes: {
+          type: 'array',
+          description: 'The application routes',
+          example: ['GET    /api/v1/status'],
         },
-        data: {
-            type: 'object',
-            properties: {
-                info: {
-                    type: 'object',
-                    example: {
-                        app_version: '1.0.0'
-                    }
-                },
-                routes: {
-                    type: 'array',
-                    description: 'The application routes',
-                    example: ['GET    /api/v1/status']
-                }
-            },
-        }
-    }
-}
+      },
+    },
+  },
+};

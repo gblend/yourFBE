@@ -1,11 +1,10 @@
-import {StatusCodes} from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import CustomAPIError from './custom_api';
 
 class UnauthorizedError extends CustomAPIError {
-
-    constructor(message: string) {
-        super(message, StatusCodes.FORBIDDEN);
-    }
+  constructor(message: string) {
+    super(message, StatusCodes.FORBIDDEN);
+  }
 }
 
 export default UnauthorizedError;

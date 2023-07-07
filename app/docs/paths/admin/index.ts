@@ -10,14 +10,14 @@ import users from './users';
 import notifications from './notifications';
 
 export default {
-    ...adminDashboard,
-    ...starredFeedsPostsStat,
-    ...adminUpdateAccount,
-    ...userDetails,
-    ...users,
-    ...followedFeedStat,
-    ...moderateUserAccount,
-    ...disabledAccounts,
-    ...changePassword,
-    ...notifications,
-}
+  ...adminDashboard,
+  ...starredFeedsPostsStat,
+  ...adminUpdateAccount,
+  ...userDetails,
+  ...users,
+  ...followedFeedStat,
+  ...moderateUserAccount,
+  ...disabledAccounts,
+  ...changePassword,
+  ...notifications,
+};

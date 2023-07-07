@@ -8,14 +8,14 @@ import statsEndpoints from './stat';
 import logsEndpoints from './logs';
 
 export default {
-    paths: {
-        ...healthEndpoints,
-        ...authEndpoints,
-        ...profileEndpoints,
-        ...adminDashboardEndpoints,
-        ...postsEndpoints,
-        ...searchEndpoints,
-        ...statsEndpoints,
-        ...logsEndpoints,
-    }
-}
+  paths: {
+    ...healthEndpoints,
+    ...authEndpoints,
+    ...profileEndpoints,
+    ...adminDashboardEndpoints,
+    ...postsEndpoints,
+    ...searchEndpoints,
+    ...statsEndpoints,
+    ...logsEndpoints,
+  },
+};

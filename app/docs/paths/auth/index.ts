@@ -8,12 +8,12 @@ import resetPassword from './reset_password';
 import resendAccountVerificationEmail from './resend_verify_account';
 
 export default {
-    ...verifyAccount,
-    ...login,
-    ...socialLogin,
-    ...forgotPassword,
-    ...logout,
-    ...resetPassword,
-    ...resendAccountVerificationEmail,
-    ...signUp
-}
+  ...verifyAccount,
+  ...login,
+  ...socialLogin,
+  ...forgotPassword,
+  ...logout,
+  ...resetPassword,
+  ...resendAccountVerificationEmail,
+  ...signUp,
+};

@@ -1,4 +1,4 @@
 declare module '*' {
-    const fn: any
-    export default fn
+  const fn: any;
+  export default fn;
 }
