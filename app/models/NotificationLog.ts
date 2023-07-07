@@ -1,35 +1,41 @@
-import mongoose, {model, Schema} from 'mongoose';
-import joi, {ValidationResult} from 'joi';
-import {INotificationLog, NotificationLogModel} from '../interface';
+import mongoose, { model, Schema } from 'mongoose';
+import joi, { ValidationResult } from 'joi';
+import { INotificationLog, NotificationLogModel } from '../interface';
 
-const NotificationLogSchema = new Schema<INotificationLog, NotificationLogModel>({
+const NotificationLogSchema = new Schema<
+  INotificationLog,
+  NotificationLogModel
+>(
+  {
     users: {
-        type: String,
-        trim: true,
-        required: true,
+      type: String,
+      trim: true,
+      required: true,
     },
     notification: {
-        type: mongoose.Types.ObjectId,
-        ref: 'Notification',
-        unique: true,
-        required: true,
+      type: mongoose.Types.ObjectId,
+      ref: 'Notification',
+      unique: true,
+      required: true,
     },
+  },
+  { timestamps: true },
+);
 
-}, {timestamps: true});
+const NotificationLog = model<INotificationLog, NotificationLogModel>(
+  'NotificationLog',
+  NotificationLogSchema,
+  'notificationsLog',
+);
 
-const NotificationLog = model<INotificationLog, NotificationLogModel>('NotificationLog', NotificationLogSchema, 'notificationsLog');
-
-const validateNotificationLogDto = (notificationLogDto: INotificationLog): ValidationResult => {
-    const notificationLog = joi.object({
-        users: joi.string().required(),
-        notification: joi.object().required()
-    });
-    return notificationLog.validate(notificationLogDto);
-}
-
-export {
-    NotificationLog,
-    validateNotificationLogDto,
+const validateNotificationLogDto = (
+  notificationLogDto: INotificationLog,
+): ValidationResult => {
+  const notificationLog = joi.object({
+    users: joi.string().required(),
+    notification: joi.object().required(),
+  });
+  return notificationLog.validate(notificationLogDto);
 };
 
-
+export { NotificationLog, validateNotificationLogDto };

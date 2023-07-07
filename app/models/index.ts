@@ -1,61 +1,37 @@
-export {
-    ActivityLog,
-    validateActivityLogDto
-} from './ActivityLog';
+export { ActivityLog, validateActivityLogDto } from './ActivityLog';
+
+export { ConfigData, validateConfigDataDto } from './Config';
+
+export { Feed, validateFeedDto, validateFeedUpdateDto } from './Feed';
+
+export { FeedCategory, validateFeedCategoryDto } from './FeedCategory';
 
 export {
-    ConfigData,
-    validateConfigDataDto
-} from './Config';
-
-export {
-    Feed,
-    validateFeedDto,
-    validateFeedUpdateDto,
-} from './Feed';
-
-export {
-    FeedCategory,
-    validateFeedCategoryDto
-} from './FeedCategory';
-
-export {
-    FollowedFeed,
-    validateFollowFeedsInCategoryDto,
-    validateFollowedFeedDto
+  FollowedFeed,
+  validateFollowFeedsInCategoryDto,
+  validateFollowedFeedDto,
 } from './FollowedFeed';
 
 export {
-    Notification,
-    validateNotificationDto,
-    validateUpdateNotificationDto
+  Notification,
+  validateNotificationDto,
+  validateUpdateNotificationDto,
 } from './Notification';
 
-export {
-    NotificationLog,
-    validateNotificationLogDto,
-} from './NotificationLog';
+export { NotificationLog, validateNotificationLogDto } from './NotificationLog';
+
+export { PollingLog, validatePollingLogDto } from './PollingLog';
+
+export { SavedForLater, validateSavedForLaterDto } from './SavedForLater';
+
+export { Token } from './Token';
 
 export {
-    PollingLog,
-    validatePollingLogDto
-} from './PollingLog';
+  User,
+  validateUserDto,
+  validateLogin,
+  validateUpdateUser,
+  validateUpdatePassword,
+} from './User';
 
-export {
-    SavedForLater,
-    validateSavedForLaterDto
-} from './SavedForLater';
-
-export {Token} from './Token';
-
-export {
-    User,
-    validateUserDto,
-    validateLogin,
-    validateUpdateUser,
-    validateUpdatePassword
-} from './User'
-
-export {
-    Schedule
-} from './Schedule'
+export { Schedule } from './Schedule';

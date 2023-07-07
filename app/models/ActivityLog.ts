@@ -1,38 +1,41 @@
-import mongoose, {model, Schema} from 'mongoose';
-import joi, {ValidationResult} from 'joi';
-import {ActivityLogModel, IActivityDto, IActivityLog} from '../interface';
+import mongoose, { model, Schema } from 'mongoose';
+import joi, { ValidationResult } from 'joi';
+import { ActivityLogModel, IActivityDto, IActivityLog } from '../interface';
 
-const ActivityLogSchema = new Schema<IActivityLog, ActivityLogModel>({
+const ActivityLogSchema = new Schema<IActivityLog, ActivityLogModel>(
+  {
     action: {
-        type: String,
-        trim: true,
-        required: true,
+      type: String,
+      trim: true,
+      required: true,
     },
     resourceName: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     user: {
-        type: mongoose.Types.ObjectId,
-        ref: 'User',
-        required: true,
-    }
-}, {timestamps: true});
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
 
-const ActivityLog = model<IActivityLog, ActivityLogModel>('ActivityLog', ActivityLogSchema);
+const ActivityLog = model<IActivityLog, ActivityLogModel>(
+  'ActivityLog',
+  ActivityLogSchema,
+);
 
-const validateActivityLogDto = (activityLogDto: IActivityDto):
-    ValidationResult => {
+const validateActivityLogDto = (
+  activityLogDto: IActivityDto,
+): ValidationResult => {
+  const activityLog = joi.object({
+    action: joi.string().required(),
+    resourceName: joi.string().required(),
+    user: joi.object().required(),
+  });
+  return activityLog.validate(activityLogDto);
+};
 
-    const activityLog = joi.object({
-        action: joi.string().required(),
-        resourceName: joi.string().required(),
-        user: joi.object().required()
-    });
-    return activityLog.validate(activityLogDto);
-}
-
-export {
-    ActivityLog,
-    validateActivityLogDto
-}
+export { ActivityLog, validateActivityLogDto };

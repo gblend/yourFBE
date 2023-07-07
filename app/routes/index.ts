@@ -13,17 +13,17 @@ import configRouter from './config';
 import notificationRouter from './notification';
 
 export {
-    apiDocRouter,
-    feedCategoryRouter,
-    followedFeedRouter,
-    savedForLaterRouter,
-    authRouter,
-    userRouter,
-    searchRouter,
-    feedRouter,
-    statRouter,
-    logRouter,
-    postRouter,
-    configRouter,
-    notificationRouter,
-}
+  apiDocRouter,
+  feedCategoryRouter,
+  followedFeedRouter,
+  savedForLaterRouter,
+  authRouter,
+  userRouter,
+  searchRouter,
+  feedRouter,
+  statRouter,
+  logRouter,
+  postRouter,
+  configRouter,
+  notificationRouter,
+};

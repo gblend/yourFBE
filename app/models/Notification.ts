@@ -1,52 +1,61 @@
-import {model, Schema} from 'mongoose';
-import joi, {ValidationResult} from 'joi';
-import {INotification, INotificationDto, NotificationModel} from '../interface';
+import { model, Schema } from 'mongoose';
+import joi, { ValidationResult } from 'joi';
+import {
+  INotification,
+  INotificationDto,
+  NotificationModel,
+} from '../interface';
 
-const NotificationSchema = new Schema<INotification, NotificationModel>({
+const NotificationSchema = new Schema<INotification, NotificationModel>(
+  {
     text: {
-        type: String,
-        trim: true,
-        required: true,
+      type: String,
+      trim: true,
+      required: true,
     },
     title: {
-        type: String,
-        trim: true,
-        unique: true,
-        required: true,
+      type: String,
+      trim: true,
+      unique: true,
+      required: true,
     },
     status: {
-        type: String,
-        enum: {
-            values: ['enabled', 'disabled'],
-            messages: '{VALUE} is not acceptable'
-        },
-        default: 'enabled',
-    }
-}, {timestamps: true});
+      type: String,
+      enum: {
+        values: ['enabled', 'disabled'],
+        messages: '{VALUE} is not acceptable',
+      },
+      default: 'enabled',
+    },
+  },
+  { timestamps: true },
+);
 
-const Notification = model<INotification, NotificationModel>('Notification', NotificationSchema, 'notifications');
+const Notification = model<INotification, NotificationModel>(
+  'Notification',
+  NotificationSchema,
+  'notifications',
+);
 
-const validateNotificationDto = (notificationDto: INotificationDto): ValidationResult => {
-    const notification = joi.object({
-        text: joi.string().required(),
-        title: joi.string().required()
-    });
-    return notification.validate(notificationDto);
-}
-
-const validateUpdateNotificationDto = (notificationUpdateDto: INotificationDto): ValidationResult => {
-    const notification = joi.object({
-        text: joi.string(),
-        title: joi.string(),
-        status: joi.string()
-    });
-    return notification.validate(notificationUpdateDto);
-}
-
-export {
-    Notification,
-    validateNotificationDto,
-    validateUpdateNotificationDto
+const validateNotificationDto = (
+  notificationDto: INotificationDto,
+): ValidationResult => {
+  const notification = joi.object({
+    text: joi.string().required(),
+    title: joi.string().required(),
+  });
+  return notification.validate(notificationDto);
 };
 
+const validateUpdateNotificationDto = (
+  notificationUpdateDto: INotificationDto,
+): ValidationResult => {
+  const notification = joi.object({
+    text: joi.string(),
+    title: joi.string(),
+    status: joi.string(),
+  });
+  return notification.validate(notificationUpdateDto);
+};
 
+export { Notification, validateNotificationDto, validateUpdateNotificationDto };
