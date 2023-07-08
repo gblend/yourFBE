@@ -1,7 +1,7 @@
 {
   "name": "yourfeeds-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "yourFeeds is a backend API for realtime access to curated feed posts, podcasts, etc. across numerous categories and many more based on user's preferences",
   "repository": {
     "type": "git",
     "url": "git://github.com/gblend/yourfeedsApi.git"
@@ -12,13 +12,15 @@
     "build": "rimraf -rf dist && tsc",
     "postbuild": "copyfiles --error .env Procfile .github/**/*.* public/**/*.* dist",
     "start": "NODE_ENV=production node dist/server",
-    "lint": "eslint .",
+    "lint": "eslint --ignore-path .eslintignore .",
+    "format": "prettier --ignore-path .gitignore --write \"{app,test}/**/*.{js,ts}\"",
     "pm2:dev": "NODE_ENV=development NODE_PATH=. DEBUG=* pm2 delete dist/ecosystem.config.js && pm2 start dist/ecosystem.config.js --no-daemon",
     "pm2": "NODE_ENV=production NODE_PATH=. pm2 delete dist/ecosystem.config.js && pm2 start dist/ecosystem.config.js",
     "stop": "NODE_PATH=. pm2 stop dist/ecosystem.config.js",
     "test": "NODE_ENV=test jest --coverage dist/tests/*  --detectOpenHandles",
     "unit": "jest --coverage dist/tests/unit",
-    "integration": "NODE_ENV=test jest --coverage dist/tests/integration/auth.test.js --detectOpenHandles"
+    "integration": "NODE_ENV=test jest --coverage dist/tests/integration/auth.test.js --detectOpenHandles",
+    "prepare": "husky install"
   },
   "author": "gabrielilo190@gmail.com",
   "license": "ISC",
@@ -30,7 +32,7 @@
     "amqplib": "^0.8.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.27.1",
-    "connect-redis": "^7.1.0",
+    "connect-redis": "^5.0.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
@@ -44,21 +46,21 @@
     "http-status-codes": "^2.1.4",
     "install": "^0.13.0",
     "ioredis": "^5.3.0",
-    "jest": "^27.4.5",
+    "jest": "^29.5.0",
     "joi": "^17.4.0",
     "jsonwebtoken": "^9.0.0",
     "mongodb-memory-server": "^8.9.0",
     "mongoose": "^6.9.1",
     "morgan": "^1.10.0",
+    "newrelic": "^9.15.0",
     "nock": "^13.2.4",
     "node-cron": "^3.0.2",
     "nodemailer": "^6.7.2",
-    "npm": "^8.17.0",
     "passport": "^0.6.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-twitter": "^0.1.5",
-    "pm2": "^5.2.0",
+    "pm2": "^5.3.0",
     "retry": "^0.13.1",
     "sinon": "^14.0.0",
     "socket.io": "^4.5.1",
@@ -92,15 +94,17 @@
     "@typescript-eslint/parser": "^6.0.0",
     "copyfiles": "^2.4.1",
     "eslint": "^8.44.0",
+    "husky": "^8.0.3",
     "ioredis-mock": "^8.2.6",
+    "lint-staged": "^13.2.3",
     "mock-amqplib": "^1.8.1",
     "nodemon": "^2.0.9",
-    "passport-mock-strategy": "^2.0.0",
+    "prettier": "^3.0.0",
     "rimraf": "^4.1.2",
     "socket.io-client": "^4.5.1",
     "typescript": "^4.9.4"
   },
   "engines": {
-    "node": ">=16.0.0 <19.0.0"
+    "node": ">=14.0.0 <19.0.0"
   }
 }
