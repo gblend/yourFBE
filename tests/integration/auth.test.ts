@@ -561,8 +561,6 @@ describe('auth', () => {
   });
 
   it('should fail to resend verification email with invalid user token', (done) => {
-    request.delete('/api/v1/auth/logout').set('Cookie', loginTokens).end(done);
-
     emailHelper.resendVerificationEmailFail({ email: data.email! });
     request
       .post('/api/v1/auth/resend-verification-email')
