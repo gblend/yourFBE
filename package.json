@@ -19,7 +19,7 @@
     "stop": "NODE_PATH=. pm2 stop dist/ecosystem.config.js",
     "test": "NODE_ENV=test jest --coverage dist/tests/*  --detectOpenHandles",
     "unit": "jest --coverage dist/tests/unit",
-    "integration": "NODE_ENV=test jest --coverage dist/tests/integration/auth.test.js --detectOpenHandles",
+    "integration": "NODE_ENV=test jest --coverage dist/tests/integration/* --forceExit --detectOpenHandles",
     "prepare": "husky install"
   },
   "author": "gabrielilo190@gmail.com",
@@ -62,7 +62,6 @@
     "passport-twitter": "^0.1.5",
     "pm2": "^5.3.0",
     "retry": "^0.13.1",
-    "sinon": "^14.0.0",
     "socket.io": "^4.5.1",
     "supertest": "^6.1.6",
     "swagger-ui-express": "^4.6.2",
