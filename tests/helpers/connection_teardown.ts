@@ -1,21 +1,10 @@
-import {connection, disconnect} from 'mongoose';
-import {pubClient, subClient} from '../../app/socket';
+import mongoose from 'mongoose';
+import { pubClient, subClient } from '../../app/socket';
 
 const tearDownTestConnection = async (): Promise<void> => {
-	if (connection.readyState === 1) {
-		const collections = await connection.db.listCollections().toArray() ?? [];
-		for (const key in collections) {
-			if (collections[key]) await connection.dropCollection(`${collections[key].name}`)
-		}
-		await connection.dropDatabase();
-	}
+  await mongoose.disconnect();
+  if (pubClient) pubClient.disconnect();
+  if (subClient) subClient.disconnect();
+};
 
-	await connection.close(true);
-	await disconnect();
-	if (pubClient) pubClient.disconnect();
-	if (subClient) subClient.disconnect();
-}
-
-export {
-	tearDownTestConnection
-}
+export { tearDownTestConnection };
