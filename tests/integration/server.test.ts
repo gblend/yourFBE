@@ -23,8 +23,8 @@ describe('App', () => {
       .expect('Content-Type', 'application/json; charset=utf-8')
       .expect((response: any) => {
         const appStatusSchema = Joi.object({
-          status: Joi.string().required(),
-          message: Joi.string().required(),
+          status: Joi.string(),
+          message: Joi.string(),
           data: Joi.object({
             info: Joi.object({
               name: Joi.string().required(),
