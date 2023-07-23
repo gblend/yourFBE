@@ -7,8 +7,9 @@ import { User } from '../../app/models';
 import supertest from 'supertest';
 const request = supertest(appServer);
 import { IUser } from '../../app/interface';
+import emailHelper from '../helpers/email_mock';
 
-describe.skip('auth', () => {
+describe('auth', () => {
   interface ITestData {
     firstname?: string;
     lastname?: string;
@@ -539,6 +540,7 @@ describe.skip('auth', () => {
   });
 
   it('should resend verification email to user', (done) => {
+    emailHelper.resendVerificationEmailSuccess({ email: data.email! });
     request
       .post('/api/v1/auth/resend-verification-email')
       .set('Content-Type', 'application/json')
@@ -558,16 +560,16 @@ describe.skip('auth', () => {
       .end(done);
   });
 
-  it('should fail to resend verification email with invalid user token', async () => {
-    request
-      .delete('/api/v1/auth/logout')
-      .set('Cookie', loginTokens)
-      .then(async () => {
-        const result = await request
-          .post('/api/v1/auth/resend-verification-email')
-          .set('Content-Type', 'application/json')
-          .send({ email: '' });
+  it('should fail to resend verification email with invalid user token', (done) => {
+    request.delete('/api/v1/auth/logout').set('Cookie', loginTokens).end(done);
 
+    emailHelper.resendVerificationEmailFail({ email: data.email! });
+    request
+      .post('/api/v1/auth/resend-verification-email')
+      .set('Content-Type', 'application/json')
+      .send({ email: '' })
+      .expect('Content-Type', 'application/json; charset=utf-8')
+      .expect((res: any) => {
         const resendVerificationEmailError = Joi.object({
           status: Joi.string().required(),
           message: Joi.string().required(),
@@ -576,7 +578,8 @@ describe.skip('auth', () => {
           }),
         });
 
-        Joi.assert(result.body, resendVerificationEmailError);
-      });
+        Joi.assert(res.body, resendVerificationEmailError);
+      })
+      .end(done);
   });
 });
