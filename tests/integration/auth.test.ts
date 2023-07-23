@@ -7,7 +7,7 @@ import { User } from '../../app/models';
 import supertest from 'supertest';
 const request = supertest(appServer);
 import { IUser } from '../../app/interface';
-import emailHelper from '../helpers/email_mock';
+import emailHelper from '../helpers/mock/email';
 
 describe('auth', () => {
   interface ITestData {
