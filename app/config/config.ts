@@ -113,19 +113,19 @@ export const config = {
       localUrl: process.env.SOCKET_IO_URL_LOCAL as string,
     },
     google: {
-      clientID: process.env.SOCIAL_OAUTH_GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.SOCIAL_OAUTH_GOOGLE_CLIENT_SECRET as string,
-      callbackURL: process.env.SOCIAL_OAUTH_GOOGLE_CALLBACK_URL as string,
+      clientID: process.env.SOCIAL_OAUTH_GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.SOCIAL_OAUTH_GOOGLE_CLIENT_SECRET || '',
+      callbackURL: process.env.SOCIAL_OAUTH_GOOGLE_CALLBACK_URL || '',
     },
     facebook: {
-      clientID: process.env.SOCIAL_OAUTH_FACEBOOK_CLIENT_ID as string,
-      clientSecret: process.env.SOCIAL_OAUTH_FACEBOOK_CLIENT_SECRET as string,
-      callbackURL: process.env.SOCIAL_OAUTH_FACEBOOK_CALLBACK_URL as string,
+      clientID: process.env.SOCIAL_OAUTH_FACEBOOK_CLIENT_ID || '',
+      clientSecret: process.env.SOCIAL_OAUTH_FACEBOOK_CLIENT_SECRET || '',
+      callbackURL: process.env.SOCIAL_OAUTH_FACEBOOK_CALLBACK_URL || '',
     },
     twitter: {
-      consumerKey: process.env.SOCIAL_OAUTH_TWITTER_CLIENT_KEY as string,
-      consumerSecret: process.env.SOCIAL_OAUTH_TWITTER_CLIENT_SECRET as string,
-      callbackURL: process.env.SOCIAL_OAUTH_TWITTER_CALLBACK_URL as string,
+      consumerKey: process.env.SOCIAL_OAUTH_TWITTER_CLIENT_KEY || '',
+      consumerSecret: process.env.SOCIAL_OAUTH_TWITTER_CLIENT_SECRET || '',
+      callbackURL: process.env.SOCIAL_OAUTH_TWITTER_CALLBACK_URL || '',
     },
   },
   socket: {
