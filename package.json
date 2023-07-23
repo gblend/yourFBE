@@ -17,9 +17,9 @@
     "pm2:dev": "NODE_ENV=development NODE_PATH=. DEBUG=* pm2 delete dist/ecosystem.config.js && pm2 start dist/ecosystem.config.js --no-daemon",
     "pm2": "NODE_ENV=production NODE_PATH=. pm2 delete dist/ecosystem.config.js && pm2 start dist/ecosystem.config.js",
     "stop": "NODE_PATH=. pm2 stop dist/ecosystem.config.js",
-    "test": "NODE_ENV=test jest --coverage dist/tests/*  --detectOpenHandles",
+    "test": "NODE_ENV=test jest --coverage dist/tests/*",
     "unit": "jest --coverage dist/tests/unit",
-    "integration": "NODE_ENV=test jest --coverage dist/tests/integration/* --forceExit --detectOpenHandles",
+    "integration": "NODE_ENV=test jest --coverage dist/tests/integration/* --forceExit",
     "prepare": "husky install"
   },
   "author": "gabrielilo190@gmail.com",
