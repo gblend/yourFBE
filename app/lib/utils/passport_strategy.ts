@@ -16,10 +16,16 @@ import { registerSocialProfile } from '../../socialauth';
 import { constants } from './constant';
 import { appEnv } from '../../../app';
 import { CustomAPIError } from '../errors';
+import passport from 'passport';
 
+/*
+  Get passport strategy
+  @param name the strategy name to retrieve
+  @return passport
+ */
 export const getStrategy = (name: string = ''): any => {
   if (constants.envList.includes(appEnv)) {
-    return new MockStrategy();
+    return passport.use(new MockStrategy());
   }
 
   let options: any = {};
@@ -73,7 +79,5 @@ export const getStrategy = (name: string = ''): any => {
       throw new CustomAPIError('Strategy not implemented');
   }
 
-  const strategy = new _Strategy(options, verify);
-
-  return strategy;
+  return passport.use(name, new _Strategy(options, verify));
 };
