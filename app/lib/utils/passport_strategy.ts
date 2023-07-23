@@ -24,7 +24,7 @@ import passport from 'passport';
   @return passport
  */
 export const getStrategy = (name: string = ''): any => {
-  if (constants.envList.includes(appEnv)) {
+  if (!constants.envList.includes(appEnv)) {
     return passport.use(new MockStrategy());
   }
 
