@@ -4,9 +4,9 @@ const { port, baseUrl, name, enabledEnv } = config.app;
 
 const start = (): void => {
   connectDB()
-    .then(() => {
+    .then((): void => {
       if (enabledEnv) {
-        httpServer.listen(port, () => {
+        httpServer.listen(port, (): void => {
           logger.info(
             `${name} server running: ${baseUrl}\n ${baseUrl}/api-docs`,
           );

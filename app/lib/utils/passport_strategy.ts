@@ -1,4 +1,3 @@
-import MockStrategy from 'passport-mock-strategy';
 import {
   Profile as FacebookProfile,
   Strategy as FacebookStrategy,
@@ -13,8 +12,6 @@ import {
 } from 'passport-twitter';
 import { config } from '../../config/config';
 import { registerSocialProfile } from '../../socialauth';
-import { constants } from './constant';
-import { appEnv } from '../../../app';
 import { CustomAPIError } from '../errors';
 import passport from 'passport';
 
@@ -25,7 +22,10 @@ import passport from 'passport';
  */
 export const getStrategy = (name: string = ''): any => {
   if (!config.app.enabledEnv) {
-    return passport.use(new MockStrategy());
+    import('passport-mock-strategy').then((mockStrategy) => {
+      const MockStrategy = mockStrategy.default;
+      return passport.use(new MockStrategy());
+    });
   }
 
   let options: any = {};

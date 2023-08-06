@@ -35,7 +35,7 @@ export const sendEmail = ({
   subject: string;
   html: any;
 }) => {
-  const from = config.mail.from;
+  const from: string = config.mail.from;
   return transporterInit().sendMail({
     from,
     to,
