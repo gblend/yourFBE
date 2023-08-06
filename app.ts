@@ -80,13 +80,14 @@ if (enabledEnv) {
       };
     })
     .catch((err: Error) => err);
+
+  app.use('/api', apiRateLimiter);
 }
 
 app.use(helmet());
 app.use(xss());
 app.use(mongoSanitize());
 app.set('trust proxy', 1);
-app.use('/api', apiRateLimiter);
 app.use(express.json({ limit: '300kb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(config.jwt.secret));
