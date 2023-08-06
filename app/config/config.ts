@@ -2,6 +2,9 @@ import { config as dotenvConfig } from 'dotenv';
 
 dotenvConfig();
 type numberUnknown = number | unknown;
+const envList: string[] = ['production', 'development'];
+const currentEnv: string = process.env.NODE_ENV || '';
+const isProdEnv: boolean = currentEnv === 'production';
 
 export const config = {
   app: {
@@ -11,14 +14,14 @@ export const config = {
     frontendBaseUrlDev: process.env.FRONTEND_BASE_URL_DEV as string,
     baseUrlProd: process.env.BASE_URL_PROD as string,
     frontendBaseUrlProd: process.env.FRONTEND_BASE_URL_PROD as string,
-    env: process.env.NODE_ENV as string,
-    prodEnv: process.env.NODE_ENV === 'production',
-    baseUrl:
-      process.env.NODE_ENV === 'production'
-        ? process.env.BASE_URL_PROD
-        : (process.env.BASE_URL_DEV as string),
+    env: currentEnv,
+    prodEnv: isProdEnv,
+    baseUrl: isProdEnv
+      ? process.env.BASE_URL_PROD
+      : (process.env.BASE_URL_DEV as string),
     secret: process.env.APP_SECRET || ('yourFeeds:_xx_default_xx' as string),
     prefix: '/api/v1',
+    enabledEnv: envList.includes(currentEnv),
   },
   rateLimiter: {
     windowMs: process.env.RATE_LIMIT_WINDOW_MS as numberUnknown,
