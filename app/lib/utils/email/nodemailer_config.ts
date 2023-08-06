@@ -3,7 +3,13 @@ import { config } from '../../../config/config';
 import { config as dotenvConfig } from 'dotenv';
 
 dotenvConfig({ path: '../.env' });
-const mail = config.app.prodEnv ? config.mail : config.mailTest;
+const mail: {
+  host: string;
+  port: any;
+  smtpSecure: boolean;
+  authUser: string;
+  authPassword: string;
+} = config.app.prodEnv ? config.mail : config.mailTest;
 
 const transporterInit = () => {
   return createTransport({

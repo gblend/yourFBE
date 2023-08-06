@@ -12,7 +12,6 @@ import mongoSanitize from 'express-mongo-sanitize';
 import { config } from './app/config/config';
 import { app, express, httpServer } from './app/socket';
 import {
-  constants,
   decodeCookies,
   getRedisConnection,
   logger,
@@ -47,7 +46,7 @@ import {
 
 export { initCron } from './app/scheduler';
 export { connectDB } from './app/config/db/connect';
-const { env: appEnv, prefix } = config.app;
+const { env: appEnv, prefix, enabledEnv } = config.app;
 
 cloudinary.v2.config({
   cloud_name: config.cloudinary.cloudName,
@@ -58,11 +57,11 @@ cloudinary.v2.config({
 const apiRateLimiter = rateLimit({
   windowMs: config.rateLimiter.windowMs,
   max: config.rateLimiter.max,
-  standardHeaders: true,
+  standardHeaders: enabledEnv,
 });
 
 let sessionRedisStore: any = {};
-if (constants.envList.includes(appEnv)) {
+if (enabledEnv) {
   import('newrelic').then((newrelicModule) => {
     const newrelic = newrelicModule.default;
     // instrument express after the agent has been loaded

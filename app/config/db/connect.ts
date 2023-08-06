@@ -1,23 +1,23 @@
 import mongoose from 'mongoose';
-import { constants, logger } from '../../lib/utils';
+import { logger } from '../../lib/utils';
 import { CustomAPIError } from '../../lib/errors';
 import { config } from '../config';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
-const appEnv = config.app.env;
-const connectionStates = {
+const { enabledEnv } = config.app;
+const connectionStates: { 1: string; 2: string } = {
   1: 'connected',
   2: 'connecting',
 };
 
 export const connectDB = async (): Promise<void> => {
-  const uri = config.database.uri;
-  const message = {
+  const uri: string = config.database.uri;
+  const message: { success: string; error: string } = {
     success: 'Database connection established.',
     error: 'Database connection error',
   };
 
-  if (constants.envList.includes(appEnv)) {
+  if (enabledEnv) {
     return await connect(uri, message);
   }
 
