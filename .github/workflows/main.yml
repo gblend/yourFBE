@@ -130,6 +130,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          cache-dependency-path: 'package.json'
 
       # Runs a set of commands using the runners shell
       # Prevent npm from executing arbitrary scripts
@@ -157,6 +158,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          cache-dependency-path: 'package.json'
 
       # Runs a set of commands using the runners shell
       # Prevent npm from executing arbitrary scripts
