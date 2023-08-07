@@ -22,7 +22,7 @@ import passport from 'passport';
  */
 export const getStrategy = (name: string = ''): any => {
   if (!config.app.enabledEnv) {
-    import('passport-mock-strategy').then((mockStrategy) => {
+    return import('passport-mock-strategy').then((mockStrategy) => {
       const MockStrategy = mockStrategy.default;
       return passport.use(new MockStrategy());
     });
