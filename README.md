@@ -1,4 +1,4 @@
-![Logo](dist/public/uploads/custom_swagger_logo.png)
+![Logo](public/uploads/custom_swagger_logo.png)
 yourFeeds is a backend API for realtime access to curated feed (news) posts, podcasts, etc. across numerous categories and many more based on user's preferences.
 
 ## Run Locally
